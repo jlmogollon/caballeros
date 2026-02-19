@@ -403,33 +403,65 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="hbrand"><div class="hbrand-icon">⚔</div>
       <div class="hbrand-text">
         <div class="h-title">HOMBRES <span>DE VERDAD</span></div>
-        <div class="h-sub">Mi Perfil · Evidencias 2026</div>
+        <div class="h-sub">Evidencias 2026</div>
       </div>
     </div>
     <div class="hacts"><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
-  <div class="pv-hero">
-    <div class="pv-av-wrap">
-      <div class="pv-av" id="pv-av" onclick="document.getElementById('photo-input-pv').click()"></div>
-      <div class="pv-cam" onclick="document.getElementById('photo-input-pv').click()">📷</div>
-    </div>
-    <div class="pv-name" id="pv-name"></div>
-    <div class="pv-meta" id="pv-meta"></div>
-    <div class="pv-bdg" id="pv-bdg"></div>
+  <!-- Nav pestañas personal -->
+  <div class="app-nav">
+    <div class="ntab active" id="pvtab-perfil" onclick="showPvTab('perfil',this)">👤 Mi Perfil</div>
+    <div class="ntab" id="pvtab-ranking" onclick="showPvTab('ranking',this)">🏆 Ranking</div>
+    <div class="ntab" id="pvtab-grupos" onclick="showPvTab('grupos',this)">👥 Grupos</div>
+    <div class="ntab" id="pvtab-clases" onclick="showPvTab('clases',this)">📚 Clases</div>
+    <div class="ntab" id="pvtab-calgr" onclick="showPvTab('calgr',this)">📊 Cal. Grupos</div>
   </div>
-  <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
-  <div class="pv-body">
-    <div class="score-hero">
-      <div class="sh-big" id="pv-total">0.0</div>
-      <div class="sh-lbl">Puntuación Acumulada</div>
-      <div class="sh-sub" id="pv-rank"></div>
-      <div class="star-row" id="pv-stars"></div>
-      <div class="ev-pill">🍇 Evidencias 2026</div>
+
+  <!-- PESTAÑA: MI PERFIL -->
+  <div class="tab active" id="pvt-perfil">
+    <div class="pv-hero">
+      <div class="pv-av-wrap">
+        <div class="pv-av" id="pv-av" onclick="document.getElementById('photo-input-pv').click()"></div>
+        <div class="pv-cam" onclick="document.getElementById('photo-input-pv').click()">📷</div>
+      </div>
+      <div class="pv-name" id="pv-name"></div>
+      <div class="pv-meta" id="pv-meta"></div>
+      <div class="pv-bdg" id="pv-bdg"></div>
     </div>
-    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
-    <div id="pv-bars"></div>
-    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
-    <div id="pv-hist"></div>
+    <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
+    <div class="pv-body">
+      <div class="score-hero">
+        <div class="sh-big" id="pv-total">0.0</div>
+        <div class="sh-lbl">Puntuación Acumulada</div>
+        <div class="sh-sub" id="pv-rank"></div>
+        <div class="star-row" id="pv-stars"></div>
+        <div class="ev-pill">🍇 Evidencias 2026</div>
+      </div>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
+      <div id="pv-bars"></div>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
+      <div id="pv-hist"></div>
+    </div>
+  </div>
+
+  <!-- PESTAÑA: RANKING -->
+  <div class="tab" id="pvt-ranking">
+    <div class="pg" id="pv-ranking-pg"></div>
+  </div>
+
+  <!-- PESTAÑA: GRUPOS -->
+  <div class="tab" id="pvt-grupos">
+    <div class="pg" id="pv-grupos-pg"></div>
+  </div>
+
+  <!-- PESTAÑA: CLASES -->
+  <div class="tab" id="pvt-clases">
+    <div class="pg" id="pv-clases-pg"></div>
+  </div>
+
+  <!-- PESTAÑA: CAL. GRUPOS -->
+  <div class="tab" id="pvt-calgr">
+    <div class="pg" id="pv-calgr-pg"></div>
   </div>
 </div>
 
@@ -695,7 +727,16 @@ function doLogin(){
     currentCabId=v;showSc('screen-personal');renderPersonal(v);
   }
 }
-function logout(){document.getElementById('admin-pw').value='';document.getElementById('login-err').style.display='none';showSc('screen-login');}
+function logout(){
+  document.getElementById('admin-pw').value='';
+  document.getElementById('login-err').style.display='none';
+  // Resetear a pestaña Mi Perfil
+  document.querySelectorAll('#screen-personal .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#screen-personal .ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pvt-perfil').classList.add('active');
+  document.getElementById('pvtab-perfil').classList.add('active');
+  showSc('screen-login');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
@@ -1180,8 +1221,119 @@ function renderCalGr(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PERSONAL VIEW
+// PERSONAL VIEW — PESTAÑAS
 // ═══════════════════════════════════════════════════════════════
+function showPvTab(id, el){
+  document.querySelectorAll('#screen-personal .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#screen-personal .ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pvt-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='ranking') renderPvRanking();
+  if(id==='grupos')  renderPvGrupos();
+  if(id==='clases')  renderPvClases();
+  if(id==='calgr')   renderPvCalGr();
+}
+
+function renderPvRanking(){
+  const list=ranking();
+  let h=`<div class="sec-ttl">🏆 Ranking General</div>`;
+  h+=list.map((c,i)=>{
+    const cal=calcCab(c.id);
+    const isMine=c.id===currentCabId;
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-family:Montserrat;font-size:12px;font-weight:900;color:var(--text3)">#${i+1}</span>`;
+    return`<div class="cab-card" style="${isMine?'border-color:var(--teal);background:var(--teal-bg);':''}" >
+      <div class="av" style="${isMine?'background:linear-gradient(135deg,var(--teal),var(--teal3));':''}">${c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:(i<3?medal:ini(c.nombre))}</div>
+      <div class="cab-inf">
+        <div class="cab-nm">${c.nombre}${isMine?' <span style="font-size:10px;color:var(--teal);font-weight:700">← Tú</span>':''}</div>
+        <div class="cab-mt">${c.grupo} · Asist: ${cal.asist}/${cal.totalClases}</div>
+      </div>
+      <div class="cab-sc">${cal.total.toFixed(1)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('pv-ranking-pg').innerHTML=h;
+}
+
+function renderPvGrupos(){
+  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  let h=`<div class="sec-ttl">👥 Grupos</div>`;
+  GRUPOS.forEach(g=>{
+    const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+    const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
+    const col=GCOL[g]||'var(--teal)';
+    h+=`<div class="gr-card"><div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} miembros · Prom: ${avg}</div></div>
+      ${ms.map(c=>{
+        const isMine=c.id===currentCabId;
+        return`<div class="gr-row" style="${isMine?'background:var(--teal-bg);border-radius:8px;padding:7px 6px;':''}" >
+          <div><span class="gr-rname" style="${isMine?'color:var(--teal2);':''}">${c.nombre}${isMine?' ← Tú':''}</span><span class="gr-rdist">${c.dist}</span></div>
+          <span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  document.getElementById('pv-grupos-pg').innerHTML=h;
+}
+
+function renderPvClases(){
+  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  let h=`<div class="sec-ttl">📚 Clases Registradas</div>`;
+  if(!sorted.length){h+='<p style="color:var(--text3);font-size:13px">Sin clases aún.</p>';document.getElementById('pv-clases-pg').innerHTML=h;return;}
+  sorted.forEach(cl=>{
+    const{d,m}=fmtBox(cl.fecha);
+    const avg=claseAvg(cl);
+    const asist=Object.values(cl.cal).filter(q=>q.a).length;
+    const miCal=cl.cal[currentCabId];
+    const sc=avg>=7?'#15803d':avg>=4?'var(--gold2)':'var(--text3)';
+    h+=`<div class="cl-card" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
+        <div class="cl-inf"><div class="cl-nm">${cl.tema||'Clase de Estudios'}</div><div class="cl-mt">${cl.grupoResp||'Sin grupo'} · ${asist} asistentes</div></div>
+        <div class="cl-avg" style="color:${sc}">${avg.toFixed(1)}</div>
+      </div>
+      ${miCal?`<div style="background:var(--teal-bg);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--teal2)">
+        <strong>Mi nota:</strong> ${miCal.a?`Int:${miCal.i} · Pun:${miCal.p} · Dom:${miCal.d} · Par:${miCal.pa} → <strong>${rowTotal(miCal).toFixed(2)}</strong>`:'Ausente ❌'}
+      </div>`:`<div style="font-size:11px;color:var(--text3);padding:4px 0">Sin registro tuyo en esta clase</div>`}
+    </div>`;
+  });
+  document.getElementById('pv-clases-pg').innerHTML=h;
+}
+
+function renderPvCalGr(){
+  const el=document.getElementById('pv-calgr-pg');if(!el)return;
+  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!sorted.length){el.innerHTML='<div class="sec-ttl">📊 Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
+  const myGrupo=DB.caballeros.find(c=>c.id===currentCabId)?.grupo;
+  let h=`<div class="sec-ttl">📊 Calificaciones por Grupo</div>
+  <div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--teal2);line-height:1.7">
+    <strong>Fórmula:</strong> 50% calidad notas + 40% % asistencia grupal + 10% bono responsable
+  </div>`;
+  sorted.forEach(cl=>{
+    const resultados=GRUPOS.map(g=>({g,d:calcGrupoScore(cl,g)})).filter(x=>x.d).sort((a,b)=>b.d.score-a.d.score);
+    const sinDatos=GRUPOS.filter(g=>!calcGrupoScore(cl,g));
+    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}${cl.grupoResp?` <span style="font-size:10px;background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold2);border-radius:10px;padding:1px 7px;margin-left:6px">Resp: ${cl.grupoResp}</span>`:''}</div>`;
+    resultados.forEach(({g,d},idx)=>{
+      const col=GCOL[g]||'var(--teal)';
+      const sc=d.score>=7?'#15803d':d.score>=4?'var(--gold2)':'var(--text3)';
+      const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
+      const pct=Math.min(100,(d.score/10)*100);
+      const isMine=g===myGrupo;
+      h+=`<div style="padding:7px 0;border-bottom:1px solid #f3f4f6;${isMine?'background:rgba(58,171,186,0.05);border-radius:8px;padding:8px 6px;':''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:700;color:${col}">${medal} ${g}${d.esResp?' ⭐':''}${isMine?' <span style="font-size:9px;color:var(--teal);font-weight:700">← Mi grupo</span>':''}</span>
+          <span style="font-family:Montserrat;font-weight:900;font-size:14px;color:${sc}">${d.score}</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);margin-bottom:5px">
+          <span>📊 <strong style="color:var(--text2)">${d.promNotas}</strong></span>
+          <span>👥 <strong style="color:var(--text2)">${d.presentes}/${d.total} (${d.pctAsist}%)</strong></span>
+          ${d.esResp?`<span style="color:var(--gold2)">⭐ +1pt</span>`:''}
+        </div>
+        <div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div>
+      </div>`;
+    });
+    sinDatos.forEach(g=>{h+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin asistencia</span></div>`;});
+    h+=`</div>`;
+  });
+  el.innerHTML=h;
+}
 function renderPersonal(cabId){
   const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
   const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
