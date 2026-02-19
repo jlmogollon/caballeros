@@ -10,13 +10,18 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+  // ══════════════════════════════════════════════
+  // 🔥 CONFIGURACIÓN FIREBASE
+  // Reemplaza estos valores con los de tu proyecto
+  // ══════════════════════════════════════════════
   const firebaseConfig = {
     apiKey: "AIzaSyCt9ylNuFBbIUvMhYMy64J5-n4J8V6OdaI",
     authDomain: "caballeroshdv.firebaseapp.com",
     projectId: "caballeroshdv",
     storageBucket: "caballeroshdv.firebasestorage.app",
     messagingSenderId: "672347418083",
-    appId: "1:672347418083:web:bdbb3e12c11f833caf04d6"
+    appId: "1:672347418083:web:bdbb3e12c11f833caf04d6",
+    measurementId: "G-9N5014B7ZR"
   };
 
   const app = initializeApp(firebaseConfig);
