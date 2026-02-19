@@ -539,50 +539,66 @@ function showLoading(msg){
     el.style.cssText='position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:Lato,sans-serif;gap:14px;';
     el.innerHTML=`<div style="font-size:42px">🛡️</div><div style="font-family:Montserrat,sans-serif;font-size:18px;font-weight:800;color:#1a1f2e">Hombres de Verdad</div><div id="fb-load-msg" style="color:#3aabba;font-size:13px;font-weight:600">${msg}</div><div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#3aabba;border-radius:50%;animation:spin 0.7s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
     document.body.appendChild(el);
-  }else{document.getElementById('fb-load-msg').textContent=msg;}
+  }else{const m=document.getElementById('fb-load-msg');if(m)m.textContent=msg;}
 }
 function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
 
+function seedDB(){
+  return {adminPw:'1234', caballeros:JSON.parse(JSON.stringify(SEED_CABS)), clases:JSON.parse(JSON.stringify(SEED_CLASES))};
+}
+
 async function loadDB(){
-  showLoading('Conectando con Firebase...');
-  try{
-    const data = await window.fbLoadDB();
-    if(data){
-      DB=data;
-    } else {
-      showLoading('Primera vez: cargando datos iniciales...');
-      DB={adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};
-      await window.fbSaveDB(DB);
-    }
-    window._fbLoaded=true;
-    // Escuchar cambios en tiempo real (otros dispositivos)
-    window.fbSubscribe(function(newData){
-      DB=newData;
-      // Refrescar UI si el admin está logueado
-      if(document.getElementById('screen-admin').classList.contains('active')){
-        initAdmin();
+  showLoading('Conectando...');
+  // Intentar Firebase
+  if(typeof window.fbLoadDB === 'function'){
+    try{
+      const data = await window.fbLoadDB();
+      if(data && data.caballeros && data.clases){
+        DB = data;
+        window._fbLoaded = true;
+        // Suscribir cambios en tiempo real
+        if(typeof window.fbSubscribe === 'function'){
+          window.fbSubscribe(function(newData){
+            if(newData && newData.caballeros){
+              DB = newData;
+              buildSel();
+              if(document.getElementById('screen-admin').classList.contains('active')) initAdmin();
+            }
+          });
+        }
+        hideLoading();
+        return;
+      } else {
+        // Primera vez — guardar datos iniciales
+        showLoading('Primera vez: guardando datos...');
+        DB = seedDB();
+        await window.fbSaveDB(DB);
+        window._fbLoaded = true;
+        hideLoading();
+        return;
       }
-      buildSel();
-    });
-  } catch(e) {
-    // Fallback a localStorage si Firebase falla
-    console.warn('Firebase no disponible, usando localStorage:', e);
-    try{const r=localStorage.getItem(SK);if(r){DB=JSON.parse(r);}}catch(e2){}
-    if(!DB||!DB.caballeros){DB={adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};localStorage.setItem(SK,JSON.stringify(DB));}
-    toast('⚠️ Sin conexión a Firebase — datos locales','err');
+    } catch(e){
+      console.warn('Firebase falló:', e);
+    }
   }
+  // Fallback localStorage
+  console.warn('Usando localStorage como respaldo');
+  try{const r=localStorage.getItem(SK);if(r){DB=JSON.parse(r);}}catch(e){}
+  if(!DB || !DB.caballeros){ DB = seedDB(); }
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
+  toast('⚠️ Sin Firebase — datos locales','err');
 }
 
 async function saveDB(){
-  // Guardar en localStorage como respaldo inmediato
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  // Guardar en Firebase
-  try{
-    await window.fbSaveDB(DB);
-  } catch(e){
-    toast('⚠️ Error al guardar en la nube','err');
-    console.error(e);
+  if(typeof window.fbSaveDB === 'function'){
+    try{
+      await window.fbSaveDB(DB);
+    } catch(e){
+      console.error('Error guardando en Firebase:', e);
+      toast('⚠️ Error al guardar en la nube','err');
+    }
   }
 }
 
@@ -698,7 +714,9 @@ function setMode(m){
 }
 function buildSel(){
   const sel=document.getElementById('miembro-sel');
+  if(!sel)return;
   sel.innerHTML='<option value="">— Seleccionar —</option>';
+  if(!DB||!DB.caballeros)return;
   [...DB.caballeros].sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(c=>{
     const o=document.createElement('option');o.value=c.id;o.textContent=c.nombre;sel.appendChild(o);
   });
