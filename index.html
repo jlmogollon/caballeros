@@ -866,24 +866,44 @@ function updateFormStars(){
   if(lbl)lbl.textContent=`${count}/7 estrellas`;
 }
 
+function compressPhoto(file, callback){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=200; // máximo 200px — suficiente para avatar
+      let w=img.width, h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      callback(canvas.toDataURL('image/jpeg',0.7));
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function handlePhoto(e,ctx){
   const file=e.target.files[0];if(!file)return;
-  if(file.size>4*1024*1024){toast('Imagen demasiado grande (max 4MB)','err');return;}
-  const reader=new FileReader();
-  reader.onload=async ev=>{
-    const data=ev.target.result;
+  if(file.size>10*1024*1024){toast('Imagen demasiado grande (max 10MB)','err');return;}
+  toast('📷 Procesando foto...','info');
+  compressPhoto(file, async function(data){
     if(ctx==='pv'){
       const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
       c.photo=data;
       const av=document.getElementById('pv-av');
       av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
-      toast('💾 Guardando foto...','info');await saveDB();toast('📷 Foto actualizada','ok');
+      await saveDB();toast('📷 Foto actualizada','ok');
     }else{
       const cabId=document.getElementById('photo-input-modal').dataset.cabId;
-      if(cabId){const c=DB.caballeros.find(x=>x.id===cabId);if(c){c.photo=data;toast('💾 Guardando foto...','info');await saveDB();toast('📷 Foto guardada','ok');}}
+      if(cabId){
+        const c=DB.caballeros.find(x=>x.id===cabId);
+        if(c){c.photo=data;await saveDB();toast('📷 Foto guardada','ok');}
+      }
     }
-  };
-  reader.readAsDataURL(file);
+  });
   e.target.value='';
 }
 
