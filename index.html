@@ -5,15 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hombres de Verdad — Caballeros</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Caveat:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-  // ══════════════════════════════════════════════
-  // 🔥 CONFIGURACIÓN FIREBASE
-  // Reemplaza estos valores con los de tu proyecto
-  // ══════════════════════════════════════════════
+<!-- Firebase SDK (compat version - no requiere módulos ES) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyCt9ylNuFBbIUvMhYMy64J5-n4J8V6OdaI",
     authDomain: "caballeroshdv.firebaseapp.com",
@@ -23,21 +18,16 @@
     appId: "1:672347418083:web:bdbb3e12c11f833caf04d6",
     measurementId: "G-9N5014B7ZR"
   };
+  firebase.initializeApp(firebaseConfig);
+  const _fbDB = firebase.firestore();
+  const _fbDOC = _fbDB.collection("hdv").doc("main");
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const DOC_REF = doc(db, "hdv", "main");
-
-  // Exponer funciones al scope global para que el resto del código las use
   window._fbLoaded = false;
-  window._fbSaving = false;
 
   window.fbLoadDB = async function() {
     try {
-      const snap = await getDoc(DOC_REF);
-      if (snap.exists()) {
-        return snap.data();
-      }
+      const snap = await _fbDOC.get();
+      if (snap.exists) return snap.data();
       return null;
     } catch(e) {
       console.error("Firebase load error:", e);
@@ -47,25 +37,18 @@
 
   window.fbSaveDB = async function(data) {
     try {
-      await setDoc(DOC_REF, data);
+      await _fbDOC.set(data);
     } catch(e) {
       console.error("Firebase save error:", e);
       throw e;
     }
   };
 
-  // Escuchar cambios en tiempo real
   window.fbSubscribe = function(callback) {
-    return onSnapshot(DOC_REF, (snap) => {
-      if (snap.exists() && window._fbLoaded) {
-        callback(snap.data());
-      }
+    return _fbDOC.onSnapshot(snap => {
+      if (snap.exists && window._fbLoaded) callback(snap.data());
     });
   };
-
-  // Señal de que Firebase está listo
-  window._firebaseReady = true;
-  document.dispatchEvent(new Event('firebaseReady'));
 </script>
 <style>
 :root{
@@ -1271,26 +1254,18 @@ function importData(e){
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
-// ── Init: esperar a Firebase antes de cargar
+// ── Init
 async function initApp(){
-  buildSel(); // selector vacío por ahora
+  buildSel();
   await loadDB();
-  buildSel(); // refrescar con datos reales
-  // Add guide button to admin header
+  buildSel();
   const acts=document.querySelector('.hacts');
   if(acts&&!document.getElementById('btn-cloud')){
     const b=document.createElement('button');b.id='btn-cloud';b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);
   }
 }
 
-// Esperar a que el módulo Firebase esté listo
-if(window._firebaseReady){
-  initApp();
-}else{
-  document.addEventListener('firebaseReady',initApp);
-  // Si Firebase tarda más de 5s, iniciar de todas formas
-  setTimeout(()=>{if(!window._fbLoaded)initApp();},5000);
-}
+document.addEventListener('DOMContentLoaded', initApp);
 </script>
 </body>
 </html>
