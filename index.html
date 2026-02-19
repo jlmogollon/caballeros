@@ -5,6 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hombres de Verdad — Caballeros</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Caveat:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCt9ylNuFBbIUvMhYMy64J5-n4J8V6OdaI",
+    authDomain: "caballeroshdv.firebaseapp.com",
+    projectId: "caballeroshdv",
+    storageBucket: "caballeroshdv.firebasestorage.app",
+    messagingSenderId: "672347418083",
+    appId: "1:672347418083:web:bdbb3e12c11f833caf04d6"
+    measurementId: "G-9N5014B7ZR"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const DOC_REF = doc(db, "hdv", "main");
+
+  // Exponer funciones al scope global para que el resto del código las use
+  window._fbLoaded = false;
+  window._fbSaving = false;
+
+  window.fbLoadDB = async function() {
+    try {
+      const snap = await getDoc(DOC_REF);
+      if (snap.exists()) {
+        return snap.data();
+      }
+      return null;
+    } catch(e) {
+      console.error("Firebase load error:", e);
+      return null;
+    }
+  };
+
+  window.fbSaveDB = async function(data) {
+    try {
+      await setDoc(DOC_REF, data);
+    } catch(e) {
+      console.error("Firebase save error:", e);
+      throw e;
+    }
+  };
+
+  // Escuchar cambios en tiempo real
+  window.fbSubscribe = function(callback) {
+    return onSnapshot(DOC_REF, (snap) => {
+      if (snap.exists() && window._fbLoaded) {
+        callback(snap.data());
+      }
+    });
+  };
+
+  // Señal de que Firebase está listo
+  window._firebaseReady = true;
+  document.dispatchEvent(new Event('firebaseReady'));
+</script>
 <style>
 :root{
   --teal:#3aabba;--teal2:#2d8f9c;--teal3:#1d6b77;--teal-bg:rgba(58,171,186,0.12);
@@ -484,14 +542,61 @@ let DB = {};
 let currentCabId = null;
 let gradeClaseId = null;
 
-function loadDB(){
-  try{ const r=localStorage.getItem(SK); if(r){DB=JSON.parse(r);return;}}catch(e){}
-  DB={adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};
-  saveDB();
+// ═══════════════════════════════════════════════════════════════
+// PANTALLA DE CARGA
+// ═══════════════════════════════════════════════════════════════
+function showLoading(msg){
+  let el=document.getElementById('fb-loading');
+  if(!el){
+    el=document.createElement('div');el.id='fb-loading';
+    el.style.cssText='position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:Lato,sans-serif;gap:14px;';
+    el.innerHTML=`<div style="font-size:42px">🛡️</div><div style="font-family:Montserrat,sans-serif;font-size:18px;font-weight:800;color:#1a1f2e">Hombres de Verdad</div><div id="fb-load-msg" style="color:#3aabba;font-size:13px;font-weight:600">${msg}</div><div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#3aabba;border-radius:50%;animation:spin 0.7s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+    document.body.appendChild(el);
+  }else{document.getElementById('fb-load-msg').textContent=msg;}
 }
-function saveDB(){
-  try{localStorage.setItem(SK,JSON.stringify(DB));}
-  catch(e){toast('⚠️ Error al guardar (almacenamiento lleno)','err');}
+function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
+
+async function loadDB(){
+  showLoading('Conectando con Firebase...');
+  try{
+    const data = await window.fbLoadDB();
+    if(data){
+      DB=data;
+    } else {
+      showLoading('Primera vez: cargando datos iniciales...');
+      DB={adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};
+      await window.fbSaveDB(DB);
+    }
+    window._fbLoaded=true;
+    // Escuchar cambios en tiempo real (otros dispositivos)
+    window.fbSubscribe(function(newData){
+      DB=newData;
+      // Refrescar UI si el admin está logueado
+      if(document.getElementById('screen-admin').classList.contains('active')){
+        initAdmin();
+      }
+      buildSel();
+    });
+  } catch(e) {
+    // Fallback a localStorage si Firebase falla
+    console.warn('Firebase no disponible, usando localStorage:', e);
+    try{const r=localStorage.getItem(SK);if(r){DB=JSON.parse(r);}}catch(e2){}
+    if(!DB||!DB.caballeros){DB={adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};localStorage.setItem(SK,JSON.stringify(DB));}
+    toast('⚠️ Sin conexión a Firebase — datos locales','err');
+  }
+  hideLoading();
+}
+
+async function saveDB(){
+  // Guardar en localStorage como respaldo inmediato
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
+  // Guardar en Firebase
+  try{
+    await window.fbSaveDB(DB);
+  } catch(e){
+    toast('⚠️ Error al guardar en la nube','err');
+    console.error(e);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -725,10 +830,11 @@ function confirmDelCab(id){
   const c=DB.caballeros.find(x=>x.id===id);
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
 }
-function doDelCab(id){
+async function doDelCab(id){
   DB.caballeros=DB.caballeros.filter(c=>c.id!==id);
   DB.clases.forEach(cl=>delete cl.cal[id]);
-  saveDB();closeModal();initAdmin();buildSel();toast('Caballero eliminado','ok');
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  await saveDB();toast('Caballero eliminado','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -796,19 +902,17 @@ function handlePhoto(e,ctx){
   const file=e.target.files[0];if(!file)return;
   if(file.size>4*1024*1024){toast('Imagen demasiado grande (max 4MB)','err');return;}
   const reader=new FileReader();
-  reader.onload=ev=>{
+  reader.onload=async ev=>{
     const data=ev.target.result;
     if(ctx==='pv'){
-      // Personal view
       const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
-      c.photo=data;saveDB();
+      c.photo=data;
       const av=document.getElementById('pv-av');
       av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
-      toast('📷 Foto actualizada','ok');
+      toast('💾 Guardando foto...','info');await saveDB();toast('📷 Foto actualizada','ok');
     }else{
-      // Modal (edit form)
       const cabId=document.getElementById('photo-input-modal').dataset.cabId;
-      if(cabId){const c=DB.caballeros.find(x=>x.id===cabId);if(c){c.photo=data;saveDB();toast('📷 Foto guardada','ok');}}
+      if(cabId){const c=DB.caballeros.find(x=>x.id===cabId);if(c){c.photo=data;toast('💾 Guardando foto...','info');await saveDB();toast('📷 Foto guardada','ok');}}
     }
   };
   reader.readAsDataURL(file);
@@ -823,15 +927,17 @@ function readForm(){
     ...Object.fromEntries(CHECKS.map(k=>[k,document.getElementById('fc-'+k).checked?1:0]))
   };
 }
-function doAddCab(){
+async function doAddCab(){
   const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
   DB.caballeros.push({id:'c'+Date.now(),photo:'',...d});
-  saveDB();closeModal();initAdmin();buildSel();toast('✅ Caballero agregado','ok');
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Caballero agregado','ok');
 }
-function doSaveCab(id){
+async function doSaveCab(id){
   const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
   const c=DB.caballeros.find(x=>x.id===id);Object.assign(c,d);
-  saveDB();closeModal();initAdmin();buildSel();toast('✅ Guardado','ok');
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Guardado','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -888,7 +994,7 @@ function confirmDelClase(id){
   const cl=DB.clases.find(x=>x.id===id);
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${id}')">Eliminar</button></div></div>`;
 }
-function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);saveDB();closeModal();renderClases();renderDash();toast('Clase eliminada','ok');}
+async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModal();renderClases();renderDash();toast('💾 Guardando...','info');await saveDB();toast('Clase eliminada','ok');}
 
 // ═══════════════════════════════════════════════════════════════
 // NUEVA CLASE
@@ -904,14 +1010,14 @@ function openNuevaClase(){
     <button class="btn bteal bfull" onclick="doCrearClase()">📋 Ir a Calificar →</button>
   `);
 }
-function doCrearClase(){
+async function doCrearClase(){
   const fecha=document.getElementById('nc-fecha').value;
   if(!fecha){toast('Selecciona la fecha','err');return;}
   const dup=DB.clases.find(c=>c.fecha===fecha);
   if(dup&&!confirm(`Ya hay una clase el ${fmtDate(fecha)}. ¿Continuar?`))return;
   const id='cl'+Date.now();
   DB.clases.push({id,fecha,tema:document.getElementById('nc-tema').value.trim()||'Clase de Estudios',grupoResp:document.getElementById('nc-grupo').value,cal:{}});
-  saveDB();closeModal();openGrade(id);
+  await saveDB();closeModal();openGrade(id);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -976,7 +1082,7 @@ function updTotal(cabId){
 }
 function closeGrade(){document.getElementById('grade-screen').classList.remove('open');gradeClaseId=null;}
 
-function doSaveGrade(){
+async function doSaveGrade(){
   if(!gradeClaseId)return;
   const cl=DB.clases.find(x=>x.id===gradeClaseId);if(!cl)return;
   const missing=[];const newCal={};let saved=0;
@@ -997,8 +1103,10 @@ function doSaveGrade(){
     }
   });
   if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''})`,'err');return;}
-  cl.cal=newCal;saveDB();closeGrade();
+  cl.cal=newCal;closeGrade();
   renderClases();renderDash();renderCalGr();
+  toast('💾 Guardando calificaciones...','info');
+  await saveDB();
   toast(`✅ ${saved} calificaciones guardadas`,'ok');
 }
 
@@ -1055,7 +1163,7 @@ function openChangePw(){
     <button class="btn bteal bfull" onclick="doChangePw()">🔒 Cambiar Contraseña</button>
   `);
 }
-function doChangePw(){
+async function doChangePw(){
   const curr=document.getElementById('pw-curr').value;
   const nw=document.getElementById('pw-new').value;
   const conf=document.getElementById('pw-conf').value;
@@ -1063,7 +1171,7 @@ function doChangePw(){
   if(curr!==DB.adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
   if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
   if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
-  DB.adminPw=nw;saveDB();closeModal();toast('✅ Contraseña actualizada','ok');
+  DB.adminPw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña actualizada','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1140,12 +1248,14 @@ function exportData(){
 function importData(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=ev=>{
+  reader.onload=async ev=>{
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.caballeros||!data.clases)throw new Error('Formato incorrecto');
       if(confirm('¿Importar estos datos? Se reemplazará todo lo actual.')){
-        DB=data;saveDB();closeModal();initAdmin();buildSel();
+        DB=data;closeModal();initAdmin();buildSel();
+        toast('💾 Guardando en la nube...','info');
+        await saveDB();
         toast('✅ Datos importados correctamente','ok');
       }
     }catch(err){toast('⚠️ Archivo inválido','err');}
@@ -1157,13 +1267,26 @@ function importData(e){
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
-loadDB();
-buildSel();
-// Add guide button to admin header (injected)
-document.addEventListener('DOMContentLoaded',()=>{
+// ── Init: esperar a Firebase antes de cargar
+async function initApp(){
+  buildSel(); // selector vacío por ahora
+  await loadDB();
+  buildSel(); // refrescar con datos reales
+  // Add guide button to admin header
   const acts=document.querySelector('.hacts');
-  if(acts){const b=document.createElement('button');b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);}
-});
+  if(acts&&!document.getElementById('btn-cloud')){
+    const b=document.createElement('button');b.id='btn-cloud';b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);
+  }
+}
+
+// Esperar a que el módulo Firebase esté listo
+if(window._firebaseReady){
+  initApp();
+}else{
+  document.addEventListener('firebaseReady',initApp);
+  // Si Firebase tarda más de 5s, iniciar de todas formas
+  setTimeout(()=>{if(!window._fbLoaded)initApp();},5000);
+}
 </script>
 </body>
 </html>
