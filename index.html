@@ -346,8 +346,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
   </div>
-  <!-- Banners informativos admin -->
-  <div id="admin-banners"></div>
 
   <!-- DASHBOARD -->
   <div id="t-dash" class="tab active">
@@ -405,66 +403,33 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="hbrand"><div class="hbrand-icon">⚔</div>
       <div class="hbrand-text">
         <div class="h-title">HOMBRES <span>DE VERDAD</span></div>
-        <div class="h-sub">Evidencias 2026</div>
+        <div class="h-sub">Mi Perfil · Evidencias 2026</div>
       </div>
     </div>
     <div class="hacts"><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
-  <div class="app-nav">
-    <div class="ntab active" id="pvtab-perfil" onclick="showPvTab('perfil',this)">👤 Mi Perfil</div>
-    <div class="ntab" id="pvtab-ranking" onclick="showPvTab('ranking',this)">🏆 Ranking</div>
-    <div class="ntab" id="pvtab-grupos" onclick="showPvTab('grupos',this)">👥 Grupos</div>
-    <div class="ntab" id="pvtab-clases" onclick="showPvTab('clases',this)">📚 Clases</div>
-    <div class="ntab" id="pvtab-calgr" onclick="showPvTab('calgr',this)">📊 Cal. Grupos</div>
-  </div>
-  <!-- Banners informativos personal -->
-  <div id="personal-banners"></div>
-
-  <!-- PESTAÑA: MI PERFIL -->
-  <div class="tab active" id="pvt-perfil">
-    <div class="pv-hero">
-      <div class="pv-av-wrap">
-        <div class="pv-av" id="pv-av" onclick="document.getElementById('photo-input-pv').click()"></div>
-        <div class="pv-cam" onclick="document.getElementById('photo-input-pv').click()">📷</div>
-      </div>
-      <div class="pv-name" id="pv-name"></div>
-      <div class="pv-meta" id="pv-meta"></div>
-      <div class="pv-bdg" id="pv-bdg"></div>
+  <div class="pv-hero">
+    <div class="pv-av-wrap">
+      <div class="pv-av" id="pv-av" onclick="document.getElementById('photo-input-pv').click()"></div>
+      <div class="pv-cam" onclick="document.getElementById('photo-input-pv').click()">📷</div>
     </div>
-    <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
-    <div class="pv-body">
-      <div class="score-hero">
-        <div class="sh-big" id="pv-total">0.0</div>
-        <div class="sh-lbl">Puntuación Acumulada</div>
-        <div class="sh-sub" id="pv-rank"></div>
-        <div class="star-row" id="pv-stars"></div>
-        <div class="ev-pill">🍇 Evidencias 2026</div>
-      </div>
-      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
-      <div id="pv-bars"></div>
-      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
-      <div id="pv-hist"></div>
+    <div class="pv-name" id="pv-name"></div>
+    <div class="pv-meta" id="pv-meta"></div>
+    <div class="pv-bdg" id="pv-bdg"></div>
+  </div>
+  <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
+  <div class="pv-body">
+    <div class="score-hero">
+      <div class="sh-big" id="pv-total">0.0</div>
+      <div class="sh-lbl">Puntuación Acumulada</div>
+      <div class="sh-sub" id="pv-rank"></div>
+      <div class="star-row" id="pv-stars"></div>
+      <div class="ev-pill">🍇 Evidencias 2026</div>
     </div>
-  </div>
-
-  <!-- PESTAÑA: RANKING -->
-  <div class="tab" id="pvt-ranking">
-    <div class="pg" id="pv-ranking-pg"></div>
-  </div>
-
-  <!-- PESTAÑA: GRUPOS -->
-  <div class="tab" id="pvt-grupos">
-    <div class="pg" id="pv-grupos-pg"></div>
-  </div>
-
-  <!-- PESTAÑA: CLASES -->
-  <div class="tab" id="pvt-clases">
-    <div class="pg" id="pv-clases-pg"></div>
-  </div>
-
-  <!-- PESTAÑA: CAL. GRUPOS -->
-  <div class="tab" id="pvt-calgr">
-    <div class="pg" id="pv-calgr-pg"></div>
+    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
+    <div id="pv-bars"></div>
+    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
+    <div id="pv-hist"></div>
   </div>
 </div>
 
@@ -661,7 +626,7 @@ const SEED_CABS=[
 ];
 
 const SEED_CLASES=[
-  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Las Dispensaciones',cal:{
+  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Clase de Estudios',cal:{
     'c1':{a:1,i:9,p:10,d:9,pa:9},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},'c11':{a:1,i:10,p:7,d:1,pa:5},
     'c13':{a:1,i:7,p:7,d:1,pa:1},'c14':{a:1,i:10,p:10,d:1,pa:5},'c15':{a:1,i:10,p:7,d:1,pa:3},
@@ -669,7 +634,7 @@ const SEED_CLASES=[
     'c26':{a:1,i:10,p:10,d:3,pa:3},'c30':{a:1,i:10,p:10,d:5,pa:10},'c34':{a:1,i:10,p:5,d:1,pa:1},
     'c36':{a:1,i:10,p:10,d:9,pa:10},'c39':{a:1,i:10,p:9,d:1,pa:7}
   }},
-  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Las Dispensaciones',cal:{
+  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Clase de Estudios',cal:{
     'c1':{a:1,i:0,p:0,d:0,pa:0},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},
     'c30':{a:1,i:10,p:10,d:5,pa:10},'c36':{a:1,i:10,p:10,d:9,pa:10}
@@ -730,16 +695,7 @@ function doLogin(){
     currentCabId=v;showSc('screen-personal');renderPersonal(v);
   }
 }
-function logout(){
-  document.getElementById('admin-pw').value='';
-  document.getElementById('login-err').style.display='none';
-  // Resetear a pestaña Mi Perfil
-  document.querySelectorAll('#screen-personal .tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#screen-personal .ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('pvt-perfil').classList.add('active');
-  document.getElementById('pvtab-perfil').classList.add('active');
-  showSc('screen-login');
-}
+function logout(){document.getElementById('admin-pw').value='';document.getElementById('login-err').style.display='none';showSc('screen-login');}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
@@ -753,144 +709,7 @@ function showTab(id,el){
   if(id==='t-clases')renderClases();
   if(id==='t-calgr')renderCalGr();
 }
-function initAdmin(){buildSel();renderDash();renderCabs();renderBanners('admin-banners');}
-
-// ═══════════════════════════════════════════════════════════════
-// BANNERS: Próximo Culto + Próximo Estudio + Material
-// ═══════════════════════════════════════════════════════════════
-function renderBanners(containerId){
-  const el = document.getElementById(containerId);
-  if(!el) return;
-
-  // ── 1. Próximo Culto de Caballeros ──────────────────────────
-  const cultoInfo = getProximoCulto();
-  const tema = CONTENIDO_TEMATICO.find(t=>t.mes===cultoInfo.mes) || {};
-  const diasRestCulto = Math.round((cultoInfo.fecha - new Date(new Date().toDateString())) / 86400000);
-  const labelCulto = diasRestCulto === 0 ? '¡Hoy!' : diasRestCulto === 1 ? 'Mañana' : `En ${diasRestCulto} días`;
-  const urgenteCulto = diasRestCulto <= 3;
-
-  // ── 2. Próximo Estudio (de DB.clases) ────────────────────────
-  const estudio = getProximoEstudio();
-  let estudioHTML = '';
-  if(estudio){
-    const fechaEst = new Date(estudio.fecha+'T00:00:00');
-    const diasRestEst = Math.round((fechaEst - new Date(new Date().toDateString())) / 86400000);
-    const labelEst = diasRestEst === 0 ? '¡Hoy!' : diasRestEst === 1 ? 'Mañana' : `En ${diasRestEst} días`;
-    const urgenteEst = diasRestEst <= 3;
-
-    // Grupo responsable
-    const grupoResp = estudio.grupos ? estudio.grupos.find(g=>g.esResp) : null;
-    const nombreGrupo = grupoResp ? grupoResp.nombre : (estudio.grupoResp || '—');
-
-    estudioHTML = `
-    <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#0d2a1a,#0a1f14);border-bottom:2px solid ${urgenteEst?'#4caf80':'#2d6b44'};padding:11px 16px;flex-shrink:0;">
-      <div style="font-size:22px;flex-shrink:0;">📚</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:900;color:#4caf80;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1px;">Próximo Estudio</div>
-        <div style="font-size:13px;font-weight:700;color:#e8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${estudio.tema||'Clase programada'}</div>
-        <div style="font-size:10px;color:rgba(200,255,200,0.6);margin-top:2px;">${fmtFechaLarga(fechaEst)} &nbsp;·&nbsp; Expone: <span style="color:#81d4a0;font-weight:700;">${nombreGrupo}</span></div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:11px;font-weight:900;color:${urgenteEst?'#69f0ae':'#4caf80'};white-space:nowrap;">${labelEst}</div>
-      </div>
-    </div>`;
-  }
-
-  // ── 3. Culto de Caballeros ────────────────────────────────────
-  const cultoHTML = `
-    <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1a1a0d,#141408);border-bottom:2px solid ${urgenteCulto?'#ffd54f':'#a08020'};padding:11px 16px;flex-shrink:0;">
-      <div style="font-size:22px;flex-shrink:0;">⛪</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:900;color:#ffd54f;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1px;">Próximo Culto de Caballeros</div>
-        <div style="font-size:13px;font-weight:700;color:#fff9e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tema.titulo||'Culto mensual'}</div>
-        ${tema.subtitulo?`<div style="font-size:10px;color:rgba(255,220,100,0.65);margin-top:1px;font-style:italic;">${tema.subtitulo}</div>`:''}
-        <div style="font-size:10px;color:rgba(255,220,100,0.5);margin-top:2px;">${fmtFechaLarga(cultoInfo.fecha)} &nbsp;·&nbsp; <span style="color:rgba(255,220,100,0.7);">${tema.cita||''}</span></div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:11px;font-weight:900;color:${urgenteCulto?'#ffe082':'#ffd54f'};white-space:nowrap;">${labelCulto}</div>
-      </div>
-    </div>`;
-
-  // ── 4. Material de Estudio ────────────────────────────────────
-  const materialHTML = `
-    <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--dark),var(--dark2));border-bottom:2px solid var(--gold2);padding:11px 16px;text-decoration:none;flex-shrink:0;">
-      <div style="font-size:22px;flex-shrink:0;">📖</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:900;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;">Toca para abrir el material →</div>
-      </div>
-      <div style="font-size:16px;color:var(--gold);">→</div>
-    </a>`;
-
-  el.innerHTML = estudioHTML + cultoHTML + materialHTML;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CONTENIDO TEMÁTICO — Culto de Caballeros 2026
-// ═══════════════════════════════════════════════════════════════
-const CONTENIDO_TEMATICO = [
-  {mes:1,  titulo:'Evidencia de una muerte',      subtitulo:'Arrepentimiento',                          cita:'Romanos 6:6'},
-  {mes:2,  titulo:'Evidencia de una Resurrección',subtitulo:'Nueva Vida',                               cita:'Juan 5:24'},
-  {mes:3,  titulo:'Evidencia de una Experiencia', subtitulo:'Bautismo del Espíritu Santo',              cita:'Hechos 2:33'},
-  {mes:4,  titulo:'Evidencia de Gozo',            subtitulo:'',                                         cita:'Hechos 8:38-39 NBV'},
-  {mes:5,  titulo:'Evidencia de la Paz',          subtitulo:'Tranquilidad en medio de las pruebas',     cita:'Hechos 16:25 / Filipenses 4:9'},
-  {mes:6,  titulo:'Evidencia de Comunión',        subtitulo:'',                                         cita:'Hechos 2:42-44 / 1 Juan 1:7'},
-  {mes:7,  titulo:'Evidencia de Testimonio',      subtitulo:'Ejemplo',                                  cita:'Daniel 3 / Mateo 5:16 PDT'},
-  {mes:8,  titulo:'Evidencia de una Marca',       subtitulo:'Enseñanza para hermanos apartados',        cita:'Mateo 26:73'},
-  {mes:9,  titulo:'Evidencia de Dependencia',     subtitulo:'Enseñanza para hermanos apartados',        cita:'2 Corintios 3:4-5'},
-  {mes:10, titulo:'Evidencia de una herida',      subtitulo:'Pruebas',                                  cita:'2 Corintios 4:8-9'},
-  {mes:11, titulo:'Evidencia de un Servicio',     subtitulo:'Especial nativos / Las marcas de Cristo',  cita:'Gálatas 6:17'},
-  {mes:12, titulo:'Evidencia de una Perseverancia al fin', subtitulo:'',                                cita:'Filipenses 3:12-14'},
-];
-
-// Devuelve la fecha del próximo culto de caballeros
-// Febrero 2026 es excepción: jueves 26 feb
-// De marzo en adelante: primer jueves del mes
-function getProximoCulto(){
-  const hoy = new Date();
-  hoy.setHours(0,0,0,0);
-
-  // Generar las próximas fechas de culto para los próximos 13 meses
-  const fechas = [];
-  for(let delta=0; delta<=13; delta++){
-    const d = new Date(hoy.getFullYear(), hoy.getMonth()+delta, 1);
-    const yr = d.getFullYear();
-    const mo = d.getMonth()+1; // 1-12
-
-    let fecha;
-    if(yr===2026 && mo===2){
-      // Excepción: jueves 26 de febrero 2026
-      fecha = new Date(2026,1,26);
-    } else {
-      // Primer jueves del mes
-      const primero = new Date(yr, mo-1, 1);
-      const diaSem = primero.getDay(); // 0=dom,1=lun,...4=jue
-      const diff = (4 - diaSem + 7) % 7;
-      fecha = new Date(yr, mo-1, 1+diff);
-    }
-    fechas.push({fecha, mes:mo, yr});
-  }
-
-  // Encontrar el próximo (hoy o futuro)
-  const proximo = fechas.find(f => f.fecha >= hoy);
-  return proximo || fechas[fechas.length-1];
-}
-
-function getProximoEstudio(){
-  const hoy = new Date();
-  hoy.setHours(0,0,0,0);
-  // Buscar la clase más próxima futura registrada en DB
-  const futuras = DB.clases
-    .filter(cl => new Date(cl.fecha+'T00:00:00') >= hoy)
-    .sort((a,b) => a.fecha.localeCompare(b.fecha));
-  return futuras[0] || null;
-}
-
-function fmtFechaLarga(fecha){
-  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
-}
+function initAdmin(){buildSel();renderDash();renderCabs();}
 
 function renderDash(){
   document.getElementById('stats-grid').innerHTML=`
@@ -899,60 +718,6 @@ function renderDash(){
     <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
     <div class="stat-card gold"><div class="stat-num">${DB.clases.length}</div><div class="stat-lbl">Clases</div></div>
   `;
-
-  // ── Banners de próximos eventos
-  const culto = getProximoCulto();
-  const tema = CONTENIDO_TEMATICO.find(t=>t.mes===culto.mes) || {};
-  const estudio = getProximoEstudio();
-
-  let eventosH = `<div class="sec-ttl" style="margin-bottom:10px">📅 Próximos Eventos</div>`;
-
-  // Banner culto
-  eventosH += `<div style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--gold2);box-shadow:var(--shadow)">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-      <div style="font-size:22px">⚔️</div>
-      <div>
-        <div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:800;color:var(--gold);letter-spacing:2px;text-transform:uppercase">Próximo Culto de Caballeros</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">${fmtFechaLarga(culto.fecha)}</div>
-      </div>
-    </div>
-    <div style="background:rgba(255,255,255,0.06);border-radius:9px;padding:10px 12px;">
-      <div style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:800;color:white">${tema.titulo||'—'}</div>
-      ${tema.subtitulo?`<div style="font-size:11px;color:var(--teal);margin-top:3px;font-style:italic">${tema.subtitulo}</div>`:''}
-      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">📖 ${tema.cita||''}</div>
-    </div>
-  </div>`;
-
-  // Banner próximo estudio
-  if(estudio){
-    const fechaEst = new Date(estudio.fecha+'T00:00:00');
-    eventosH += `<div style="background:linear-gradient(135deg,#0c2340,#103a5e);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--teal);box-shadow:var(--shadow)">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="font-size:22px">📚</div>
-        <div>
-          <div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:800;color:var(--teal);letter-spacing:2px;text-transform:uppercase">Próximo Estudio</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">${fmtFechaLarga(fechaEst)}</div>
-        </div>
-      </div>
-      <div style="background:rgba(255,255,255,0.06);border-radius:9px;padding:10px 12px;">
-        <div style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:800;color:white">${estudio.tema||'Clase de Estudios'}</div>
-        <div style="font-size:11px;color:var(--teal);margin-top:3px">👥 Expone: <strong style="color:white">${estudio.grupoResp||'Por definir'}</strong></div>
-      </div>
-    </div>`;
-  } else {
-    eventosH += `<div style="background:linear-gradient(135deg,#0c2340,#103a5e);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--teal);box-shadow:var(--shadow)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="font-size:22px">📚</div>
-        <div>
-          <div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:800;color:var(--teal);letter-spacing:2px;text-transform:uppercase">Próximo Estudio</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px">Sin estudios futuros programados aún</div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  document.getElementById('eventos-dash').innerHTML = eventosH;
-
   const list=ranking();
   document.getElementById('top5').innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
   const recent=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,4);
@@ -1334,203 +1099,30 @@ async function doSaveGrade(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CAL GRUPOS — Fórmula equitativa
-// Puntaje grupo = (promedio notas × 0.5) + (% asistencia del grupo × 10 × 0.4) + (bono responsable × 0.1)
-// Así se premia tanto la calidad individual como traer más miembros
+// CAL GRUPOS
 // ═══════════════════════════════════════════════════════════════
-function calcGrupoScore(cl, grupo){
-  const miembros = DB.caballeros.filter(c=>c.grupo===grupo);
-  if(!miembros.length) return null;
-  const presentes = miembros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
-  if(!presentes.length) return null;
-
-  // Promedio de notas de los que asistieron
-  const promNotas = presentes.reduce((s,c)=>s+rowTotal(cl.cal[c.id]),0)/presentes.length;
-  // % de asistencia del grupo (cuántos de sus miembros vinieron)
-  const pctAsist = presentes.length / miembros.length;
-  // Bono si el grupo fue el responsable del estudio
-  const esResp = cl.grupoResp === grupo ? 1 : 0;
-
-  // Fórmula: 50% calidad + 40% participación grupal + 10% responsable
-  const score = (promNotas * 0.5) + (pctAsist * 10 * 0.4) + (esResp * 10 * 0.1);
-
-  return {
-    score: +score.toFixed(2),
-    promNotas: +promNotas.toFixed(2),
-    pctAsist: Math.round(pctAsist*100),
-    presentes: presentes.length,
-    total: miembros.length,
-    esResp
-  };
-}
-
 function renderCalGr(){
   const el=document.getElementById('calgr-pg');if(!el)return;
   const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
-
-  let h=`<div class="sec-ttl">Calificaciones por Grupo</div>
-  <div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--teal2);line-height:1.7">
-    <strong>Fórmula de puntaje grupal:</strong><br>
-    50% calidad de notas + 40% % de asistencia del grupo + 10% bono grupo responsable
-  </div>`;
-
+  let h='<div class="sec-ttl">Calificaciones por Grupo</div>';
   sorted.forEach(cl=>{
-    // Calcular y ordenar grupos por score
-    const resultados = GRUPOS.map(g=>({g, d:calcGrupoScore(cl,g)}))
-      .filter(x=>x.d)
-      .sort((a,b)=>b.d.score-a.d.score);
-
-    const sinDatos = GRUPOS.filter(g=>!calcGrupoScore(cl,g));
-
-    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}${cl.grupoResp?` <span style="font-size:10px;background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold2);border-radius:10px;padding:1px 7px;margin-left:6px">Resp: ${cl.grupoResp}</span>`:''}</div>`;
-
-    resultados.forEach(({g,d},idx)=>{
-      const col=GCOL[g]||'var(--teal)';
-      const sc=d.score>=7?'#15803d':d.score>=4?'var(--gold2)':'var(--text3)';
-      const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
-      const pct=Math.min(100,(d.score/10)*100);
-      h+=`<div style="padding:7px 0;border-bottom:1px solid #f3f4f6">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <span style="font-size:12px;font-weight:700;color:${col}">${medal} ${g}${d.esResp?` ⭐`:''}</span>
-          <span style="font-family:Montserrat;font-weight:900;font-size:14px;color:${sc}">${d.score}</span>
-        </div>
-        <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);margin-bottom:5px">
-          <span>📊 Notas: <strong style="color:var(--text2)">${d.promNotas}</strong></span>
-          <span>👥 Asistencia: <strong style="color:var(--text2)">${d.presentes}/${d.total} (${d.pctAsist}%)</strong></span>
-          ${d.esResp?`<span style="color:var(--gold2)">⭐ +1pt responsable</span>`:''}
-        </div>
-        <div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div>
-      </div>`;
-    });
-
-    sinDatos.forEach(g=>{
-      h+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin asistencia</span></div>`;
-    });
-
-    h+=`</div>`;
+    const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
+    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}</div>
+      ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
+      const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
+      const sc=+avg>=7?'#15803d':+avg>=4?'var(--gold2)':'var(--text3)';const col=GCOL[g]||'var(--teal)';
+      return`<div style="padding:6px 0;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:${col}">${g}</span><span style="font-family:Montserrat;font-weight:800;font-size:13px;color:${sc}">${avg}<span style="font-size:10px;color:var(--text3);font-weight:400"> (${d.n})</span></span></div><div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div></div>`;
+      }).join('')}</div>`;
   });
-
   el.innerHTML=h;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PERSONAL VIEW — PESTAÑAS
+// PERSONAL VIEW
 // ═══════════════════════════════════════════════════════════════
-function showPvTab(id, el){
-  document.querySelectorAll('#screen-personal .tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#screen-personal .ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('pvt-'+id).classList.add('active');
-  el.classList.add('active');
-  if(id==='ranking') renderPvRanking();
-  if(id==='grupos')  renderPvGrupos();
-  if(id==='clases')  renderPvClases();
-  if(id==='calgr')   renderPvCalGr();
-}
-
-function renderPvRanking(){
-  const list=ranking();
-  let h=`<div class="sec-ttl">🏆 Ranking General</div>`;
-  h+=list.map((c,i)=>{
-    const cal=calcCab(c.id);
-    const isMine=c.id===currentCabId;
-    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-family:Montserrat;font-size:12px;font-weight:900;color:var(--text3)">#${i+1}</span>`;
-    return`<div class="cab-card" style="${isMine?'border-color:var(--teal);background:var(--teal-bg);':''}" >
-      <div class="av" style="${isMine?'background:linear-gradient(135deg,var(--teal),var(--teal3));':''}">${c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:(i<3?medal:ini(c.nombre))}</div>
-      <div class="cab-inf">
-        <div class="cab-nm">${c.nombre}${isMine?' <span style="font-size:10px;color:var(--teal);font-weight:700">← Tú</span>':''}</div>
-        <div class="cab-mt">${c.grupo} · Asist: ${cal.asist}/${cal.totalClases}</div>
-      </div>
-      <div class="cab-sc">${cal.total.toFixed(1)}</div>
-    </div>`;
-  }).join('');
-  document.getElementById('pv-ranking-pg').innerHTML=h;
-}
-
-function renderPvGrupos(){
-  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
-  let h=`<div class="sec-ttl">👥 Grupos</div>`;
-  GRUPOS.forEach(g=>{
-    const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
-    const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
-    const col=GCOL[g]||'var(--teal)';
-    h+=`<div class="gr-card"><div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} miembros · Prom: ${avg}</div></div>
-      ${ms.map(c=>{
-        const isMine=c.id===currentCabId;
-        return`<div class="gr-row" style="${isMine?'background:var(--teal-bg);border-radius:8px;padding:7px 6px;':''}" >
-          <div><span class="gr-rname" style="${isMine?'color:var(--teal2);':''}">${c.nombre}${isMine?' ← Tú':''}</span><span class="gr-rdist">${c.dist}</span></div>
-          <span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
-  });
-  document.getElementById('pv-grupos-pg').innerHTML=h;
-}
-
-function renderPvClases(){
-  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  let h=`<div class="sec-ttl">📚 Clases Registradas</div>`;
-  if(!sorted.length){h+='<p style="color:var(--text3);font-size:13px">Sin clases aún.</p>';document.getElementById('pv-clases-pg').innerHTML=h;return;}
-  sorted.forEach(cl=>{
-    const{d,m}=fmtBox(cl.fecha);
-    const avg=claseAvg(cl);
-    const asist=Object.values(cl.cal).filter(q=>q.a).length;
-    const miCal=cl.cal[currentCabId];
-    const sc=avg>=7?'#15803d':avg>=4?'var(--gold2)':'var(--text3)';
-    h+=`<div class="cl-card" style="flex-direction:column;align-items:stretch;gap:8px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
-        <div class="cl-inf"><div class="cl-nm">${cl.tema||'Clase de Estudios'}</div><div class="cl-mt">${cl.grupoResp||'Sin grupo'} · ${asist} asistentes</div></div>
-        <div class="cl-avg" style="color:${sc}">${avg.toFixed(1)}</div>
-      </div>
-      ${miCal?`<div style="background:var(--teal-bg);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--teal2)">
-        <strong>Mi nota:</strong> ${miCal.a?`Int:${miCal.i} · Pun:${miCal.p} · Dom:${miCal.d} · Par:${miCal.pa} → <strong>${rowTotal(miCal).toFixed(2)}</strong>`:'Ausente ❌'}
-      </div>`:`<div style="font-size:11px;color:var(--text3);padding:4px 0">Sin registro tuyo en esta clase</div>`}
-    </div>`;
-  });
-  document.getElementById('pv-clases-pg').innerHTML=h;
-}
-
-function renderPvCalGr(){
-  const el=document.getElementById('pv-calgr-pg');if(!el)return;
-  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  if(!sorted.length){el.innerHTML='<div class="sec-ttl">📊 Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
-  const myGrupo=DB.caballeros.find(c=>c.id===currentCabId)?.grupo;
-  let h=`<div class="sec-ttl">📊 Calificaciones por Grupo</div>
-  <div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--teal2);line-height:1.7">
-    <strong>Fórmula:</strong> 50% calidad notas + 40% % asistencia grupal + 10% bono responsable
-  </div>`;
-  sorted.forEach(cl=>{
-    const resultados=GRUPOS.map(g=>({g,d:calcGrupoScore(cl,g)})).filter(x=>x.d).sort((a,b)=>b.d.score-a.d.score);
-    const sinDatos=GRUPOS.filter(g=>!calcGrupoScore(cl,g));
-    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}${cl.grupoResp?` <span style="font-size:10px;background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold2);border-radius:10px;padding:1px 7px;margin-left:6px">Resp: ${cl.grupoResp}</span>`:''}</div>`;
-    resultados.forEach(({g,d},idx)=>{
-      const col=GCOL[g]||'var(--teal)';
-      const sc=d.score>=7?'#15803d':d.score>=4?'var(--gold2)':'var(--text3)';
-      const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
-      const pct=Math.min(100,(d.score/10)*100);
-      const isMine=g===myGrupo;
-      h+=`<div style="padding:7px 0;border-bottom:1px solid #f3f4f6;${isMine?'background:rgba(58,171,186,0.05);border-radius:8px;padding:8px 6px;':''}">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-          <span style="font-size:12px;font-weight:700;color:${col}">${medal} ${g}${d.esResp?' ⭐':''}${isMine?' <span style="font-size:9px;color:var(--teal);font-weight:700">← Mi grupo</span>':''}</span>
-          <span style="font-family:Montserrat;font-weight:900;font-size:14px;color:${sc}">${d.score}</span>
-        </div>
-        <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);margin-bottom:5px">
-          <span>📊 <strong style="color:var(--text2)">${d.promNotas}</strong></span>
-          <span>👥 <strong style="color:var(--text2)">${d.presentes}/${d.total} (${d.pctAsist}%)</strong></span>
-          ${d.esResp?`<span style="color:var(--gold2)">⭐ +1pt</span>`:''}
-        </div>
-        <div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div>
-      </div>`;
-    });
-    sinDatos.forEach(g=>{h+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin asistencia</span></div>`;});
-    h+=`</div>`;
-  });
-  el.innerHTML=h;
-}
 function renderPersonal(cabId){
   const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
-  renderBanners('personal-banners');
   const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
   // Avatar
   const av=document.getElementById('pv-av');
