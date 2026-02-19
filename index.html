@@ -535,11 +535,11 @@ async function loadDB(){
   if(USE_CLOUD){
     try{
       const data=await cloudLoad();
-      if(data&&data.caballeros&&data.clases){
+      if(data&&data.caballeros&&data.caballeros.length>0){
         DB=data;hideLoading();return;
       }
-      // Bin vacío — primera vez
-      showLoading('Guardando datos iniciales...');
+      // Bin vacío — cargar datos iniciales
+      showLoading('Cargando datos iniciales...');
       DB=seedDB();
       await cloudSave(DB);
       hideLoading();return;
