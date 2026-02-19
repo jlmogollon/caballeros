@@ -5,51 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hombres de Verdad — Caballeros</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Caveat:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-<!-- Firebase SDK (compat version - no requiere módulos ES) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCt9ylNuFBbIUvMhYMy64J5-n4J8V6OdaI",
-    authDomain: "caballeroshdv.firebaseapp.com",
-    projectId: "caballeroshdv",
-    storageBucket: "caballeroshdv.firebasestorage.app",
-    messagingSenderId: "672347418083",
-    appId: "1:672347418083:web:bdbb3e12c11f833caf04d6",
-    measurementId: "G-9N5014B7ZR"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const _fbDB = firebase.firestore();
-  const _fbDOC = _fbDB.collection("hdv").doc("main");
+<!-- No external SDK needed - usamos fetch directo a JSONBin -->
 
-  window._fbLoaded = false;
-
-  window.fbLoadDB = async function() {
-    try {
-      const snap = await _fbDOC.get();
-      if (snap.exists) return snap.data();
-      return null;
-    } catch(e) {
-      console.error("Firebase load error:", e);
-      return null;
-    }
-  };
-
-  window.fbSaveDB = async function(data) {
-    try {
-      await _fbDOC.set(data);
-    } catch(e) {
-      console.error("Firebase save error:", e);
-      throw e;
-    }
-  };
-
-  window.fbSubscribe = function(callback) {
-    return _fbDOC.onSnapshot(snap => {
-      if (snap.exists && window._fbLoaded) callback(snap.data());
-    });
-  };
-</script>
 <style>
 :root{
   --teal:#3aabba;--teal2:#2d8f9c;--teal3:#1d6b77;--teal-bg:rgba(58,171,186,0.12);
@@ -530,8 +487,16 @@ let currentCabId = null;
 let gradeClaseId = null;
 
 // ═══════════════════════════════════════════════════════════════
-// PANTALLA DE CARGA
+// NUBE — JSONBin.io (gratis, sin SDK, funciona con fetch)
 // ═══════════════════════════════════════════════════════════════
+// 1. Ve a https://jsonbin.io → crea cuenta gratis
+// 2. Crea un "Bin" con {} como contenido inicial
+// 3. Copia el BIN_ID y tu API_KEY aquí:
+const JSONBIN_ID  = '699758eaae596e708f3803f4';
+const JSONBIN_KEY = '$2a$10$LJhHfiUXMSXwo3kKp1ZKFuEBtLmIrrxxIhWE1YFufteRWU45lQJYS';
+
+const USE_CLOUD = JSONBIN_ID !== 'TU_BIN_ID';
+
 function showLoading(msg){
   let el=document.getElementById('fb-loading');
   if(!el){
@@ -544,61 +509,59 @@ function showLoading(msg){
 function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
 
 function seedDB(){
-  return {adminPw:'1234', caballeros:JSON.parse(JSON.stringify(SEED_CABS)), clases:JSON.parse(JSON.stringify(SEED_CLASES))};
+  return{adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};
+}
+
+async function cloudLoad(){
+  const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{
+    headers:{'X-Master-Key':JSONBIN_KEY,'X-Bin-Meta':'false'}
+  });
+  if(!r.ok)throw new Error('cloudLoad '+r.status);
+  return await r.json();
+}
+
+async function cloudSave(data){
+  const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,{
+    method:'PUT',
+    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+    body:JSON.stringify(data)
+  });
+  if(!r.ok)throw new Error('cloudSave '+r.status);
 }
 
 async function loadDB(){
-  showLoading('Conectando...');
-  // Intentar Firebase
-  if(typeof window.fbLoadDB === 'function'){
+  showLoading('Cargando datos...');
+  // Intentar nube
+  if(USE_CLOUD){
     try{
-      const data = await window.fbLoadDB();
-      if(data && data.caballeros && data.clases){
-        DB = data;
-        window._fbLoaded = true;
-        // Suscribir cambios en tiempo real
-        if(typeof window.fbSubscribe === 'function'){
-          window.fbSubscribe(function(newData){
-            if(newData && newData.caballeros){
-              DB = newData;
-              buildSel();
-              if(document.getElementById('screen-admin').classList.contains('active')) initAdmin();
-            }
-          });
-        }
-        hideLoading();
-        return;
-      } else {
-        // Primera vez — guardar datos iniciales
-        showLoading('Primera vez: guardando datos...');
-        DB = seedDB();
-        await window.fbSaveDB(DB);
-        window._fbLoaded = true;
-        hideLoading();
-        return;
+      const data=await cloudLoad();
+      if(data&&data.caballeros&&data.clases){
+        DB=data;hideLoading();return;
       }
-    } catch(e){
-      console.warn('Firebase falló:', e);
+      // Bin vacío — primera vez
+      showLoading('Guardando datos iniciales...');
+      DB=seedDB();
+      await cloudSave(DB);
+      hideLoading();return;
+    }catch(e){
+      console.warn('Nube falló, usando localStorage:',e);
+      toast('⚠️ Sin conexión a la nube','err');
     }
   }
-  // Fallback localStorage
-  console.warn('Usando localStorage como respaldo');
-  try{const r=localStorage.getItem(SK);if(r){DB=JSON.parse(r);}}catch(e){}
-  if(!DB || !DB.caballeros){ DB = seedDB(); }
+  // localStorage como respaldo
+  try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
+  if(!DB||!DB.caballeros)DB=seedDB();
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
-  toast('⚠️ Sin Firebase — datos locales','err');
 }
 
 async function saveDB(){
+  // Guardar local siempre
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  if(typeof window.fbSaveDB === 'function'){
-    try{
-      await window.fbSaveDB(DB);
-    } catch(e){
-      console.error('Error guardando en Firebase:', e);
-      toast('⚠️ Error al guardar en la nube','err');
-    }
+  // Guardar en nube
+  if(USE_CLOUD){
+    try{await cloudSave(DB);}
+    catch(e){toast('⚠️ Error al guardar en la nube','err');console.error(e);}
   }
 }
 
