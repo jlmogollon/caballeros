@@ -661,7 +661,7 @@ const SEED_CABS=[
 ];
 
 const SEED_CLASES=[
-  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Clase de Estudios',cal:{
+  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Las Dispensaciones',cal:{
     'c1':{a:1,i:9,p:10,d:9,pa:9},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},'c11':{a:1,i:10,p:7,d:1,pa:5},
     'c13':{a:1,i:7,p:7,d:1,pa:1},'c14':{a:1,i:10,p:10,d:1,pa:5},'c15':{a:1,i:10,p:7,d:1,pa:3},
@@ -669,7 +669,7 @@ const SEED_CLASES=[
     'c26':{a:1,i:10,p:10,d:3,pa:3},'c30':{a:1,i:10,p:10,d:5,pa:10},'c34':{a:1,i:10,p:5,d:1,pa:1},
     'c36':{a:1,i:10,p:10,d:9,pa:10},'c39':{a:1,i:10,p:9,d:1,pa:7}
   }},
-  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Clase de Estudios',cal:{
+  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Las Dispensaciones',cal:{
     'c1':{a:1,i:0,p:0,d:0,pa:0},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},
     'c30':{a:1,i:10,p:10,d:5,pa:10},'c36':{a:1,i:10,p:10,d:9,pa:10}
@@ -1205,23 +1205,7 @@ function openClaseDetail(id){
   const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
   const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`;
-  const gOpts=['<option value="">Sin grupo responsable</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   openSheet('📅',cl.tema||'Clase',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
-    <div class="dsec">
-      <div class="dhead">Información de la Clase</div>
-      <div class="fr"><label>Tema del estudio</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input id="edit-tema-${id}" value="${(cl.tema||'').replace(/"/g,'&quot;')}" style="flex:1">
-          <button class="btn bteal" style="padding:6px 12px;font-size:12px" onclick="saveTemClase('${id}')">💾</button>
-        </div>
-      </div>
-      <div class="fr"><label>Grupo Responsable</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <select id="edit-grupo-${id}" style="flex:1">${gOpts}</select>
-          <button class="btn bteal" style="padding:6px 12px;font-size:12px" onclick="saveGrupoClase('${id}')">💾</button>
-        </div>
-      </div>
-    </div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
     <div class="btn-row">
       <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar</button>
@@ -1234,22 +1218,6 @@ function confirmDelClase(id){
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${id}')">Eliminar</button></div></div>`;
 }
 async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModal();renderClases();renderDash();toast('💾 Guardando...','info');await saveDB();toast('Clase eliminada','ok');}
-
-async function saveTemClase(id){
-  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
-  const v=document.getElementById('edit-tema-'+id).value.trim();
-  if(!v){toast('El tema no puede estar vacío','err');return;}
-  cl.tema=v;
-  // Actualizar título del sheet visualmente
-  const mttl=document.getElementById('m-title');if(mttl)mttl.textContent=v;
-  toast('💾 Guardando...','info');await saveDB();toast('Tema actualizado ✓','ok');
-}
-
-async function saveGrupoClase(id){
-  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
-  cl.grupoResp=document.getElementById('edit-grupo-'+id).value;
-  toast('💾 Guardando...','info');await saveDB();toast('Grupo responsable actualizado ✓','ok');
-}
 
 // ═══════════════════════════════════════════════════════════════
 // NUEVA CLASE
