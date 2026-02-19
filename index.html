@@ -1099,22 +1099,83 @@ async function doSaveGrade(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CAL GRUPOS
+// CAL GRUPOS — Fórmula equitativa
+// Puntaje grupo = (promedio notas × 0.5) + (% asistencia del grupo × 10 × 0.4) + (bono responsable × 0.1)
+// Así se premia tanto la calidad individual como traer más miembros
 // ═══════════════════════════════════════════════════════════════
+function calcGrupoScore(cl, grupo){
+  const miembros = DB.caballeros.filter(c=>c.grupo===grupo);
+  if(!miembros.length) return null;
+  const presentes = miembros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
+  if(!presentes.length) return null;
+
+  // Promedio de notas de los que asistieron
+  const promNotas = presentes.reduce((s,c)=>s+rowTotal(cl.cal[c.id]),0)/presentes.length;
+  // % de asistencia del grupo (cuántos de sus miembros vinieron)
+  const pctAsist = presentes.length / miembros.length;
+  // Bono si el grupo fue el responsable del estudio
+  const esResp = cl.grupoResp === grupo ? 1 : 0;
+
+  // Fórmula: 50% calidad + 40% participación grupal + 10% responsable
+  const score = (promNotas * 0.5) + (pctAsist * 10 * 0.4) + (esResp * 10 * 0.1);
+
+  return {
+    score: +score.toFixed(2),
+    promNotas: +promNotas.toFixed(2),
+    pctAsist: Math.round(pctAsist*100),
+    presentes: presentes.length,
+    total: miembros.length,
+    esResp
+  };
+}
+
 function renderCalGr(){
   const el=document.getElementById('calgr-pg');if(!el)return;
   const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
-  let h='<div class="sec-ttl">Calificaciones por Grupo</div>';
+
+  let h=`<div class="sec-ttl">Calificaciones por Grupo</div>
+  <div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--teal2);line-height:1.7">
+    <strong>Fórmula de puntaje grupal:</strong><br>
+    50% calidad de notas + 40% % de asistencia del grupo + 10% bono grupo responsable
+  </div>`;
+
   sorted.forEach(cl=>{
-    const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
-    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}</div>
-      ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
-      const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
-      const sc=+avg>=7?'#15803d':+avg>=4?'var(--gold2)':'var(--text3)';const col=GCOL[g]||'var(--teal)';
-      return`<div style="padding:6px 0;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:${col}">${g}</span><span style="font-family:Montserrat;font-weight:800;font-size:13px;color:${sc}">${avg}<span style="font-size:10px;color:var(--text3);font-weight:400"> (${d.n})</span></span></div><div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div></div>`;
-      }).join('')}</div>`;
+    // Calcular y ordenar grupos por score
+    const resultados = GRUPOS.map(g=>({g, d:calcGrupoScore(cl,g)}))
+      .filter(x=>x.d)
+      .sort((a,b)=>b.d.score-a.d.score);
+
+    const sinDatos = GRUPOS.filter(g=>!calcGrupoScore(cl,g));
+
+    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}${cl.grupoResp?` <span style="font-size:10px;background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold2);border-radius:10px;padding:1px 7px;margin-left:6px">Resp: ${cl.grupoResp}</span>`:''}</div>`;
+
+    resultados.forEach(({g,d},idx)=>{
+      const col=GCOL[g]||'var(--teal)';
+      const sc=d.score>=7?'#15803d':d.score>=4?'var(--gold2)':'var(--text3)';
+      const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
+      const pct=Math.min(100,(d.score/10)*100);
+      h+=`<div style="padding:7px 0;border-bottom:1px solid #f3f4f6">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:700;color:${col}">${medal} ${g}${d.esResp?` ⭐`:''}</span>
+          <span style="font-family:Montserrat;font-weight:900;font-size:14px;color:${sc}">${d.score}</span>
+        </div>
+        <div style="display:flex;gap:8px;font-size:10px;color:var(--text3);margin-bottom:5px">
+          <span>📊 Notas: <strong style="color:var(--text2)">${d.promNotas}</strong></span>
+          <span>👥 Asistencia: <strong style="color:var(--text2)">${d.presentes}/${d.total} (${d.pctAsist}%)</strong></span>
+          ${d.esResp?`<span style="color:var(--gold2)">⭐ +1pt responsable</span>`:''}
+        </div>
+        <div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div>
+      </div>`;
+    });
+
+    sinDatos.forEach(g=>{
+      h+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin asistencia</span></div>`;
+    });
+
+    h+=`</div>`;
   });
+
   el.innerHTML=h;
 }
 
