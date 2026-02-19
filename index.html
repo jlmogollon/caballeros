@@ -346,6 +346,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
   </div>
+  <!-- Banners informativos admin -->
+  <div id="admin-banners"></div>
 
   <!-- DASHBOARD -->
   <div id="t-dash" class="tab active">
@@ -408,7 +410,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     </div>
     <div class="hacts"><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
-  <!-- Nav pestañas personal -->
   <div class="app-nav">
     <div class="ntab active" id="pvtab-perfil" onclick="showPvTab('perfil',this)">👤 Mi Perfil</div>
     <div class="ntab" id="pvtab-ranking" onclick="showPvTab('ranking',this)">🏆 Ranking</div>
@@ -416,6 +417,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" id="pvtab-clases" onclick="showPvTab('clases',this)">📚 Clases</div>
     <div class="ntab" id="pvtab-calgr" onclick="showPvTab('calgr',this)">📊 Cal. Grupos</div>
   </div>
+  <!-- Banners informativos personal -->
+  <div id="personal-banners"></div>
 
   <!-- PESTAÑA: MI PERFIL -->
   <div class="tab active" id="pvt-perfil">
@@ -750,7 +753,144 @@ function showTab(id,el){
   if(id==='t-clases')renderClases();
   if(id==='t-calgr')renderCalGr();
 }
-function initAdmin(){buildSel();renderDash();renderCabs();}
+function initAdmin(){buildSel();renderDash();renderCabs();renderBanners('admin-banners');}
+
+// ═══════════════════════════════════════════════════════════════
+// BANNERS: Próximo Culto + Próximo Estudio + Material
+// ═══════════════════════════════════════════════════════════════
+function renderBanners(containerId){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+
+  // ── 1. Próximo Culto de Caballeros ──────────────────────────
+  const cultoInfo = getProximoCulto();
+  const tema = CONTENIDO_TEMATICO.find(t=>t.mes===cultoInfo.mes) || {};
+  const diasRestCulto = Math.round((cultoInfo.fecha - new Date(new Date().toDateString())) / 86400000);
+  const labelCulto = diasRestCulto === 0 ? '¡Hoy!' : diasRestCulto === 1 ? 'Mañana' : `En ${diasRestCulto} días`;
+  const urgenteCulto = diasRestCulto <= 3;
+
+  // ── 2. Próximo Estudio (de DB.clases) ────────────────────────
+  const estudio = getProximoEstudio();
+  let estudioHTML = '';
+  if(estudio){
+    const fechaEst = new Date(estudio.fecha+'T00:00:00');
+    const diasRestEst = Math.round((fechaEst - new Date(new Date().toDateString())) / 86400000);
+    const labelEst = diasRestEst === 0 ? '¡Hoy!' : diasRestEst === 1 ? 'Mañana' : `En ${diasRestEst} días`;
+    const urgenteEst = diasRestEst <= 3;
+
+    // Grupo responsable
+    const grupoResp = estudio.grupos ? estudio.grupos.find(g=>g.esResp) : null;
+    const nombreGrupo = grupoResp ? grupoResp.nombre : (estudio.grupoResp || '—');
+
+    estudioHTML = `
+    <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#0d2a1a,#0a1f14);border-bottom:2px solid ${urgenteEst?'#4caf80':'#2d6b44'};padding:11px 16px;flex-shrink:0;">
+      <div style="font-size:22px;flex-shrink:0;">📚</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:900;color:#4caf80;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1px;">Próximo Estudio</div>
+        <div style="font-size:13px;font-weight:700;color:#e8f5e9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${estudio.tema||'Clase programada'}</div>
+        <div style="font-size:10px;color:rgba(200,255,200,0.6);margin-top:2px;">${fmtFechaLarga(fechaEst)} &nbsp;·&nbsp; Expone: <span style="color:#81d4a0;font-weight:700;">${nombreGrupo}</span></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:11px;font-weight:900;color:${urgenteEst?'#69f0ae':'#4caf80'};white-space:nowrap;">${labelEst}</div>
+      </div>
+    </div>`;
+  }
+
+  // ── 3. Culto de Caballeros ────────────────────────────────────
+  const cultoHTML = `
+    <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#1a1a0d,#141408);border-bottom:2px solid ${urgenteCulto?'#ffd54f':'#a08020'};padding:11px 16px;flex-shrink:0;">
+      <div style="font-size:22px;flex-shrink:0;">⛪</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:Montserrat,sans-serif;font-size:9px;font-weight:900;color:#ffd54f;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1px;">Próximo Culto de Caballeros</div>
+        <div style="font-size:13px;font-weight:700;color:#fff9e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${tema.titulo||'Culto mensual'}</div>
+        ${tema.subtitulo?`<div style="font-size:10px;color:rgba(255,220,100,0.65);margin-top:1px;font-style:italic;">${tema.subtitulo}</div>`:''}
+        <div style="font-size:10px;color:rgba(255,220,100,0.5);margin-top:2px;">${fmtFechaLarga(cultoInfo.fecha)} &nbsp;·&nbsp; <span style="color:rgba(255,220,100,0.7);">${tema.cita||''}</span></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:11px;font-weight:900;color:${urgenteCulto?'#ffe082':'#ffd54f'};white-space:nowrap;">${labelCulto}</div>
+      </div>
+    </div>`;
+
+  // ── 4. Material de Estudio ────────────────────────────────────
+  const materialHTML = `
+    <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--dark),var(--dark2));border-bottom:2px solid var(--gold2);padding:11px 16px;text-decoration:none;flex-shrink:0;">
+      <div style="font-size:22px;flex-shrink:0;">📖</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:Montserrat,sans-serif;font-size:11px;font-weight:900;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;">Toca para abrir el material →</div>
+      </div>
+      <div style="font-size:16px;color:var(--gold);">→</div>
+    </a>`;
+
+  el.innerHTML = estudioHTML + cultoHTML + materialHTML;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTENIDO TEMÁTICO — Culto de Caballeros 2026
+// ═══════════════════════════════════════════════════════════════
+const CONTENIDO_TEMATICO = [
+  {mes:1,  titulo:'Evidencia de una muerte',      subtitulo:'Arrepentimiento',                          cita:'Romanos 6:6'},
+  {mes:2,  titulo:'Evidencia de una Resurrección',subtitulo:'Nueva Vida',                               cita:'Juan 5:24'},
+  {mes:3,  titulo:'Evidencia de una Experiencia', subtitulo:'Bautismo del Espíritu Santo',              cita:'Hechos 2:33'},
+  {mes:4,  titulo:'Evidencia de Gozo',            subtitulo:'',                                         cita:'Hechos 8:38-39 NBV'},
+  {mes:5,  titulo:'Evidencia de la Paz',          subtitulo:'Tranquilidad en medio de las pruebas',     cita:'Hechos 16:25 / Filipenses 4:9'},
+  {mes:6,  titulo:'Evidencia de Comunión',        subtitulo:'',                                         cita:'Hechos 2:42-44 / 1 Juan 1:7'},
+  {mes:7,  titulo:'Evidencia de Testimonio',      subtitulo:'Ejemplo',                                  cita:'Daniel 3 / Mateo 5:16 PDT'},
+  {mes:8,  titulo:'Evidencia de una Marca',       subtitulo:'Enseñanza para hermanos apartados',        cita:'Mateo 26:73'},
+  {mes:9,  titulo:'Evidencia de Dependencia',     subtitulo:'Enseñanza para hermanos apartados',        cita:'2 Corintios 3:4-5'},
+  {mes:10, titulo:'Evidencia de una herida',      subtitulo:'Pruebas',                                  cita:'2 Corintios 4:8-9'},
+  {mes:11, titulo:'Evidencia de un Servicio',     subtitulo:'Especial nativos / Las marcas de Cristo',  cita:'Gálatas 6:17'},
+  {mes:12, titulo:'Evidencia de una Perseverancia al fin', subtitulo:'',                                cita:'Filipenses 3:12-14'},
+];
+
+// Devuelve la fecha del próximo culto de caballeros
+// Febrero 2026 es excepción: jueves 26 feb
+// De marzo en adelante: primer jueves del mes
+function getProximoCulto(){
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+
+  // Generar las próximas fechas de culto para los próximos 13 meses
+  const fechas = [];
+  for(let delta=0; delta<=13; delta++){
+    const d = new Date(hoy.getFullYear(), hoy.getMonth()+delta, 1);
+    const yr = d.getFullYear();
+    const mo = d.getMonth()+1; // 1-12
+
+    let fecha;
+    if(yr===2026 && mo===2){
+      // Excepción: jueves 26 de febrero 2026
+      fecha = new Date(2026,1,26);
+    } else {
+      // Primer jueves del mes
+      const primero = new Date(yr, mo-1, 1);
+      const diaSem = primero.getDay(); // 0=dom,1=lun,...4=jue
+      const diff = (4 - diaSem + 7) % 7;
+      fecha = new Date(yr, mo-1, 1+diff);
+    }
+    fechas.push({fecha, mes:mo, yr});
+  }
+
+  // Encontrar el próximo (hoy o futuro)
+  const proximo = fechas.find(f => f.fecha >= hoy);
+  return proximo || fechas[fechas.length-1];
+}
+
+function getProximoEstudio(){
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  // Buscar la clase más próxima futura registrada en DB
+  const futuras = DB.clases
+    .filter(cl => new Date(cl.fecha+'T00:00:00') >= hoy)
+    .sort((a,b) => a.fecha.localeCompare(b.fecha));
+  return futuras[0] || null;
+}
+
+function fmtFechaLarga(fecha){
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${dias[fecha.getDay()]} ${fecha.getDate()} de ${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
+}
 
 function renderDash(){
   document.getElementById('stats-grid').innerHTML=`
@@ -759,6 +899,60 @@ function renderDash(){
     <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
     <div class="stat-card gold"><div class="stat-num">${DB.clases.length}</div><div class="stat-lbl">Clases</div></div>
   `;
+
+  // ── Banners de próximos eventos
+  const culto = getProximoCulto();
+  const tema = CONTENIDO_TEMATICO.find(t=>t.mes===culto.mes) || {};
+  const estudio = getProximoEstudio();
+
+  let eventosH = `<div class="sec-ttl" style="margin-bottom:10px">📅 Próximos Eventos</div>`;
+
+  // Banner culto
+  eventosH += `<div style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--gold2);box-shadow:var(--shadow)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <div style="font-size:22px">⚔️</div>
+      <div>
+        <div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:800;color:var(--gold);letter-spacing:2px;text-transform:uppercase">Próximo Culto de Caballeros</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">${fmtFechaLarga(culto.fecha)}</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.06);border-radius:9px;padding:10px 12px;">
+      <div style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:800;color:white">${tema.titulo||'—'}</div>
+      ${tema.subtitulo?`<div style="font-size:11px;color:var(--teal);margin-top:3px;font-style:italic">${tema.subtitulo}</div>`:''}
+      <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px">📖 ${tema.cita||''}</div>
+    </div>
+  </div>`;
+
+  // Banner próximo estudio
+  if(estudio){
+    const fechaEst = new Date(estudio.fecha+'T00:00:00');
+    eventosH += `<div style="background:linear-gradient(135deg,#0c2340,#103a5e);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--teal);box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-size:22px">📚</div>
+        <div>
+          <div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:800;color:var(--teal);letter-spacing:2px;text-transform:uppercase">Próximo Estudio</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">${fmtFechaLarga(fechaEst)}</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:9px;padding:10px 12px;">
+        <div style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:800;color:white">${estudio.tema||'Clase de Estudios'}</div>
+        <div style="font-size:11px;color:var(--teal);margin-top:3px">👥 Expone: <strong style="color:white">${estudio.grupoResp||'Por definir'}</strong></div>
+      </div>
+    </div>`;
+  } else {
+    eventosH += `<div style="background:linear-gradient(135deg,#0c2340,#103a5e);border-radius:14px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--teal);box-shadow:var(--shadow)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:22px">📚</div>
+        <div>
+          <div style="font-family:Montserrat,sans-serif;font-size:10px;font-weight:800;color:var(--teal);letter-spacing:2px;text-transform:uppercase">Próximo Estudio</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px">Sin estudios futuros programados aún</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('eventos-dash').innerHTML = eventosH;
+
   const list=ranking();
   document.getElementById('top5').innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
   const recent=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,4);
@@ -1011,7 +1205,23 @@ function openClaseDetail(id){
   const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
   const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`;
+  const gOpts=['<option value="">Sin grupo responsable</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   openSheet('📅',cl.tema||'Clase',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
+    <div class="dsec">
+      <div class="dhead">Información de la Clase</div>
+      <div class="fr"><label>Tema del estudio</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="edit-tema-${id}" value="${(cl.tema||'').replace(/"/g,'&quot;')}" style="flex:1">
+          <button class="btn bteal" style="padding:6px 12px;font-size:12px" onclick="saveTemClase('${id}')">💾</button>
+        </div>
+      </div>
+      <div class="fr"><label>Grupo Responsable</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="edit-grupo-${id}" style="flex:1">${gOpts}</select>
+          <button class="btn bteal" style="padding:6px 12px;font-size:12px" onclick="saveGrupoClase('${id}')">💾</button>
+        </div>
+      </div>
+    </div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
     <div class="btn-row">
       <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar</button>
@@ -1024,6 +1234,22 @@ function confirmDelClase(id){
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${id}')">Eliminar</button></div></div>`;
 }
 async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModal();renderClases();renderDash();toast('💾 Guardando...','info');await saveDB();toast('Clase eliminada','ok');}
+
+async function saveTemClase(id){
+  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
+  const v=document.getElementById('edit-tema-'+id).value.trim();
+  if(!v){toast('El tema no puede estar vacío','err');return;}
+  cl.tema=v;
+  // Actualizar título del sheet visualmente
+  const mttl=document.getElementById('m-title');if(mttl)mttl.textContent=v;
+  toast('💾 Guardando...','info');await saveDB();toast('Tema actualizado ✓','ok');
+}
+
+async function saveGrupoClase(id){
+  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
+  cl.grupoResp=document.getElementById('edit-grupo-'+id).value;
+  toast('💾 Guardando...','info');await saveDB();toast('Grupo responsable actualizado ✓','ok');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // NUEVA CLASE
@@ -1336,6 +1562,7 @@ function renderPvCalGr(){
 }
 function renderPersonal(cabId){
   const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
+  renderBanners('personal-banners');
   const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
   // Avatar
   const av=document.getElementById('pv-av');
