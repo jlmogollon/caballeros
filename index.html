@@ -350,6 +350,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
+    <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
   </div>
 
   <!-- DASHBOARD -->
@@ -424,6 +425,14 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="admin-peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
         <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- EVENTOS ADMIN -->
+  <div id="t-eventos-admin" class="tab">
+    <div class="pg">
+      <div class="sec-ttl">🗓 Eventos <button class="btn bteal" onclick="openFormEvento(null)" style="font-size:11px;padding:7px 12px">+ Nuevo</button></div>
+      <div id="eventos-admin-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
   </div>
 </div>
@@ -608,7 +617,13 @@ function showLoading(msg){
 function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
 
 function seedDB(){
-  return{adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES)),peticiones:[]};
+  return{
+    adminPw:'1234',
+    caballeros:JSON.parse(JSON.stringify(SEED_CABS)),
+    clases:JSON.parse(JSON.stringify(SEED_CLASES)),
+    peticiones:[],
+    eventos:JSON.parse(JSON.stringify(SEED_EVENTOS))
+  };
 }
 
 async function cloudLoad(){
@@ -640,6 +655,8 @@ async function loadDB(){
         DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
         // Migración: asegurar array de peticiones
         if(!DB.peticiones)DB.peticiones=[];
+        // Migración: asegurar array de eventos
+        if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
         hideLoading();return;
       }
       // Bin vacío — cargar datos iniciales
@@ -659,6 +676,8 @@ async function loadDB(){
   DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
   // Migración: asegurar array de peticiones
   if(!DB.peticiones)DB.peticiones=[];
+  // Migración: asegurar array de eventos
+  if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
 }
@@ -748,6 +767,18 @@ const SEED_CLASES=[
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},
     'c30':{a:1,i:10,p:10,d:5,pa:10},'c36':{a:1,i:10,p:10,d:9,pa:10}
   }}
+];
+
+// ═══════════════════════════════════════════════════════════════
+// SEED EVENTOS
+// ═══════════════════════════════════════════════════════════════
+const SEED_EVENTOS=[
+  {id:'ev1',nombre:'Vigilia (Pro recepción del Espíritu Santo)',fecha:'2026-04-03',fechaFin:'',icono:'🕯️',color:'#8b5cf6',nota:''},
+  {id:'ev2',nombre:'Congreso Nacional',fecha:'2026-04-18',fechaFin:'',icono:'🏟️',color:'#ef4444',nota:'Lema: El fruto del Espíritu Santo'},
+  {id:'ev3',nombre:'Culto dirigido por los niños',fecha:'2026-05-26',fechaFin:'',icono:'👧',color:'#f59e0b',nota:''},
+  {id:'ev4',nombre:'Ayuno Caballeros',fecha:'recurrente_ultimo_domingo',fechaFin:'',icono:'✝️',color:'#6d28d9',nota:'Último domingo de cada mes'},
+  {id:'ev5',nombre:'Reunión Mensual de Caballeros',fecha:'por_definir',fechaFin:'',icono:'👥',color:'#3aabba',nota:'A fin de mes se votará por el día y la sede'},
+  {id:'ev6',nombre:'Campamento Nacional de Caballeros',fecha:'2026-11-13',fechaFin:'2026-11-15',icono:'⛺',color:'#22c55e',nota:'Del 13 al 15 de noviembre'},
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -866,6 +897,7 @@ function showTab(id,el){
   if(id==='t-clases')renderClases();
   if(id==='t-calgr')renderCalGr();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
+  if(id==='t-eventos-admin'){renderEventosAdmin();}
 }
 function initAdmin(){buildSel();renderDash();renderCabs();}
 
@@ -1652,111 +1684,125 @@ function importData(e){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// EVENTOS: PRÓXIMO CULTO & PRÓXIMO ESTUDIO
+// EVENTOS — helpers compartidos
+// ═══════════════════════════════════════════════════════════════
+function lastSundayOfMonth(year,month){
+  // mes en JS: 0-based. Pasamos month 1-based.
+  // Último día del mes, retrocede hasta domingo
+  const last=new Date(year,month,0); // día 0 del mes siguiente = último día del mes
+  last.setDate(last.getDate()-((last.getDay()+7)%7 === 0 ? 0 : last.getDay()));
+  // asegurar que es domingo (0)
+  const d=new Date(year,month-1,last.getDate());
+  const dow=d.getDay();
+  d.setDate(d.getDate()-(dow===0?0:dow));
+  // re-calcular correctamente
+  const fin=new Date(year,month,0);
+  fin.setHours(0,0,0,0);
+  while(fin.getDay()!==0)fin.setDate(fin.getDate()-1);
+  return fin;
+}
+
+function proximaFechaEvento(ev, desde){
+  if(ev.fecha==='por_definir') return null;
+  if(ev.fecha==='recurrente_ultimo_domingo'){
+    // Buscar el próximo último domingo desde 'desde'
+    let y=desde.getFullYear(), m=desde.getMonth()+1;
+    for(let i=0;i<14;i++){
+      const d=lastSundayOfMonth(y,m);
+      if(d>=desde) return d;
+      m++;if(m>12){m=1;y++;}
+    }
+    return null;
+  }
+  const d=new Date(ev.fecha+'T00:00:00');
+  return d>=desde?d:null;
+}
+
+function fmtEvDate(d){
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return`${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
+}
+
+function diffDaysEv(d,today){return Math.round((d-today)/(1000*60*60*24));}
+
+function badgeEv(n){
+  if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
+  if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
+  return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENTOS: Vista Personal — próximo evento único
 // ═══════════════════════════════════════════════════════════════
 function renderEventosPV(){
   const el=document.getElementById('pv-eventos');
-  if(!el)return;
+  if(!el){el&&(el.innerHTML='');return;}
 
-  // ── Contenido Temático completo según imagen ──
-  // mes:1-12, aplica para 2026; de 2027 en adelante se puede extender
   const TEMAS=[
-    {mes:1,  nombre:'Enero',      titulo:'Evidencia de una Muerte',               sub:'Arrepentimiento',                              ref:'Romanos 6:6'},
-    {mes:2,  nombre:'Febrero',    titulo:'Evidencia de una Resurrección',          sub:'Nueva Vida',                                   ref:'Juan 5:24'},
-    {mes:3,  nombre:'Marzo',      titulo:'Evidencia de una Experiencia',           sub:'Bautismo del Espíritu Santo',                  ref:'Hechos 2:33'},
-    {mes:4,  nombre:'Abril',      titulo:'Evidencia de Gozo',                      sub:'',                                             ref:'Hechos 8:38-39 NBV'},
-    {mes:5,  nombre:'Mayo',       titulo:'Evidencia de la Paz',                    sub:'Tranquilidad en medio de las pruebas',         ref:'Hechos 16:25 / Filipenses 4:9'},
-    {mes:6,  nombre:'Junio',      titulo:'Evidencia de Comunión',                  sub:'',                                             ref:'Hechos 2:42-44 / 1 Juan 1:7'},
-    {mes:7,  nombre:'Julio',      titulo:'Evidencia de Testimonio',                sub:'Ejemplo',                                      ref:'Daniel 3 / Mateo 5:16 PDT'},
-    {mes:8,  nombre:'Agosto',     titulo:'Evidencia de una Marca',                 sub:'Enseñanza para hermanos apartados',            ref:'Mateo 26:73'},
-    {mes:9,  nombre:'Septiembre', titulo:'Evidencia de Dependencia',               sub:'Enseñanza para hermanos apartados',            ref:'2 Corintios 3:4-5'},
-    {mes:10, nombre:'Octubre',    titulo:'Evidencia de una Herida',                sub:'Pruebas',                                      ref:'2 Corintios 4:8-9'},
-    {mes:11, nombre:'Noviembre',  titulo:'Evidencia de un Servicio',               sub:'Especial nativos / Las marcas de Cristo',      ref:'Gálatas 6:17'},
-    {mes:12, nombre:'Diciembre',  titulo:'Evidencia de una Perseverancia al fin',  sub:'',                                             ref:'Filipenses 3:12-14'},
+    {mes:1,titulo:'Evidencia de una Muerte',sub:'Arrepentimiento',ref:'Romanos 6:6'},
+    {mes:2,titulo:'Evidencia de una Resurrección',sub:'Nueva Vida',ref:'Juan 5:24'},
+    {mes:3,titulo:'Evidencia de una Experiencia',sub:'Bautismo del Espíritu Santo',ref:'Hechos 2:33'},
+    {mes:4,titulo:'Evidencia de Gozo',sub:'',ref:'Hechos 8:38-39 NBV'},
+    {mes:5,titulo:'Evidencia de la Paz',sub:'Tranquilidad en medio de las pruebas',ref:'Hechos 16:25 / Filipenses 4:9'},
+    {mes:6,titulo:'Evidencia de Comunión',sub:'',ref:'Hechos 2:42-44 / 1 Juan 1:7'},
+    {mes:7,titulo:'Evidencia de Testimonio',sub:'Ejemplo',ref:'Daniel 3 / Mateo 5:16 PDT'},
+    {mes:8,titulo:'Evidencia de una Marca',sub:'Enseñanza para hermanos apartados',ref:'Mateo 26:73'},
+    {mes:9,titulo:'Evidencia de Dependencia',sub:'Enseñanza para hermanos apartados',ref:'2 Corintios 3:4-5'},
+    {mes:10,titulo:'Evidencia de una Herida',sub:'Pruebas',ref:'2 Corintios 4:8-9'},
+    {mes:11,titulo:'Evidencia de un Servicio',sub:'Especial nativos / Las marcas de Cristo',ref:'Gálatas 6:17'},
+    {mes:12,titulo:'Evidencia de una Perseverancia al fin',sub:'',ref:'Filipenses 3:12-14'},
   ];
 
-  const today=new Date();
-  today.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().split('T')[0];
 
-  // ── Lógica de fechas ──
-  // Febrero 2026: excepción → jueves 26 feb
-  // Resto: primer jueves del mes
   function firstThursdayOfMonth(year,month){
     const d=new Date(year,month-1,1);
-    const diff=(4-d.getDay()+7)%7;
-    d.setDate(1+diff);
-    return d;
+    d.setDate(1+((4-d.getDay()+7)%7));return d;
   }
-  function getCultoDate(year,month){
-    if(year===2026&&month===2) return new Date(2026,1,26);
-    return firstThursdayOfMonth(year,month);
+  function getCultoDate(y,m){
+    if(y===2026&&m===2)return new Date(2026,1,26);
+    return firstThursdayOfMonth(y,m);
   }
 
-  // ── Próximo culto: primer jueves del mes (excepción feb 2026 = 26) + tema del mes ──
-  let culto=null, cultoTema=null;
+  let html='';
+
+  // ── Tarjeta 1: Próximo Culto de Caballeros ──
   let ym=new Date(today.getFullYear(),today.getMonth(),1);
   for(let i=0;i<18;i++){
-    const y=ym.getFullYear(), m=ym.getMonth()+1;
+    const y=ym.getFullYear(),m=ym.getMonth()+1;
     const d=getCultoDate(y,m);
     if(d>=today){
-      culto=d;
-      cultoTema=TEMAS.find(t=>t.mes===m)||null;
+      const tema=TEMAS.find(t=>t.mes===m)||null;
+      const n=diffDaysEv(d,today);
+      const temaLine=tema
+        ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
+          ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
+          <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
+      html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
+          <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(d)}</div>
+          ${temaLine}
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
       break;
     }
     ym.setMonth(ym.getMonth()+1);
   }
 
-  // ── Próximo estudio: siguiente clase futura en DB.clases (viernes cada 15 días) ──
-  let estudio=null, grupoExp='';
-  const todayStr=today.toISOString().split('T')[0];
-  const futureClases=(DB.clases||[])
-    .filter(cl=>cl.fecha>=todayStr)
-    .sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  // ── Tarjeta 2: Próximo Estudio ──
+  const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(futureClases.length>0){
     const cl=futureClases[0];
-    estudio=new Date(cl.fecha+'T00:00:00');
-    grupoExp=cl.grupoResp||'';
-  }
-
-  function diffDays(d){return Math.round((d-today)/(1000*60*60*24));}
-  function fmtEvDate(d){
-    const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-    const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    return `${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
-  }
-  function badge(n){
-    if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
-    if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
-    return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
-  }
-
-  let html='';
-
-  // ── Tarjeta: Próximo Culto (con tema del mes) ──
-  if(culto){
-    const n=diffDays(culto);
-    const temaLine=cultoTema
-      ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${cultoTema.titulo}</div>
-        ${cultoTema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${cultoTema.sub}</div>`:''}
-        <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${cultoTema.ref}</div>`
-      :'';
-    html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
-      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
-        <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(culto)}</div>
-        ${temaLine}
-      </div>
-      <div style="flex-shrink:0;">${badge(n)}</div>
-    </div>`;
-  }
-
-  // ── Tarjeta: Próximo Estudio (siempre: Estudio de las Dispensaciones) ──
-  if(estudio){
-    const n=diffDays(estudio);
-    const grupoTxt=grupoExp
-      ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${grupoExp}</div>`
+    const d=new Date(cl.fecha+'T00:00:00');
+    const n=diffDaysEv(d,today);
+    const grupoTxt=cl.grupoResp
+      ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
       :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
     html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
       <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
@@ -1764,14 +1810,195 @@ function renderEventosPV(){
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
         <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-        <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(estudio)}</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(d)}</div>
         ${grupoTxt}
       </div>
-      <div style="flex-shrink:0;">${badge(n)}</div>
+      <div style="flex-shrink:0;">${badgeEv(n)}</div>
+    </div>`;
+  }
+
+  // ── Tarjeta 3: Próximo evento de DB.eventos (solo el más cercano) ──
+  const evCandidatos=[];
+  (DB.eventos||[]).forEach(ev=>{
+    const d=proximaFechaEvento(ev,today);
+    if(d) evCandidatos.push({ev,d});
+  });
+  evCandidatos.sort((a,b)=>a.d-b.d);
+  if(evCandidatos.length>0){
+    const {ev,d}=evCandidatos[0];
+    const n=diffDaysEv(d,today);
+    let fechaRango='';
+    if(ev.fechaFin){
+      const fin=new Date(ev.fechaFin+'T00:00:00');
+      const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      fechaRango=` – ${fin.getDate()} de ${meses[fin.getMonth()]}`;
+    }
+    html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
+      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Evento</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${ev.nombre}</div>
+        ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
+        <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(d)}${fechaRango}</div>
+      </div>
+      <div style="flex-shrink:0;">${badgeEv(n)}</div>
     </div>`;
   }
 
   el.innerHTML=html||'';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENTOS — Admin: lista y formulario
+// ═══════════════════════════════════════════════════════════════
+function renderEventosAdmin(){
+  const el=document.getElementById('eventos-admin-lista');
+  if(!el)return;
+  const evs=DB.eventos||[];
+  const today=new Date();today.setHours(0,0,0,0);
+
+  if(!evs.length){
+    el.innerHTML=`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos. Crea el primero con + Nuevo.</div>`;
+    return;
+  }
+
+  el.innerHTML=evs.map(ev=>{
+    const fechaLegible=ev.fecha==='recurrente_ultimo_domingo'
+      ?'Último domingo de cada mes'
+      :ev.fecha==='por_definir'
+      ?'Fecha por definir'
+      :fmtEvDate(new Date(ev.fecha+'T00:00:00'))+(ev.fechaFin?` — ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}`:'');
+    const proxFecha=proximaFechaEvento(ev,today);
+    let diasStr='—';
+    if(proxFecha){const n=diffDaysEv(proxFecha,today);diasStr=n===0?'¡HOY!':n===1?'Mañana':'En '+n+' días';}
+    return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:${ev.color}18;border:1.5px solid ${ev.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${ev.icono}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.nombre}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${fechaLegible}</div>
+        ${ev.nota?`<div style="font-size:10px;color:#6b7280;margin-top:1px;font-style:italic;">${ev.nota}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${ev.color};">${diasStr}</div>
+        <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+          <button onclick="openFormEvento('${ev.id}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">✏️</button>
+          <button onclick="confirmarDelEvento('${ev.id}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const ICONOS_EV=['📅','⚔️','🏟️','⛺','🕯️','✝️','👥','📚','🙏','🎉','👧','🌿','📖','🎵'];
+const COLORES_EV=['#3aabba','#ef4444','#22c55e','#f59e0b','#8b5cf6','#6d28d9','#ec4899','#14b8a6','#f97316','#64748b'];
+
+function openFormEvento(id){
+  const isNew=!id;
+  const ev=id?(DB.eventos||[]).find(e=>e.id===id):{nombre:'',fecha:'',fechaFin:'',icono:'📅',color:'#3aabba',nota:''};
+  if(!ev)return;
+
+  const tipoFecha=ev.fecha==='recurrente_ultimo_domingo'?'recurrente':ev.fecha==='por_definir'?'por_definir':'fija';
+  const fechaVal=tipoFecha==='fija'?ev.fecha:'';
+  const fechaFinVal=ev.fechaFin||'';
+
+  const iconoOpts=ICONOS_EV.map(i=>`<span onclick="selectEvIcon('${i}')" id="ev-ico-${i}" style="font-size:22px;cursor:pointer;padding:6px;border-radius:8px;border:2px solid ${ev.icono===i?'var(--teal)':'transparent'};background:${ev.icono===i?'var(--teal-bg)':'transparent'};transition:all .15s;">${i}</span>`).join('');
+  const colorOpts=COLORES_EV.map(c=>`<div onclick="selectEvColor('${c}')" id="ev-col-${c.replace('#','')}" style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${ev.color===c?'#1a1f2e':'transparent'};box-shadow:${ev.color===c?'0 0 0 2px white inset':'none'};transition:all .15s;flex-shrink:0;"></div>`).join('');
+
+  openSheet(ev.icono||'📅',isNew?'Nuevo Evento':`Editar Evento`,'',`
+    <div class="fr"><label>Nombre del evento</label><input id="ev-nombre" value="${ev.nombre}" placeholder="Ej: Congreso Nacional"></div>
+    <div class="fr"><label>Ícono</label><div style="display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--off);border-radius:10px;">${iconoOpts}</div></div>
+    <div class="fr"><label>Color</label><div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:var(--off);border-radius:10px;">${colorOpts}</div></div>
+    <div class="fr"><label>Tipo de fecha</label>
+      <select id="ev-tipofecha" onchange="onEvTipoFechaChange()" style="width:100%;padding:11px 14px;background:var(--off);border:1.5px solid #e9edf2;border-radius:10px;font-family:'Lato',sans-serif;font-size:14px;outline:none;">
+        <option value="fija" ${tipoFecha==='fija'?'selected':''}>Fecha fija</option>
+        <option value="recurrente" ${tipoFecha==='recurrente'?'selected':''}>Último domingo de cada mes</option>
+        <option value="por_definir" ${tipoFecha==='por_definir'?'selected':''}>Por definir</option>
+      </select>
+    </div>
+    <div id="ev-fecha-wrap" style="display:${tipoFecha==='fija'?'block':'none'}">
+      <div class="fr"><label>Fecha</label><input type="date" id="ev-fecha" value="${fechaVal}"></div>
+      <div class="fr"><label>Fecha fin (opcional, para eventos de varios días)</label><input type="date" id="ev-fechafin" value="${fechaFinVal}"></div>
+    </div>
+    <div class="fr"><label>Nota / descripción breve (opcional)</label><input id="ev-nota" value="${ev.nota||''}" placeholder="Ej: Lema: El fruto del Espíritu Santo"></div>
+    <input type="hidden" id="ev-icono-val" value="${ev.icono||'📅'}">
+    <input type="hidden" id="ev-color-val" value="${ev.color||'#3aabba'}">
+    <button class="btn bteal bfull" onclick="${isNew?'doAddEvento()':'doSaveEvento(\''+id+'\')'}" style="margin-top:4px">${isNew?'✚ Crear Evento':'💾 Guardar Cambios'}</button>
+  `);
+}
+
+function onEvTipoFechaChange(){
+  const v=document.getElementById('ev-tipofecha').value;
+  document.getElementById('ev-fecha-wrap').style.display=v==='fija'?'block':'none';
+}
+function selectEvIcon(ico){
+  document.getElementById('ev-icono-val').value=ico;
+  ICONOS_EV.forEach(i=>{
+    const el=document.getElementById('ev-ico-'+i);
+    if(el){el.style.border=i===ico?'2px solid var(--teal)':'2px solid transparent';el.style.background=i===ico?'var(--teal-bg)':'transparent';}
+  });
+  // update sheet avatar
+  document.getElementById('m-av').textContent=ico;
+}
+function selectEvColor(col){
+  document.getElementById('ev-color-val').value=col;
+  COLORES_EV.forEach(c=>{
+    const el=document.getElementById('ev-col-'+c.replace('#',''));
+    if(el){el.style.border=c===col?'3px solid #1a1f2e':'3px solid transparent';el.style.boxShadow=c===col?'0 0 0 2px white inset':'none';}
+  });
+}
+
+function readFormEvento(){
+  const tipo=document.getElementById('ev-tipofecha').value;
+  let fecha='',fechaFin='';
+  if(tipo==='fija'){fecha=document.getElementById('ev-fecha').value;fechaFin=document.getElementById('ev-fechafin').value;}
+  else if(tipo==='recurrente')fecha='recurrente_ultimo_domingo';
+  else fecha='por_definir';
+  return{
+    nombre:document.getElementById('ev-nombre').value.trim(),
+    fecha,fechaFin,
+    icono:document.getElementById('ev-icono-val').value,
+    color:document.getElementById('ev-color-val').value,
+    nota:document.getElementById('ev-nota').value.trim()
+  };
+}
+
+async function doAddEvento(){
+  const d=readFormEvento();
+  if(!d.nombre){toast('Escribe el nombre del evento','err');return;}
+  if(!DB.eventos)DB.eventos=[];
+  DB.eventos.push({id:'ev'+Date.now(),...d});
+  closeModal();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Evento creado','ok');
+  renderEventosAdmin();
+}
+async function doSaveEvento(id){
+  const d=readFormEvento();
+  if(!d.nombre){toast('Escribe el nombre del evento','err');return;}
+  const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
+  Object.assign(ev,d);
+  closeModal();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Evento actualizado','ok');
+  renderEventosAdmin();
+}
+function confirmarDelEvento(id){
+  const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
+  const lista=document.getElementById('eventos-admin-lista');
+  // Insertar confirmación inline
+  const conf=document.createElement('div');
+  conf.id='ev-conf-'+id;
+  conf.style.cssText='background:var(--red-bg);border:1.5px solid rgba(239,68,68,0.25);border-radius:12px;padding:13px 14px;margin-top:6px;';
+  conf.innerHTML=`<p style="font-size:13px;color:var(--text);margin-bottom:10px;">¿Eliminar <strong>${ev.nombre}</strong>?</p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn boutline" onclick="document.getElementById('ev-conf-${id}').remove()" style="flex:1;">Cancelar</button>
+      <button class="btn bred" onclick="doDelEvento('${id}')" style="flex:1;">Eliminar</button>
+    </div>`;
+  lista.appendChild(conf);
+}
+async function doDelEvento(id){
+  DB.eventos=(DB.eventos||[]).filter(e=>e.id!==id);
+  toast('💾 Guardando...','info');await saveDB();toast('Evento eliminado','ok');
+  renderEventosAdmin();
 }
 
 // ═══════════════════════════════════════════════════════════════
