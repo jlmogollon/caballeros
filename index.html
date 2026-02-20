@@ -620,15 +620,19 @@ let currentCabId = null;
 let gradeClaseId = null;
 
 // ═══════════════════════════════════════════════════════════════
-// NUBE — JSONBin.io (gratis, sin SDK, funciona con fetch)
+// NUBE — Proxy seguro vía Netlify Functions
+// Las credenciales de JSONBin viven en el servidor, nunca aquí.
 // ═══════════════════════════════════════════════════════════════
-// 1. Ve a https://jsonbin.io → crea cuenta gratis
-// 2. Crea un "Bin" con {} como contenido inicial
-// 3. Copia el BIN_ID y tu API_KEY aquí:
-const JSONBIN_ID  = '699758eaae596e708f3803f4';
-const JSONBIN_KEY = '$2a$10$LJhHfiUXMSXwo3kKp1ZKFuEBtLmIrrxxIhWE1YFufteRWU45lQJYS';
 
-const USE_CLOUD = JSONBIN_ID !== 'TU_BIN_ID';
+// Token de app: confirma que las solicitudes vienen de esta página.
+// Debe coincidir con la variable APP_TOKEN en Netlify.
+const APP_TOKEN = 'hdv2026_miClaveSecreta123';
+
+const API_URL = '/api/db';
+
+function apiHeaders(extra){
+  return {'Content-Type':'application/json','x-app-token':APP_TOKEN,...(extra||{})};
+}
 
 function showLoading(msg){
   let el=document.getElementById('fb-loading');
@@ -652,17 +656,15 @@ function seedDB(){
 }
 
 async function cloudLoad(){
-  const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{
-    headers:{'X-Master-Key':JSONBIN_KEY,'X-Bin-Meta':'false'}
-  });
+  const r=await fetch(API_URL,{headers:apiHeaders()});
   if(!r.ok)throw new Error('cloudLoad '+r.status);
   return await r.json();
 }
 
 async function cloudSave(data){
-  const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,{
+  const r=await fetch(API_URL,{
     method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+    headers:apiHeaders(),
     body:JSON.stringify(data)
   });
   if(!r.ok)throw new Error('cloudSave '+r.status);
@@ -670,38 +672,29 @@ async function cloudSave(data){
 
 async function loadDB(){
   showLoading('Cargando datos...');
-  // Intentar nube
-  if(USE_CLOUD){
-    try{
-      const data=await cloudLoad();
-      if(data&&data.caballeros&&data.caballeros.length>0){
-        DB=data;
-        // Migración: asegurar que todos los caballeros tengan campo pw
-        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
-        // Migración: asegurar array de peticiones
-        if(!DB.peticiones)DB.peticiones=[];
-        // Migración: asegurar array de eventos
-        if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
-        hideLoading();return;
-      }
-      // Bin vacío — cargar datos iniciales
-      showLoading('Cargando datos iniciales...');
-      DB=seedDB();
-      await cloudSave(DB);
+  try{
+    const data=await cloudLoad();
+    if(data&&data.caballeros&&data.caballeros.length>0){
+      DB=data;
+      DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+      if(!DB.peticiones)DB.peticiones=[];
+      if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
       hideLoading();return;
-    }catch(e){
-      console.warn('Nube falló, usando localStorage:',e);
-      toast('⚠️ Sin conexión a la nube','err');
     }
+    // Bin vacío — inicializar con seed
+    showLoading('Cargando datos iniciales...');
+    DB=seedDB();
+    await cloudSave(DB);
+    hideLoading();return;
+  }catch(e){
+    console.warn('Proxy falló, usando localStorage como respaldo:',e);
+    toast('⚠️ Sin conexión al servidor. Usando datos locales.','err');
   }
-  // localStorage como respaldo
+  // Respaldo local
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
-  // Migración: asegurar campo pw en todos
   DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
-  // Migración: asegurar array de peticiones
   if(!DB.peticiones)DB.peticiones=[];
-  // Migración: asegurar array de eventos
   if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
@@ -709,13 +702,9 @@ async function loadDB(){
 
 async function saveDB(){
   invalidateCache();
-  // Guardar local siempre
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  // Guardar en nube
-  if(USE_CLOUD){
-    try{await cloudSave(DB);}
-    catch(e){toast('⚠️ Error al guardar en la nube','err');console.error(e);}
-  }
+  try{await cloudSave(DB);}
+  catch(e){toast('⚠️ Error al guardar en el servidor','err');console.error(e);}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1050,7 +1039,7 @@ function openFormCab(id){
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
     <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
       <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
-        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles en su vida pública, en su hogar, su trabajo y la Iglesia. El caballero también puede marcarse a sí mismo desde su perfil personal.</span>
+        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. El caballero también puede marcarse a sí mismo desde su perfil personal.</span>
       </div>
     </div>
     <div class="fr">

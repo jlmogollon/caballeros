@@ -1,0 +1,23 @@
+# ═══════════════════════════════════════════════════════════════
+# netlify.toml — Configuración de Hombres de Verdad
+# ═══════════════════════════════════════════════════════════════
+
+[build]
+  # No hay build step — es un archivo HTML estático
+  publish = "."
+  functions = "netlify/functions"
+
+# Redirige /api/db → función serverless (URL limpia para el HTML)
+[[redirects]]
+  from = "/api/db"
+  to   = "/.netlify/functions/db"
+  status = 200
+
+# Headers de seguridad para el HTML principal
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options       = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy       = "strict-origin-when-cross-origin"
+    Permissions-Policy    = "camera=(), microphone=(), geolocation=()"
