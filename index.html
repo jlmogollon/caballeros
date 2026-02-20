@@ -605,7 +605,7 @@ function showLoading(msg){
 function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
 
 function seedDB(){
-  return{adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES))};
+  return{adminPw:'1234',caballeros:JSON.parse(JSON.stringify(SEED_CABS)),clases:JSON.parse(JSON.stringify(SEED_CLASES)),peticiones:[]};
 }
 
 async function cloudLoad(){
@@ -635,6 +635,8 @@ async function loadDB(){
         DB=data;
         // Migración: asegurar que todos los caballeros tengan campo pw
         DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+        // Migración: asegurar array de peticiones
+        if(!DB.peticiones)DB.peticiones=[];
         hideLoading();return;
       }
       // Bin vacío — cargar datos iniciales
@@ -652,6 +654,8 @@ async function loadDB(){
   if(!DB||!DB.caballeros)DB=seedDB();
   // Migración: asegurar campo pw en todos
   DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+  // Migración: asegurar array de peticiones
+  if(!DB.peticiones)DB.peticiones=[];
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
 }
@@ -1748,7 +1752,7 @@ function togglePrayerTimer(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PETICIONES DE ORACIÓN (almacenamiento compartido)
+// PETICIONES DE ORACIÓN — guardadas en DB.peticiones (JSONBin)
 // ═══════════════════════════════════════════════════════════════
 let petAnon=false;
 
@@ -1774,84 +1778,96 @@ async function enviarPeticion(){
   const nombre=petAnon?'Anónimo':(document.getElementById('pet-nombre').value.trim()||'Anónimo');
   const id='pet_'+Date.now();
   const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
+  if(!DB.peticiones)DB.peticiones=[];
+  DB.peticiones.push(peticion);
   try{
-    await window.storage.set(id,JSON.stringify(peticion),true);
+    toast('💾 Enviando...','info');
+    await saveDB();
     document.getElementById('pet-texto').value='';
     document.getElementById('pet-nombre').value='';
+    if(petAnon){petAnon=false;toggleAnon();}
     toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
-    await cargarPeticiones();
-  }catch(e){toast('Error al enviar petición','err');console.error(e);}
-}
-
-async function borrarPeticion(id){
-  if(!confirm('¿Borrar esta petición de oración?'))return;
-  try{
-    await window.storage.delete(id,true);
-    toast('Petición eliminada','ok');
-    await cargarPeticiones();
-    // Si estamos en admin, refrescar también el panel admin
-    if(document.getElementById('screen-admin').classList.contains('active'))
-      await cargarPeticionesAdmin();
-  }catch(e){toast('Error al eliminar','err');console.error(e);}
-}
-
-async function cargarPeticiones(esAdmin=false){
-  const lista=document.getElementById(esAdmin?'admin-peticiones-lista':'peticiones-lista');
-  const badge=document.getElementById('peticiones-count-badge');
-  if(!lista)return;
-  try{
-    const keys=await window.storage.list('pet_',true);
-    const keyList=(keys&&keys.keys)?keys.keys:[];
-    if(keyList.length===0){
-      lista.innerHTML=`<div style="text-align:center;padding:24px 16px;background:white;border-radius:14px;border:1.5px dashed #e9edf2;">
-        <div style="font-size:28px;margin-bottom:8px;">🕊️</div>
-        <div style="font-size:13px;color:#9ca3af;font-weight:600;">No hay peticiones esta semana</div>
-        <div style="font-size:11px;color:#d1d5db;margin-top:4px;">Sé el primero en compartir una</div>
-      </div>`;
-      if(badge)badge.textContent='0 peticiones';
-      return;
-    }
-    // Cargar todas
-    const items=[];
-    for(const k of keyList){
-      try{const r=await window.storage.get(k,true);if(r)items.push(JSON.parse(r.value));}catch(e){}
-    }
-    items.sort((a,b)=>b.ts-a.ts);
-    if(badge)badge.textContent=`${items.length} petición${items.length!==1?'es':''}`;
-    const adminBadge=document.getElementById('admin-pet-badge');
-    if(adminBadge)adminBadge.textContent=`${items.length} petición${items.length!==1?'es':''}`;
-    lista.innerHTML=items.map(p=>{
-      const isAnon=p.nombre==='Anónimo';
-      const avColor=isAnon?'#9ca3af':'#8b5cf6';
-      const avIcon=isAnon?'🤍':'🙏';
-      const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
-      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-radius:3px 0 0 3px;"></div>
-        <div style="display:flex;align-items:flex-start;gap:10px;margin-left:4px;">
-          <div style="width:34px;height:34px;border-radius:50%;background:${isAnon?'rgba(156,163,175,0.15)':'rgba(139,92,246,0.12)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1.5px solid ${isAnon?'rgba(156,163,175,0.3)':'rgba(139,92,246,0.25)'};">${avIcon}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-              <span style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${avColor};">${p.nombre}</span>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:10px;color:#d1d5db;">${p.fecha||''}</span>
-                ${puedeborrar?`<button onclick="borrarPeticion('${p.id}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Montserrat',sans-serif;" title="Eliminar petición">🗑</button>`:''}
-              </div>
-            </div>
-            <div style="font-size:13px;color:#374151;line-height:1.5;">${p.texto}</div>
-            <div style="margin-top:6px;font-size:11px;color:#a78bfa;font-family:'Caveat',cursive;">🙏 Orando por esto</div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+    cargarPeticiones();
   }catch(e){
-    lista.innerHTML=`<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No se pudieron cargar las peticiones</div>`;
+    DB.peticiones=DB.peticiones.filter(p=>p.id!==id);
+    toast('⚠️ Error al enviar. Intenta de nuevo.','err');
     console.error(e);
   }
 }
 
-async function cargarPeticionesAdmin(){
-  await cargarPeticiones(true);
+function borrarPeticion(id){
+  const card=document.getElementById('pet-card-'+id);
+  if(!card)return;
+  // Si ya hay confirmación abierta, la cerramos
+  const ya=document.getElementById('pet-confirm-'+id);
+  if(ya){ya.remove();return;}
+  const conf=document.createElement('div');
+  conf.id='pet-confirm-'+id;
+  conf.style.cssText='margin-top:8px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+  conf.innerHTML=`<span style="font-size:12px;color:#b91c1c;font-weight:600;">¿Borrar esta petición?</span>
+    <div style="display:flex;gap:6px;">
+      <button onclick="document.getElementById('pet-confirm-${id}').remove()" style="background:white;border:1px solid #e5e7eb;color:#6b7280;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Cancelar</button>
+      <button onclick="confirmarBorrarPeticion('${id}')" style="background:#ef4444;border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Borrar</button>
+    </div>`;
+  card.appendChild(conf);
 }
+
+async function confirmarBorrarPeticion(id){
+  DB.peticiones=(DB.peticiones||[]).filter(p=>p.id!==id);
+  try{
+    toast('💾 Guardando...','info');
+    await saveDB();
+    toast('✅ Petición eliminada','ok');
+  }catch(e){toast('⚠️ Error al guardar','err');console.error(e);}
+  cargarPeticiones();
+  cargarPeticionesAdmin();
+}
+
+function cargarPeticiones(esAdmin=false){
+  const listaId=esAdmin?'admin-peticiones-lista':'peticiones-lista';
+  const lista=document.getElementById(listaId);
+  if(!lista)return;
+  const badge=document.getElementById('peticiones-count-badge');
+  const adminBadge=document.getElementById('admin-pet-badge');
+  const items=[...(DB.peticiones||[])].sort((a,b)=>b.ts-a.ts);
+  const count=items.length;
+  if(badge)badge.textContent=`${count} petición${count!==1?'es':''}`;
+  if(adminBadge)adminBadge.textContent=`${count} petición${count!==1?'es':''}`;
+  if(count===0){
+    lista.innerHTML=`<div style="text-align:center;padding:24px 16px;background:white;border-radius:14px;border:1.5px dashed #e9edf2;">
+      <div style="font-size:28px;margin-bottom:8px;">🕊️</div>
+      <div style="font-size:13px;color:#9ca3af;font-weight:600;">No hay peticiones esta semana</div>
+      <div style="font-size:11px;color:#d1d5db;margin-top:4px;">Sé el primero en compartir una</div>
+    </div>`;
+    return;
+  }
+  lista.innerHTML=items.map(p=>{
+    const isAnon=p.nombre==='Anónimo';
+    const avColor=isAnon?'#9ca3af':'#8b5cf6';
+    const avIcon=isAnon?'🤍':'🙏';
+    const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
+    return`<div id="pet-card-${p.id}" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-radius:3px 0 0 3px;"></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-left:4px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:${isAnon?'rgba(156,163,175,0.15)':'rgba(139,92,246,0.12)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1.5px solid ${isAnon?'rgba(156,163,175,0.3)':'rgba(139,92,246,0.25)'};">${avIcon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${avColor};">${p.nombre}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:10px;color:#d1d5db;">${p.fecha||''}</span>
+              ${puedeborrar?`<button onclick="borrarPeticion('${p.id}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;" title="Eliminar">🗑</button>`:''}
+            </div>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.5;">${p.texto}</div>
+          <div style="margin-top:6px;font-size:11px;color:#a78bfa;font-family:'Caveat',cursive;">🙏 Orando por esto</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cargarPeticionesAdmin(){cargarPeticiones(true);}
+
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
