@@ -317,7 +317,11 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="lf"><label>Contraseña de administrador</label><input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     </div>
     <div id="miembro-fields" style="display:none">
-      <div class="lf"><label>Selecciona tu nombre</label><select id="miembro-sel"><option value="">— Seleccionar —</option></select></div>
+      <div class="lf"><label>Selecciona tu nombre</label><select id="miembro-sel" onchange="onMiembroSelChange()"><option value="">— Seleccionar —</option></select></div>
+      <div id="miembro-pw-wrap" style="display:none">
+        <div class="lf"><label id="miembro-pw-label">Contraseña</label><input type="password" id="miembro-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <div id="miembro-pw-hint" style="font-size:11px;color:var(--teal2);margin-bottom:8px;display:none;">🔑 Primera vez: crea tu contraseña personal (mín. 4 caracteres)</div>
+      </div>
     </div>
     <div class="login-err" id="login-err"></div>
     <button class="btn-enter" onclick="doLogin()">⚔ ENTRAR</button>
@@ -345,6 +349,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-grupos',this)">Grupos</div>
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
+    <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
   </div>
 
   <!-- DASHBOARD -->
@@ -368,8 +373,21 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <!-- CABALLEROS -->
   <div id="t-cabs" class="tab">
     <div class="pg">
+      <!-- MATERIAL DE ESTUDIO -->
+      <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:14px;">
+        <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+          <div style="font-size:30px;flex-shrink:0;">📖</div>
+          <div style="flex:1;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Material de Estudio</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
+          </div>
+          <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
+        </div>
+      </a>
+
       <div class="sec-ttl">Caballeros <button class="btn bteal" onclick="openFormCab(null)" style="font-size:11px;padding:7px 12px">+ Agregar</button></div>
-      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-inp" placeholder="Buscar caballero..." oninput="renderCabs()"></div>
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-inp" placeholder="Buscar caballero..." oninput="onSearch()"></div>
       <!-- Row 1: group chips -->
       <div class="chips-row" id="chips-grupo"></div>
       <!-- Row 2: badge chips -->
@@ -395,6 +413,19 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <div id="t-calgr" class="tab">
     <div class="pg" id="calgr-pg"></div>
   </div>
+
+  <!-- PETICIONES -->
+  <div id="t-peticiones" class="tab">
+    <div class="pg">
+      <div class="sec-ttl">🙏 Peticiones de Oración <span class="tag" id="admin-pet-badge">—</span></div>
+      <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:12px;color:#6d28d9;">
+        Como administrador puedes borrar cualquier petición que sea inapropiada o que el hermano haya solicitado eliminar.
+      </div>
+      <div id="admin-peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando...</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ════ PERSONAL VIEW ════ -->
@@ -406,7 +437,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="h-sub">Mi Perfil · Evidencias 2026</div>
       </div>
     </div>
-    <div class="hacts"><button class="btn-hdr" onclick="logout()">Salir</button></div>
+    <div class="hacts"><button class="btn-hdr" onclick="openChangeCabPw()">🔑</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
   <div class="pv-hero">
     <div class="pv-av-wrap">
@@ -426,8 +457,73 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="star-row" id="pv-stars"></div>
       <div class="ev-pill">🍇 Evidencias 2026</div>
     </div>
+    <!-- MATERIAL DE ESTUDIO -->
+    <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
+      <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="font-size:28px;flex-shrink:0;">📖</div>
+        <div style="flex:1;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Material de Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
+        </div>
+        <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
+      </div>
+    </a>
+
+    <!-- PRÓXIMO ESTUDIO & CULTO -->
+    <div id="pv-eventos" style="margin-bottom:10px;display:flex;flex-direction:column;gap:8px;"></div>
+
+    <!-- BANNER: RECORDATORIO DE ORACIÓN -->
+    <div id="prayer-banner" style="background:linear-gradient(135deg,#1a1f2e 0%,#2e1d47 60%,#4c1d95 100%);border-radius:14px;padding:16px 18px;margin-bottom:10px;border:1px solid rgba(139,92,246,0.35);box-shadow:0 4px 20px rgba(139,92,246,0.2);position:relative;overflow:hidden;cursor:pointer;" onclick="togglePrayerTimer()">
+      <div style="position:absolute;right:-20px;top:-20px;width:110px;height:110px;background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;left:-10px;bottom:-15px;width:80px;height:80px;background:radial-gradient(circle,rgba(245,197,24,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-size:30px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(139,92,246,0.6));">🙏</div>
+        <div style="flex:1;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Llamado a Oración</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:white;line-height:1.3;">Ora <span style="color:#a78bfa;">20 minutos</span> por los Caballeros de la Iglesia</div>
+          <div style="font-family:'Caveat',cursive;font-size:13px;color:#a78bfa;margin-top:3px;">"La oración del justo es poderosa y eficaz" — Stg 5:16</div>
+        </div>
+        <div style="flex-shrink:0;text-align:center;">
+          <div id="prayer-timer-badge" style="background:rgba(139,92,246,0.25);border:1px solid rgba(139,92,246,0.5);border-radius:10px;padding:6px 10px;min-width:52px;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#c4b5fd;" id="prayer-timer-display">20:00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-top:1px;" id="prayer-timer-label">INICIAR</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN: PETICIONES DE ORACIÓN -->
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+        <span>🕊️ Peticiones de Oración</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,0.1);color:#6d28d9;border:1px solid rgba(139,92,246,0.2);" id="peticiones-count-badge">cargando...</span>
+      </div>
+
+      <!-- Formulario nueva petición -->
+      <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
+        <div style="font-size:11px;color:#9ca3af;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Nueva Petición</div>
+        <textarea id="pet-texto" placeholder="Escribe tu petición de oración..." rows="3" style="width:100%;padding:10px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color .2s;line-height:1.5;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'"></textarea>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <div id="pet-anon-toggle" onclick="toggleAnon()" style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .15s;">
+            <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
+            <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
+          </div>
+          <input id="pet-nombre" placeholder="Tu nombre (opcional)" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'">
+          <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
+        </div>
+      </div>
+
+      <!-- Lista de peticiones -->
+      <div id="peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando peticiones...</div>
+      </div>
+    </div>
+
     <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
     <div id="pv-bars"></div>
+    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">⚔️</div><div class="vine-line r"></div></div>
+    <div id="pv-grupo-section"></div>
     <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
     <div id="pv-hist"></div>
   </div>
@@ -536,7 +632,10 @@ async function loadDB(){
     try{
       const data=await cloudLoad();
       if(data&&data.caballeros&&data.caballeros.length>0){
-        DB=data;hideLoading();return;
+        DB=data;
+        // Migración: asegurar que todos los caballeros tengan campo pw
+        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+        hideLoading();return;
       }
       // Bin vacío — cargar datos iniciales
       showLoading('Cargando datos iniciales...');
@@ -551,11 +650,14 @@ async function loadDB(){
   // localStorage como respaldo
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
+  // Migración: asegurar campo pw en todos
+  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
 }
 
 async function saveDB(){
+  invalidateCache();
   // Guardar local siempre
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   // Guardar en nube
@@ -642,16 +744,27 @@ const SEED_CLASES=[
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// CALC
+// CALC — con caché para evitar recalcular en cada render
 // ═══════════════════════════════════════════════════════════════
+let _calcCache={};
+let _rankCache=null;
+function invalidateCache(){_calcCache={};_rankCache=null;}
+
 function rowTotal(q){return+((q.i*0.3)+(q.p*0.3)+(q.d*0.2)+(q.pa*0.2)).toFixed(2);}
 function calcCab(id){
+  if(_calcCache[id])return _calcCache[id];
   let si=0,sp=0,sd=0,spa=0,n=0,tot=0;
   DB.clases.forEach(cl=>{const q=cl.cal[id];if(q){tot+=(q.a?rowTotal(q):0);if(q.a){si+=q.i;sp+=q.p;sd+=q.d;spa+=q.pa;n++;}}});
-  return{i:n?+(si/n).toFixed(1):0,p:n?+(sp/n).toFixed(1):0,d:n?+(sd/n).toFixed(1):0,pa:n?+(spa/n).toFixed(1):0,asist:n,totalClases:DB.clases.length,total:+tot.toFixed(1)};
+  const result={i:n?+(si/n).toFixed(1):0,p:n?+(sp/n).toFixed(1):0,d:n?+(sd/n).toFixed(1):0,pa:n?+(spa/n).toFixed(1):0,asist:n,totalClases:DB.clases.length,total:+tot.toFixed(1)};
+  _calcCache[id]=result;
+  return result;
 }
 function claseAvg(cl){const vs=Object.values(cl.cal).filter(q=>q.a);return vs.length?+(vs.reduce((s,q)=>s+rowTotal(q),0)/vs.length).toFixed(2):0;}
-function ranking(){return[...DB.caballeros].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);}
+function ranking(){
+  if(_rankCache)return _rankCache;
+  _rankCache=[...DB.caballeros].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+  return _rankCache;
+}
 function getRank(id){return ranking().findIndex(c=>c.id===id)+1;}
 
 // ═══════════════════════════════════════════════════════════════
@@ -663,6 +776,15 @@ function fmtBox(f){const[y,m,d]=f.split('-');const M=['ENE','FEB','MAR','ABR','M
 function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}">${CLBL[k]}</span>`).join('');}
 function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
 function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%">`;return ini(c.nombre);}
+
+// Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
+function mkHistoryTable(cabId){
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
+  return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Tot</th></tr></thead><tbody>${
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:10px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tema||'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
+  }</tbody></table>`;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // LOGIN
@@ -684,6 +806,24 @@ function buildSel(){
     const o=document.createElement('option');o.value=c.id;o.textContent=c.nombre;sel.appendChild(o);
   });
 }
+function onMiembroSelChange(){
+  const v=document.getElementById('miembro-sel').value;
+  const wrap=document.getElementById('miembro-pw-wrap');
+  const hint=document.getElementById('miembro-pw-hint');
+  const lbl=document.getElementById('miembro-pw-label');
+  document.getElementById('miembro-pw').value='';
+  if(!v){wrap.style.display='none';return;}
+  const c=DB.caballeros.find(x=>x.id===v);
+  if(!c){wrap.style.display='none';return;}
+  wrap.style.display='';
+  if(!c.pw){
+    lbl.textContent='Crear contraseña personal';
+    hint.style.display='';
+  }else{
+    lbl.textContent='Contraseña';
+    hint.style.display='none';
+  }
+}
 function doLogin(){
   const err=document.getElementById('login-err');err.style.display='none';
   if(loginMode==='admin'){
@@ -692,10 +832,20 @@ function doLogin(){
   }else{
     const v=document.getElementById('miembro-sel').value;
     if(!v){err.textContent='Selecciona tu nombre.';err.style.display='block';return;}
+    const c=DB.caballeros.find(x=>x.id===v);if(!c)return;
+    const pw=document.getElementById('miembro-pw').value;
+    if(!c.pw){
+      // Primera vez — crear contraseña
+      if(pw.length<4){err.textContent='Crea una contraseña de al menos 4 caracteres.';err.style.display='block';return;}
+      c.pw=pw;saveDB();toast('🔑 ¡Contraseña creada! Recuérdala bien.','ok');
+    }else{
+      // Verificar: contraseña propia O contraseña maestra (admin)
+      if(pw!==c.pw&&pw!==DB.adminPw){err.textContent='Contraseña incorrecta.';err.style.display='block';return;}
+    }
     currentCabId=v;showSc('screen-personal');renderPersonal(v);
   }
 }
-function logout(){document.getElementById('admin-pw').value='';document.getElementById('login-err').style.display='none';showSc('screen-login');}
+function logout(){document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
@@ -708,6 +858,7 @@ function showTab(id,el){
   if(id==='t-grupos')renderGrupos();
   if(id==='t-clases')renderClases();
   if(id==='t-calgr')renderCalGr();
+  if(id==='t-peticiones'){cargarPeticionesAdmin();}
 }
 function initAdmin(){buildSel();renderDash();renderCabs();}
 
@@ -728,16 +879,22 @@ function renderDash(){
 // CABALLEROS LIST
 // ═══════════════════════════════════════════════════════════════
 let fGrupo='TODOS', fBadge='TODOS';
+let _lastFGrupo=null, _lastFBadge=null;
 
 function renderCabs(){
-  // Group chips — nombres completos
-  document.getElementById('chips-grupo').innerHTML=
-    ['TODOS',...GRUPOS].map(g=>`<div class="chip ${g===fGrupo?'active':''}" onclick="setFG('${g}')">${g==='TODOS'?'Todos':g}</div>`).join('');
-  // Badge chips (Hermano, Amigo, + 7 badges)
-  const badgeOpts=[{id:'TODOS',l:'Todos'},{id:'Hermano',l:'Hermanos'},{id:'Amigo',l:'Amigos'},
-    ...CHECKS.map(k=>({id:k,l:CLBL[k]}))];
-  document.getElementById('chips-badge').innerHTML=
-    badgeOpts.map(b=>`<div class="chip bdg-filter ${b.id===fBadge?'active':''}" onclick="setFB('${b.id}')">${b.l}</div>`).join('');
+  // Solo reconstruir chips si cambió el filtro activo
+  if(fGrupo!==_lastFGrupo){
+    _lastFGrupo=fGrupo;
+    document.getElementById('chips-grupo').innerHTML=
+      ['TODOS',...GRUPOS].map(g=>`<div class="chip ${g===fGrupo?'active':''}" onclick="setFG('${g}')">${g==='TODOS'?'Todos':g}</div>`).join('');
+  }
+  if(fBadge!==_lastFBadge){
+    _lastFBadge=fBadge;
+    const badgeOpts=[{id:'TODOS',l:'Todos'},{id:'Hermano',l:'Hermanos'},{id:'Amigo',l:'Amigos'},
+      ...CHECKS.map(k=>({id:k,l:CLBL[k]}))];
+    document.getElementById('chips-badge').innerHTML=
+      badgeOpts.map(b=>`<div class="chip bdg-filter ${b.id===fBadge?'active':''}" onclick="setFB('${b.id}')">${b.l}</div>`).join('');
+  }
 
   const q=(document.getElementById('search-inp').value||'').toLowerCase();
   let list=[...DB.caballeros];
@@ -748,12 +905,15 @@ function renderCabs(){
   list.sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
   document.getElementById('cabs-list').innerHTML=list.length?list.map(c=>mkCabCard(c)).join(''):'<p style="color:var(--text3);font-size:13px">Sin resultados.</p>';
 }
-function setFG(g){fGrupo=g;renderCabs();}
-function setFB(b){fBadge=b;renderCabs();}
+function setFG(g){fGrupo=g;_lastFGrupo=null;renderCabs();}
+function setFB(b){fBadge=b;_lastFBadge=null;renderCabs();}
+
+// Debounce para el campo de búsqueda
+let _searchTimer=null;
+function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCabs,220);}
 
 function mkCabCard(c,rank){
   const cal=calcCab(c.id);
-  const avEl=c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:(rank?'#'+rank:ini(c.nombre));
   const bd=mkBadges(c);
   return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
     <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(c.nombre)}</span>`)}</div>
@@ -778,7 +938,7 @@ function openCabDetail(id){
   const barK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const bars=barK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  const histH=hist.length?`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Tot</th></tr></thead><tbody>${hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:10px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tema||'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`:'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
+  const histH=mkHistoryTable(id);
   openSheet(avH2,c.nombre,`${c.dist} · Rank #${rank} · ${c.grupo}`,`
     <div class="dsec"><div class="dhead">Estado Espiritual</div>
       <div class="badges">${mkBadges(c)||'<span style="color:var(--text3);font-size:12px">Sin distinciones</span>'}</div>
@@ -917,7 +1077,7 @@ function readForm(){
 }
 async function doAddCab(){
   const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
-  DB.caballeros.push({id:'c'+Date.now(),photo:'',...d});
+  DB.caballeros.push({id:'c'+Date.now(),photo:'',pw:'',...d});
   closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
   await saveDB();toast('✅ Caballero agregado','ok');
 }
@@ -1059,14 +1219,13 @@ function togAtt(cabId){
 }
 function clamp(inp){if(+inp.value>10)inp.value=10;if(+inp.value<0)inp.value=0;}
 function updTotal(cabId){
+  const tot=document.getElementById('tot-'+cabId);
+  if(!tot||!document.getElementById('att-'+cabId).classList.contains('yes'))return;
   const i=+document.getElementById('si-'+cabId).value||0;
   const p=+document.getElementById('sp-'+cabId).value||0;
   const d=+document.getElementById('sd-'+cabId).value||0;
   const pa=+document.getElementById('spa-'+cabId).value||0;
-  const tot=document.getElementById('tot-'+cabId);
-  if(tot&&document.getElementById('att-'+cabId).classList.contains('yes')){
-    tot.textContent=((i*0.3)+(p*0.3)+(d*0.2)+(pa*0.2)).toFixed(2);
-  }
+  tot.textContent=rowTotal({i,p,d,pa}).toFixed(2);
 }
 function closeGrade(){document.getElementById('grade-screen').classList.remove('open');gradeClaseId=null;}
 
@@ -1090,7 +1249,7 @@ async function doSaveGrade(){
       newCal[c.id]={a:1,i,p,d,pa};saved++;
     }
   });
-  if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''})`,'err');return;}
+  if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''}`,'err');return;}
   cl.cal=newCal;closeGrade();
   renderClases();renderDash();renderCalGr();
   toast('💾 Guardando calificaciones...','info');
@@ -1136,7 +1295,10 @@ function renderPersonal(cabId){
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   document.getElementById('pv-bars').innerHTML=bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  document.getElementById('pv-hist').innerHTML=hist.length?`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:10px;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tema||'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`:'<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Sin clases registradas.</p>';
+  document.getElementById('pv-hist').innerHTML=mkHistoryTable(cabId);
+  renderEventosPV();
+  renderGrupoSection(c);
+  cargarPeticiones();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1160,6 +1322,173 @@ async function doChangePw(){
   if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
   if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
   DB.adminPw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña actualizada','ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECCIÓN GRUPO — Vista Personal
+// ═══════════════════════════════════════════════════════════════
+function renderGrupoSection(c){
+  const el=document.getElementById('pv-grupo-section');
+  if(!el)return;
+  const GRUPOS_ACTIVOS=GRUPOS.filter(g=>g!=='SIN GRUPO');
+  const miGrupo=c.grupo;
+
+  // Calcular stats por grupo (solo grupos activos)
+  const grupoStats={};
+  GRUPOS_ACTIVOS.forEach(g=>{
+    const miembros=DB.caballeros.filter(x=>x.grupo===g);
+    const totalPts=miembros.reduce((s,x)=>s+calcCab(x.id).total,0);
+    const avgPts=miembros.length?+(totalPts/miembros.length).toFixed(1):0;
+    // Asistencia total / clases posibles
+    const asistTot=miembros.reduce((s,x)=>s+calcCab(x.id).asist,0);
+    const posTot=miembros.length*DB.clases.length;
+    const pctAsist=posTot?Math.round((asistTot/posTot)*100):0;
+    grupoStats[g]={miembros,totalPts:+totalPts.toFixed(1),avgPts,asistTot,pctAsist};
+  });
+
+  // Ordenar grupos por avgPts para ranking
+  const ranking=[...GRUPOS_ACTIVOS].sort((a,b)=>grupoStats[b].avgPts-grupoStats[a].avgPts);
+  const maxAvg=grupoStats[ranking[0]]?.avgPts||1;
+
+  // Mi grupo — miembros ordenados por puntuación
+  const misMiembros=[...grupoStats[miGrupo]?.miembros||[]].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+  const col=GCOL[miGrupo]||'var(--teal)';
+
+  // Clases con calificaciones del grupo
+  const clasesGrupo=DB.clases
+    .filter(cl=>misMiembros.some(m=>cl.cal[m.id]&&cl.cal[m.id].a))
+    .sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+  const miRank=ranking.indexOf(miGrupo)+1;
+  const medal=miRank===1?'🥇':miRank===2?'🥈':miRank===3?'🥉':'';
+
+  // ── HTML ──
+  let h=`
+  <!-- ENCABEZADO MI GRUPO -->
+  <div style="background:linear-gradient(135deg,var(--dark) 0%,var(--dark2) 60%,${col}33 100%);border-radius:14px;padding:14px 18px;margin-bottom:12px;border:1px solid ${col}44;box-shadow:0 4px 20px rgba(0,0,0,0.15);position:relative;overflow:hidden;">
+    <div style="position:absolute;right:-20px;top:-20px;width:110px;height:110px;background:radial-gradient(circle,${col}22 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Mi Grupo</div>
+    <div style="font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:${col};letter-spacing:1px;">${medal} ${miGrupo}</div>
+    <div style="display:flex;gap:16px;margin-top:10px;">
+      <div style="text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:white;">${grupoStats[miGrupo]?.avgPts??'—'}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;">Prom. pts</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:white;">${grupoStats[miGrupo]?.pctAsist??0}%</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;">Asistencia</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:white;">#${miRank}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;">Ranking</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:white;">${misMiembros.length}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;">Caballeros</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MIEMBROS DEL GRUPO -->
+  <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${col}33;">Caballeros del Grupo</div>
+    ${misMiembros.map((m,i)=>{
+      const cal=calcCab(m.id);
+      const esYo=m.id===c.id;
+      return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid ${i===misMiembros.length-1?'transparent':'#f3f4f6'};">
+        <div style="width:24px;text-align:center;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${i===0?'#d4a800':i===1?'#9ca3af':i===2?'#c2783b':'var(--text3)'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:${esYo?col+'33':'#f3f4f6'};border:2px solid ${esYo?col:'#e9edf2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          ${m.photo?`<img src="${m.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:9px;font-weight:900;color:${esYo?col:'var(--text3)'};">${ini(m.nombre)}</span>`}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:${esYo?'800':'600'};color:${esYo?col:'var(--dark)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.nombre}${esYo?' <span style="font-size:9px;background:'+col+'22;color:'+col+';padding:1px 6px;border-radius:10px;font-weight:700;">Tú</span>':''}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px;">Asist: ${cal.asist}/${cal.totalClases}</div>
+        </div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:${esYo?col:'var(--teal)'};">${cal.total.toFixed(1)}</div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- COMPARACIÓN ENTRE GRUPOS -->
+  <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal2);font-weight:700;margin-bottom:12px;padding-bottom:6px;border-bottom:1.5px solid var(--border);">Comparación de Grupos</div>
+    ${ranking.map((g,i)=>{
+      const st=grupoStats[g];
+      const esMio=g===miGrupo;
+      const gCol=GCOL[g]||'var(--teal)';
+      const pct=maxAvg>0?Math.round((st.avgPts/maxAvg)*100):0;
+      const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+      return`<div style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:13px;">${med}</span>
+            <span style="font-size:12px;font-weight:${esMio?'800':'600'};color:${esMio?gCol:'var(--dark)'};">${g}</span>
+            ${esMio?`<span style="font-size:9px;background:${gCol}22;color:${gCol};padding:1px 7px;border-radius:10px;font-weight:700;letter-spacing:0.5px;">Tu grupo</span>`:''}
+          </div>
+          <div style="text-align:right;">
+            <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:${esMio?gCol:'var(--text)'};">${st.avgPts}</span>
+            <span style="font-size:10px;color:var(--text3);"> pts · ${st.pctAsist}% asist</span>
+          </div>
+        </div>
+        <div style="height:8px;background:#f0f2f5;border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${esMio?`linear-gradient(90deg,${gCol},${gCol}bb)`:`linear-gradient(90deg,#d1d5db,#e5e7eb)`};border-radius:4px;transition:width .6s ease;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px;">${st.miembros.length} caballero${st.miembros.length!==1?'s':''}</div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- HISTORIAL POR CLASE — MI GRUPO -->
+  ${clasesGrupo.length?`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${col}33;">Clases de Mi Grupo</div>
+    ${clasesGrupo.map(cl=>{
+      const presentes=misMiembros.filter(m=>cl.cal[m.id]&&cl.cal[m.id].a);
+      const avgCl=presentes.length?+(presentes.reduce((s,m)=>s+rowTotal(cl.cal[m.id]),0)/presentes.length).toFixed(1):0;
+      const sc=avgCl>=7?'#15803d':avgCl>=4?'var(--gold2)':'var(--text3)';
+      const{d,m}=fmtBox(cl.fecha);
+      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+        <div style="background:linear-gradient(135deg,${col},${col}bb);border-radius:8px;padding:6px 8px;text-align:center;flex-shrink:0;min-width:38px;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:white;line-height:1;">${d}</div>
+          <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;">${m}</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cl.tema||'Clase'}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">${presentes.length} de ${misMiembros.length} asistieron</div>
+        </div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:${sc};">${avgCl.toFixed(1)}</div>
+      </div>`;
+    }).join('')}
+  </div>`:''}
+  `;
+
+  el.innerHTML=h;
+}
+
+
+function openChangeCabPw(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const tienePass=!!c.pw;
+  openSheet('🔑','Mi Contraseña',c.nombre,`
+    ${tienePass?`<div class="fr"><label>Contraseña actual</label><input type="password" id="cpw-curr" placeholder="Tu contraseña actual"></div>`:'<div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--teal2)">🔑 Todavía no tienes contraseña personal. Crea una para proteger tu perfil.</div>'}
+    <div class="fr"><label>${tienePass?'Nueva contraseña':'Crear contraseña'}</label><input type="password" id="cpw-new" placeholder="Mínimo 4 caracteres"></div>
+    <div class="fr"><label>Confirmar contraseña</label><input type="password" id="cpw-conf" placeholder="Repetir contraseña"></div>
+    <div class="login-err" id="cpw-err" style="display:none;margin-bottom:10px"></div>
+    <button class="btn bteal bfull" onclick="doChangeCabPw(${tienePass})">🔒 ${tienePass?'Cambiar Contraseña':'Crear Contraseña'}</button>
+  `);
+}
+async function doChangeCabPw(tienePass){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const err=document.getElementById('cpw-err');err.style.display='none';
+  if(tienePass){
+    const curr=document.getElementById('cpw-curr').value;
+    // Acepta contraseña propia O contraseña maestra
+    if(curr!==c.pw&&curr!==DB.adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
+  }
+  const nw=document.getElementById('cpw-new').value;
+  const conf=document.getElementById('cpw-conf').value;
+  if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
+  if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
+  c.pw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña '+(tienePass?'actualizada':'creada')+' con éxito','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1250,6 +1579,278 @@ function importData(e){
   };
   reader.readAsText(file);
   e.target.value='';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENTOS: PRÓXIMO CULTO & PRÓXIMO ESTUDIO
+// ═══════════════════════════════════════════════════════════════
+function renderEventosPV(){
+  const el=document.getElementById('pv-eventos');
+  if(!el)return;
+
+  // ── Contenido Temático completo según imagen ──
+  // mes:1-12, aplica para 2026; de 2027 en adelante se puede extender
+  const TEMAS=[
+    {mes:1,  nombre:'Enero',      titulo:'Evidencia de una Muerte',               sub:'Arrepentimiento',                              ref:'Romanos 6:6'},
+    {mes:2,  nombre:'Febrero',    titulo:'Evidencia de una Resurrección',          sub:'Nueva Vida',                                   ref:'Juan 5:24'},
+    {mes:3,  nombre:'Marzo',      titulo:'Evidencia de una Experiencia',           sub:'Bautismo del Espíritu Santo',                  ref:'Hechos 2:33'},
+    {mes:4,  nombre:'Abril',      titulo:'Evidencia de Gozo',                      sub:'',                                             ref:'Hechos 8:38-39 NBV'},
+    {mes:5,  nombre:'Mayo',       titulo:'Evidencia de la Paz',                    sub:'Tranquilidad en medio de las pruebas',         ref:'Hechos 16:25 / Filipenses 4:9'},
+    {mes:6,  nombre:'Junio',      titulo:'Evidencia de Comunión',                  sub:'',                                             ref:'Hechos 2:42-44 / 1 Juan 1:7'},
+    {mes:7,  nombre:'Julio',      titulo:'Evidencia de Testimonio',                sub:'Ejemplo',                                      ref:'Daniel 3 / Mateo 5:16 PDT'},
+    {mes:8,  nombre:'Agosto',     titulo:'Evidencia de una Marca',                 sub:'Enseñanza para hermanos apartados',            ref:'Mateo 26:73'},
+    {mes:9,  nombre:'Septiembre', titulo:'Evidencia de Dependencia',               sub:'Enseñanza para hermanos apartados',            ref:'2 Corintios 3:4-5'},
+    {mes:10, nombre:'Octubre',    titulo:'Evidencia de una Herida',                sub:'Pruebas',                                      ref:'2 Corintios 4:8-9'},
+    {mes:11, nombre:'Noviembre',  titulo:'Evidencia de un Servicio',               sub:'Especial nativos / Las marcas de Cristo',      ref:'Gálatas 6:17'},
+    {mes:12, nombre:'Diciembre',  titulo:'Evidencia de una Perseverancia al fin',  sub:'',                                             ref:'Filipenses 3:12-14'},
+  ];
+
+  const today=new Date();
+  today.setHours(0,0,0,0);
+
+  // ── Lógica de fechas ──
+  // Febrero 2026: excepción → jueves 26 feb
+  // Resto: primer jueves del mes
+  function firstThursdayOfMonth(year,month){
+    const d=new Date(year,month-1,1);
+    const diff=(4-d.getDay()+7)%7;
+    d.setDate(1+diff);
+    return d;
+  }
+  function getCultoDate(year,month){
+    if(year===2026&&month===2) return new Date(2026,1,26);
+    return firstThursdayOfMonth(year,month);
+  }
+
+  // ── Próximo culto: primer jueves del mes (excepción feb 2026 = 26) + tema del mes ──
+  let culto=null, cultoTema=null;
+  let ym=new Date(today.getFullYear(),today.getMonth(),1);
+  for(let i=0;i<18;i++){
+    const y=ym.getFullYear(), m=ym.getMonth()+1;
+    const d=getCultoDate(y,m);
+    if(d>=today){
+      culto=d;
+      cultoTema=TEMAS.find(t=>t.mes===m)||null;
+      break;
+    }
+    ym.setMonth(ym.getMonth()+1);
+  }
+
+  // ── Próximo estudio: siguiente clase futura en DB.clases (viernes cada 15 días) ──
+  let estudio=null, grupoExp='';
+  const todayStr=today.toISOString().split('T')[0];
+  const futureClases=(DB.clases||[])
+    .filter(cl=>cl.fecha>=todayStr)
+    .sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(futureClases.length>0){
+    const cl=futureClases[0];
+    estudio=new Date(cl.fecha+'T00:00:00');
+    grupoExp=cl.grupoResp||'';
+  }
+
+  function diffDays(d){return Math.round((d-today)/(1000*60*60*24));}
+  function fmtEvDate(d){
+    const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    return `${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
+  }
+  function badge(n){
+    if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
+    if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
+    return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
+  }
+
+  let html='';
+
+  // ── Tarjeta: Próximo Culto (con tema del mes) ──
+  if(culto){
+    const n=diffDays(culto);
+    const temaLine=cultoTema
+      ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${cultoTema.titulo}</div>
+        ${cultoTema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${cultoTema.sub}</div>`:''}
+        <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${cultoTema.ref}</div>`
+      :'';
+    html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
+      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
+        <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(culto)}</div>
+        ${temaLine}
+      </div>
+      <div style="flex-shrink:0;">${badge(n)}</div>
+    </div>`;
+  }
+
+  // ── Tarjeta: Próximo Estudio (siempre: Estudio de las Dispensaciones) ──
+  if(estudio){
+    const n=diffDays(estudio);
+    const grupoTxt=grupoExp
+      ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${grupoExp}</div>`
+      :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
+    html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(estudio)}</div>
+        ${grupoTxt}
+      </div>
+      <div style="flex-shrink:0;">${badge(n)}</div>
+    </div>`;
+  }
+
+  el.innerHTML=html||'';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TEMPORIZADOR DE ORACIÓN
+// ═══════════════════════════════════════════════════════════════
+let prayerInterval=null;
+let prayerSeconds=20*60;
+let prayerRunning=false;
+
+function togglePrayerTimer(){
+  if(prayerRunning){
+    clearInterval(prayerInterval);
+    prayerRunning=false;
+    prayerSeconds=20*60;
+    document.getElementById('prayer-timer-display').textContent='20:00';
+    document.getElementById('prayer-timer-label').textContent='INICIAR';
+    document.getElementById('prayer-banner').style.boxShadow='0 4px 20px rgba(139,92,246,0.2)';
+  } else {
+    prayerRunning=true;
+    document.getElementById('prayer-timer-label').textContent='DETENER';
+    document.getElementById('prayer-banner').style.boxShadow='0 4px 24px rgba(139,92,246,0.5)';
+    prayerInterval=setInterval(()=>{
+      prayerSeconds--;
+      if(prayerSeconds<=0){
+        clearInterval(prayerInterval);
+        prayerRunning=false;
+        document.getElementById('prayer-timer-display').textContent='✅';
+        document.getElementById('prayer-timer-label').textContent='¡AMÉN!';
+        document.getElementById('prayer-banner').style.boxShadow='0 4px 24px rgba(22,163,74,0.5)';
+        toast('🙏 ¡20 minutos de oración completados! Amén.','ok');
+        setTimeout(()=>{
+          prayerSeconds=20*60;
+          document.getElementById('prayer-timer-display').textContent='20:00';
+          document.getElementById('prayer-timer-label').textContent='INICIAR';
+          document.getElementById('prayer-banner').style.boxShadow='0 4px 20px rgba(139,92,246,0.2)';
+        },4000);
+        return;
+      }
+      const m=Math.floor(prayerSeconds/60);
+      const s=prayerSeconds%60;
+      document.getElementById('prayer-timer-display').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    },1000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PETICIONES DE ORACIÓN (almacenamiento compartido)
+// ═══════════════════════════════════════════════════════════════
+let petAnon=false;
+
+function toggleAnon(){
+  petAnon=!petAnon;
+  const box=document.getElementById('pet-anon-box');
+  const lbl=document.getElementById('pet-anon-lbl');
+  const toggle=document.getElementById('pet-anon-toggle');
+  const nombreInp=document.getElementById('pet-nombre');
+  box.textContent=petAnon?'✓':'';
+  box.style.background=petAnon?'#8b5cf6':'white';
+  box.style.borderColor=petAnon?'#8b5cf6':'#d1d5db';
+  box.style.color='white';
+  toggle.style.borderColor=petAnon?'#8b5cf6':'#e9edf2';
+  toggle.style.background=petAnon?'rgba(139,92,246,0.08)':'#f9fafb';
+  lbl.style.color=petAnon?'#6d28d9':'#4b5563';
+  nombreInp.style.display=petAnon?'none':'';
+}
+
+async function enviarPeticion(){
+  const texto=document.getElementById('pet-texto').value.trim();
+  if(!texto){toast('Escribe tu petición primero','err');return;}
+  const nombre=petAnon?'Anónimo':(document.getElementById('pet-nombre').value.trim()||'Anónimo');
+  const id='pet_'+Date.now();
+  const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
+  try{
+    await window.storage.set(id,JSON.stringify(peticion),true);
+    document.getElementById('pet-texto').value='';
+    document.getElementById('pet-nombre').value='';
+    toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
+    await cargarPeticiones();
+  }catch(e){toast('Error al enviar petición','err');console.error(e);}
+}
+
+async function borrarPeticion(id){
+  if(!confirm('¿Borrar esta petición de oración?'))return;
+  try{
+    await window.storage.delete(id,true);
+    toast('Petición eliminada','ok');
+    await cargarPeticiones();
+    // Si estamos en admin, refrescar también el panel admin
+    if(document.getElementById('screen-admin').classList.contains('active'))
+      await cargarPeticionesAdmin();
+  }catch(e){toast('Error al eliminar','err');console.error(e);}
+}
+
+async function cargarPeticiones(esAdmin=false){
+  const lista=document.getElementById(esAdmin?'admin-peticiones-lista':'peticiones-lista');
+  const badge=document.getElementById('peticiones-count-badge');
+  if(!lista)return;
+  try{
+    const keys=await window.storage.list('pet_',true);
+    const keyList=(keys&&keys.keys)?keys.keys:[];
+    if(keyList.length===0){
+      lista.innerHTML=`<div style="text-align:center;padding:24px 16px;background:white;border-radius:14px;border:1.5px dashed #e9edf2;">
+        <div style="font-size:28px;margin-bottom:8px;">🕊️</div>
+        <div style="font-size:13px;color:#9ca3af;font-weight:600;">No hay peticiones esta semana</div>
+        <div style="font-size:11px;color:#d1d5db;margin-top:4px;">Sé el primero en compartir una</div>
+      </div>`;
+      if(badge)badge.textContent='0 peticiones';
+      return;
+    }
+    // Cargar todas
+    const items=[];
+    for(const k of keyList){
+      try{const r=await window.storage.get(k,true);if(r)items.push(JSON.parse(r.value));}catch(e){}
+    }
+    items.sort((a,b)=>b.ts-a.ts);
+    if(badge)badge.textContent=`${items.length} petición${items.length!==1?'es':''}`;
+    const adminBadge=document.getElementById('admin-pet-badge');
+    if(adminBadge)adminBadge.textContent=`${items.length} petición${items.length!==1?'es':''}`;
+    lista.innerHTML=items.map(p=>{
+      const isAnon=p.nombre==='Anónimo';
+      const avColor=isAnon?'#9ca3af':'#8b5cf6';
+      const avIcon=isAnon?'🤍':'🙏';
+      const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-radius:3px 0 0 3px;"></div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-left:4px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:${isAnon?'rgba(156,163,175,0.15)':'rgba(139,92,246,0.12)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1.5px solid ${isAnon?'rgba(156,163,175,0.3)':'rgba(139,92,246,0.25)'};">${avIcon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${avColor};">${p.nombre}</span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:10px;color:#d1d5db;">${p.fecha||''}</span>
+                ${puedeborrar?`<button onclick="borrarPeticion('${p.id}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Montserrat',sans-serif;" title="Eliminar petición">🗑</button>`:''}
+              </div>
+            </div>
+            <div style="font-size:13px;color:#374151;line-height:1.5;">${p.texto}</div>
+            <div style="margin-top:6px;font-size:11px;color:#a78bfa;font-family:'Caveat',cursive;">🙏 Orando por esto</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    lista.innerHTML=`<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No se pudieron cargar las peticiones</div>`;
+    console.error(e);
+  }
+}
+
+async function cargarPeticionesAdmin(){
+  await cargarPeticiones(true);
 }
 
 // ═══════════════════════════════════════════════════════════════
