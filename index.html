@@ -457,6 +457,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="star-row" id="pv-stars"></div>
       <div class="ev-pill">🍇 Evidencias 2026</div>
     </div>
+    <!-- AUTOCALIFICACIÓN DEVOTO -->
+    <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
+
     <!-- MATERIAL DE ESTUDIO -->
     <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
       <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
@@ -988,7 +991,11 @@ function openFormCab(id){
     <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${c.nombre}" placeholder="Nombre y apellido"></div>
     <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
-    <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}</div>
+    <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
+      <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
+        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. El caballero también puede marcarse a sí mismo desde su perfil personal.</span>
+      </div>
+    </div>
     <div class="fr">
       <label>Valoración automática ⭐</label>
       <div class="star-row" id="fc-stars">${starsH}</div>
@@ -1302,6 +1309,7 @@ function renderPersonal(cabId){
   document.getElementById('pv-hist').innerHTML=mkHistoryTable(cabId);
   renderEventosPV();
   renderGrupoSection(c);
+  renderDevotoCard(c);
   cargarPeticiones();
 }
 
@@ -1326,6 +1334,64 @@ async function doChangePw(){
   if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
   if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
   DB.adminPw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña actualizada','ok');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTOCALIFICACIÓN DEVOTO
+// ═══════════════════════════════════════════════════════════════
+function renderDevotoCard(c){
+  const el=document.getElementById('pv-devoto-card');
+  if(!el)return;
+  const esDevoto=!!c.devoto;
+  el.innerHTML=`
+  <div style="background:${esDevoto?'linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%)':'white'};border:1.5px solid ${esDevoto?'#6ee7b7':'#e9edf2'};border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);transition:all .3s;">
+    <div style="display:flex;align-items:flex-start;gap:12px;">
+      <div style="font-size:26px;flex-shrink:0;margin-top:2px;">${esDevoto?'🌿':'🕊️'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:${esDevoto?'#065f46':'#1a1f2e'};">
+              ${esDevoto?'✅ Soy Devoto':'¿Eres Devoto?'}
+            </div>
+            ${esDevoto
+              ?`<div style="font-size:11px;color:#059669;font-weight:600;margin-top:2px;">Esta distinción aparece en tu perfil</div>`
+              :`<div style="font-size:11px;color:#9ca3af;margin-top:2px;">Aún no has marcado esta distinción</div>`
+            }
+          </div>
+          <button onclick="toggleDevoto()" style="background:${esDevoto?'#ef4444':'linear-gradient(135deg,#059669,#047857)'};border:none;color:white;border-radius:10px;padding:9px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px ${esDevoto?'rgba(239,68,68,0.3)':'rgba(5,150,105,0.3)'};letter-spacing:0.5px;flex-shrink:0;">
+            ${esDevoto?'Quitar distinción':'Marcarme como Devoto'}
+          </button>
+        </div>
+        <div style="margin-top:10px;background:${esDevoto?'rgba(5,150,105,0.08)':'rgba(156,163,175,0.07)'};border-radius:8px;padding:8px 10px;">
+          <div style="font-size:10px;color:${esDevoto?'#065f46':'#6b7280'};line-height:1.6;">
+            <span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. No es solo asistir, sino vivir la fe con coherencia.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function toggleDevoto(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c)return;
+  c.devoto=c.devoto?0:1;
+  // Actualizar badges en header y stars
+  document.getElementById('pv-bdg').innerHTML=mkBadges(c);
+  const val=autoVal(c);
+  document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
+  // Re-renderizar la tarjeta
+  renderDevotoCard(c);
+  toast('💾 Guardando...','info');
+  try{
+    await saveDB();
+    toast(c.devoto?'🌿 ¡Distinción Devoto añadida a tu perfil!':'Distinción Devoto removida','ok');
+  }catch(e){
+    // Revertir si falla
+    c.devoto=c.devoto?0:1;
+    renderDevotoCard(c);
+    toast('⚠️ Error al guardar. Intenta de nuevo.','err');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
