@@ -283,6 +283,13 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .vine-line.r{background:linear-gradient(90deg,var(--border),transparent);}
 .vine-ico{font-size:16px;color:var(--teal);}
 
+/* ── PERSONAL VIEW TABS ── */
+.pv-nav{background:var(--dark2);display:flex;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;}
+.pv-ntab{flex:1;padding:11px 6px;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;text-align:center;border-bottom:2.5px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;}
+.pv-ntab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.pv-tab{display:none;flex:1;overflow-y:auto;}
+.pv-tab.active{display:block;}
+
 /* ── CAL GRUPO ── */
 .cgc{background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);}
 .cgc-ttl{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:var(--dark);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f3f4f6;}
@@ -458,87 +465,105 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-bdg" id="pv-bdg"></div>
   </div>
   <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
-  <div class="pv-body">
-    <div class="score-hero">
-      <div class="sh-big" id="pv-total">0.0</div>
-      <div class="sh-lbl">Puntuación Acumulada</div>
-      <div class="sh-sub" id="pv-rank"></div>
-      <div class="star-row" id="pv-stars"></div>
-      <div class="ev-pill">🍇 Evidencias 2026</div>
-    </div>
-    <!-- AUTOCALIFICACIÓN DEVOTO -->
-    <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
 
-    <!-- MATERIAL DE ESTUDIO -->
-    <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
-      <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
-        <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-        <div style="font-size:28px;flex-shrink:0;">📖</div>
-        <div style="flex:1;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Material de Estudio</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
-        </div>
-        <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
+  <!-- PESTAÑAS NAVEGACIÓN -->
+  <nav class="pv-nav">
+    <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
+    <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
+    <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
+  </nav>
+
+  <!-- ── TAB: PERFIL ── -->
+  <div class="pv-tab active" id="pvtab-perfil">
+    <div class="pv-body">
+      <div class="score-hero">
+        <div class="sh-big" id="pv-total">0.0</div>
+        <div class="sh-lbl">Puntuación Acumulada</div>
+        <div class="sh-sub" id="pv-rank"></div>
+        <div class="star-row" id="pv-stars"></div>
+        <div class="ev-pill">🍇 Evidencias 2026</div>
       </div>
-    </a>
-
-    <!-- PRÓXIMO ESTUDIO & CULTO -->
-    <div id="pv-eventos" style="margin-bottom:10px;display:flex;flex-direction:column;gap:8px;"></div>
-
-    <!-- BANNER: RECORDATORIO DE ORACIÓN -->
-    <div id="prayer-banner" style="background:linear-gradient(135deg,#1a1f2e 0%,#2e1d47 60%,#4c1d95 100%);border-radius:14px;padding:16px 18px;margin-bottom:10px;border:1px solid rgba(139,92,246,0.35);box-shadow:0 4px 20px rgba(139,92,246,0.2);position:relative;overflow:hidden;cursor:pointer;" onclick="togglePrayerTimer()">
-      <div style="position:absolute;right:-20px;top:-20px;width:110px;height:110px;background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="position:absolute;left:-10px;bottom:-15px;width:80px;height:80px;background:radial-gradient(circle,rgba(245,197,24,0.08) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="font-size:30px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(139,92,246,0.6));">🙏</div>
-        <div style="flex:1;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Llamado a Oración</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:white;line-height:1.3;">Ora <span style="color:#a78bfa;">20 minutos</span> por los Caballeros de la Iglesia</div>
-          <div style="font-family:'Caveat',cursive;font-size:13px;color:#a78bfa;margin-top:3px;">"La oración del justo es poderosa y eficaz" — Stg 5:16</div>
-        </div>
-        <div style="flex-shrink:0;text-align:center;">
-          <div id="prayer-timer-badge" style="background:rgba(139,92,246,0.25);border:1px solid rgba(139,92,246,0.5);border-radius:10px;padding:6px 10px;min-width:52px;">
-            <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#c4b5fd;" id="prayer-timer-display">20:00</div>
-            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-top:1px;" id="prayer-timer-label">INICIAR</div>
+      <!-- AUTOCALIFICACIÓN DEVOTO -->
+      <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
+      <!-- MATERIAL DE ESTUDIO -->
+      <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
+        <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+          <div style="font-size:28px;flex-shrink:0;">📖</div>
+          <div style="flex:1;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Material de Estudio</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
           </div>
+          <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
         </div>
-      </div>
+      </a>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
+      <div id="pv-bars"></div>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">⚔️</div><div class="vine-line r"></div></div>
+      <div id="pv-grupo-section"></div>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
+      <div id="pv-hist"></div>
     </div>
-
-    <!-- SECCIÓN: PETICIONES DE ORACIÓN -->
-    <div style="margin-bottom:14px;">
-      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
-        <span>🕊️ Peticiones de Oración</span>
-        <span style="font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,0.1);color:#6d28d9;border:1px solid rgba(139,92,246,0.2);" id="peticiones-count-badge">cargando...</span>
-      </div>
-
-      <!-- Formulario nueva petición -->
-      <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
-        <div style="font-size:11px;color:#9ca3af;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Nueva Petición</div>
-        <textarea id="pet-texto" placeholder="Escribe tu petición de oración..." rows="3" style="width:100%;padding:10px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color .2s;line-height:1.5;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'"></textarea>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
-          <div id="pet-anon-toggle" onclick="toggleAnon()" style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .15s;">
-            <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
-            <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
-          </div>
-          <input id="pet-nombre" placeholder="Tu nombre (opcional)" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'">
-          <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
-        </div>
-      </div>
-
-      <!-- Lista de peticiones -->
-      <div id="peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
-        <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando peticiones...</div>
-      </div>
-    </div>
-
-    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
-    <div id="pv-bars"></div>
-    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">⚔️</div><div class="vine-line r"></div></div>
-    <div id="pv-grupo-section"></div>
-    <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
-    <div id="pv-hist"></div>
   </div>
+
+  <!-- ── TAB: EVENTOS ── -->
+  <div class="pv-tab" id="pvtab-eventos">
+    <div class="pv-body">
+      <div class="sec-ttl">🗓 Próximos Eventos</div>
+      <div id="pv-eventos" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: ORACIÓN Y PETICIONES ── -->
+  <div class="pv-tab" id="pvtab-oracion">
+    <div class="pv-body">
+      <!-- BANNER: RECORDATORIO DE ORACIÓN -->
+      <div id="prayer-banner" style="background:linear-gradient(135deg,#1a1f2e 0%,#2e1d47 60%,#4c1d95 100%);border-radius:14px;padding:16px 18px;margin-bottom:14px;border:1px solid rgba(139,92,246,0.35);box-shadow:0 4px 20px rgba(139,92,246,0.2);position:relative;overflow:hidden;cursor:pointer;" onclick="togglePrayerTimer()">
+        <div style="position:absolute;right:-20px;top:-20px;width:110px;height:110px;background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="position:absolute;left:-10px;bottom:-15px;width:80px;height:80px;background:radial-gradient(circle,rgba(245,197,24,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:30px;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(139,92,246,0.6));">🙏</div>
+          <div style="flex:1;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Llamado a Oración</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:white;line-height:1.3;">Ora <span style="color:#a78bfa;">20 minutos</span> por los Caballeros de la Iglesia</div>
+            <div style="font-family:'Caveat',cursive;font-size:13px;color:#a78bfa;margin-top:3px;">"La oración del justo es poderosa y eficaz" — Stg 5:16</div>
+          </div>
+          <div style="flex-shrink:0;text-align:center;">
+            <div id="prayer-timer-badge" style="background:rgba(139,92,246,0.25);border:1px solid rgba(139,92,246,0.5);border-radius:10px;padding:6px 10px;min-width:52px;">
+              <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#c4b5fd;" id="prayer-timer-display">20:00</div>
+              <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-top:1px;" id="prayer-timer-label">INICIAR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: PETICIONES DE ORACIÓN -->
+      <div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+          <span>🕊️ Peticiones de Oración</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,0.1);color:#6d28d9;border:1px solid rgba(139,92,246,0.2);" id="peticiones-count-badge">cargando...</span>
+        </div>
+        <!-- Formulario nueva petición -->
+        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
+          <div style="font-size:11px;color:#9ca3af;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Nueva Petición</div>
+          <textarea id="pet-texto" placeholder="Escribe tu petición de oración..." rows="3" style="width:100%;padding:10px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color .2s;line-height:1.5;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'"></textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <div id="pet-anon-toggle" onclick="toggleAnon()" style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .15s;">
+              <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
+              <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
+            </div>
+            <input id="pet-nombre" placeholder="Tu nombre (opcional)" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'">
+            <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
+          </div>
+        </div>
+        <!-- Lista de peticiones -->
+        <div id="peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando peticiones...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ════ GRADING FULL-SCREEN ════ -->
@@ -1337,12 +1362,20 @@ function renderPersonal(cabId){
   document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   document.getElementById('pv-bars').innerHTML=bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
-  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   document.getElementById('pv-hist').innerHTML=mkHistoryTable(cabId);
-  renderEventosPV();
   renderGrupoSection(c);
   renderDevotoCard(c);
-  cargarPeticiones();
+  // Tab perfil activo por defecto al entrar
+  showPvTab('perfil');
+}
+
+function showPvTab(tab){
+  ['perfil','eventos','oracion'].forEach(t=>{
+    document.getElementById('pvtab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('pvtab-'+t+'-btn').classList.toggle('active',t===tab);
+  });
+  if(tab==='eventos') renderEventosPV();
+  if(tab==='oracion') cargarPeticiones();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1687,18 +1720,10 @@ function importData(e){
 // EVENTOS — helpers compartidos
 // ═══════════════════════════════════════════════════════════════
 function lastSundayOfMonth(year,month){
-  // mes en JS: 0-based. Pasamos month 1-based.
-  // Último día del mes, retrocede hasta domingo
-  const last=new Date(year,month,0); // día 0 del mes siguiente = último día del mes
-  last.setDate(last.getDate()-((last.getDay()+7)%7 === 0 ? 0 : last.getDay()));
-  // asegurar que es domingo (0)
-  const d=new Date(year,month-1,last.getDate());
-  const dow=d.getDay();
-  d.setDate(d.getDate()-(dow===0?0:dow));
-  // re-calcular correctamente
-  const fin=new Date(year,month,0);
+  // Retrocede desde el último día del mes hasta encontrar domingo (0)
+  const fin=new Date(year,month,0); // día 0 del mes+1 = último día del mes
   fin.setHours(0,0,0,0);
-  while(fin.getDay()!==0)fin.setDate(fin.getDate()-1);
+  while(fin.getDay()!==0) fin.setDate(fin.getDate()-1);
   return fin;
 }
 
@@ -1733,11 +1758,11 @@ function badgeEv(n){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// EVENTOS: Vista Personal — próximo evento único
+// EVENTOS: Vista Personal — todos ordenados por fecha
 // ═══════════════════════════════════════════════════════════════
 function renderEventosPV(){
   const el=document.getElementById('pv-eventos');
-  if(!el){el&&(el.innerHTML='');return;}
+  if(!el)return;
 
   const TEMAS=[
     {mes:1,titulo:'Evidencia de una Muerte',sub:'Arrepentimiento',ref:'Romanos 6:6'},
@@ -1756,6 +1781,7 @@ function renderEventosPV(){
 
   const today=new Date();today.setHours(0,0,0,0);
   const todayStr=today.toISOString().split('T')[0];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
   function firstThursdayOfMonth(year,month){
     const d=new Date(year,month-1,1);
@@ -1766,89 +1792,96 @@ function renderEventosPV(){
     return firstThursdayOfMonth(y,m);
   }
 
-  let html='';
+  // ── Recopilar todos los ítems con su fecha ──
+  const items=[];
 
-  // ── Tarjeta 1: Próximo Culto de Caballeros ──
+  // 1. Próximo Culto de Caballeros (solo el siguiente)
   let ym=new Date(today.getFullYear(),today.getMonth(),1);
   for(let i=0;i<18;i++){
     const y=ym.getFullYear(),m=ym.getMonth()+1;
     const d=getCultoDate(y,m);
-    if(d>=today){
-      const tema=TEMAS.find(t=>t.mes===m)||null;
-      const n=diffDaysEv(d,today);
+    if(d>=today){items.push({tipo:'culto',fecha:d,tema:TEMAS.find(t=>t.mes===m)||null});break;}
+    ym.setMonth(ym.getMonth()+1);
+  }
+
+  // 2. Próximo Estudio (siguiente clase futura de DB.clases)
+  const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(futureClases.length>0){
+    const cl=futureClases[0];
+    items.push({tipo:'estudio',fecha:new Date(cl.fecha+'T00:00:00'),cl});
+  }
+
+  // 3. Todos los eventos de DB.eventos con fecha calculada
+  (DB.eventos||[]).forEach(ev=>{
+    const d=proximaFechaEvento(ev,today);
+    if(d) items.push({tipo:'evento',fecha:d,ev});
+  });
+
+  // ── Ordenar cronológicamente ──
+  items.sort((a,b)=>a.fecha-b.fecha);
+
+  // ── Renderizar en orden ──
+  const html=items.map(item=>{
+    const n=diffDaysEv(item.fecha,today);
+
+    if(item.tipo==='culto'){
+      const {tema}=item;
       const temaLine=tema
         ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
           ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
           <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
-      html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
-          <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(d)}</div>
+          <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
           ${temaLine}
         </div>
         <div style="flex-shrink:0;">${badgeEv(n)}</div>
       </div>`;
-      break;
     }
-    ym.setMonth(ym.getMonth()+1);
-  }
 
-  // ── Tarjeta 2: Próximo Estudio ──
-  const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
-  if(futureClases.length>0){
-    const cl=futureClases[0];
-    const d=new Date(cl.fecha+'T00:00:00');
-    const n=diffDaysEv(d,today);
-    const grupoTxt=cl.grupoResp
-      ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
-      :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
-    html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
-      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-        <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(d)}</div>
-        ${grupoTxt}
-      </div>
-      <div style="flex-shrink:0;">${badgeEv(n)}</div>
-    </div>`;
-  }
-
-  // ── Tarjeta 3: Próximo evento de DB.eventos (solo el más cercano) ──
-  const evCandidatos=[];
-  (DB.eventos||[]).forEach(ev=>{
-    const d=proximaFechaEvento(ev,today);
-    if(d) evCandidatos.push({ev,d});
-  });
-  evCandidatos.sort((a,b)=>a.d-b.d);
-  if(evCandidatos.length>0){
-    const {ev,d}=evCandidatos[0];
-    const n=diffDaysEv(d,today);
-    let fechaRango='';
-    if(ev.fechaFin){
-      const fin=new Date(ev.fechaFin+'T00:00:00');
-      const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-      fechaRango=` – ${fin.getDate()} de ${meses[fin.getMonth()]}`;
+    if(item.tipo==='estudio'){
+      const {cl}=item;
+      const grupoTxt=cl.grupoResp
+        ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
+        :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
+          <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+          ${grupoTxt}
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
     }
-    html+=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
-      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Evento</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${ev.nombre}</div>
-        ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
-        <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(d)}${fechaRango}</div>
-      </div>
-      <div style="flex-shrink:0;">${badgeEv(n)}</div>
-    </div>`;
-  }
 
-  el.innerHTML=html||'';
+    if(item.tipo==='evento'){
+      const {ev}=item;
+      const fechaRango=ev.fechaFin
+        ?` – ${new Date(ev.fechaFin+'T00:00:00').getDate()} de ${meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]}`
+        :'';
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${ev.nombre}</div>
+          ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
+          <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
+    }
+    return'';
+  }).join('');
+
+  el.innerHTML=html||'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>';
 }
-
 // ═══════════════════════════════════════════════════════════════
 // EVENTOS — Admin: lista y formulario
 // ═══════════════════════════════════════════════════════════════
