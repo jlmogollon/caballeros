@@ -1842,11 +1842,39 @@ function renderEventosPV(){
     ym.setMonth(ym.getMonth()+1);
   }
 
-  // 2. Próximo Estudio (siguiente clase futura de DB.clases)
-  const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
-  if(futureClases.length>0){
-    const cl=futureClases[0];
-    items.push({tipo:'estudio',fecha:new Date(cl.fecha+'T00:00:00'),cl});
+  // 2. Próximo Estudio (calendario fijo de sesiones programadas)
+  const ESTUDIOS=[
+    {fecha:'2026-02-13',grupo:'Caballeros del Cielo'},
+    {fecha:'2026-02-27',grupo:'Emanuel'},
+    {fecha:'2026-03-13',grupo:'Embajadores del Rey'},
+    {fecha:'2026-03-27',grupo:'Centinelas'},
+    {fecha:'2026-04-10',grupo:'Caballeros del Cielo'},
+    {fecha:'2026-04-24',grupo:'Emanuel'},
+    {fecha:'2026-05-08',grupo:'Embajadores del Rey'},
+    {fecha:'2026-05-22',grupo:'Centinelas'},
+    {fecha:'2026-06-05',grupo:'Caballeros del Cielo'},
+    {fecha:'2026-06-19',grupo:'Emanuel'},
+    {fecha:'2026-07-03',grupo:'Embajadores del Rey'},
+    {fecha:'2026-07-17',grupo:'Centinelas'},
+    {fecha:'2026-07-31',grupo:'Caballeros del Cielo'},
+    {fecha:'2026-08-14',grupo:'Emanuel'},
+    {fecha:'2026-08-28',grupo:'Embajadores del Rey'},
+    {fecha:'2026-09-11',grupo:'Centinelas'},
+    {fecha:'2026-09-25',grupo:'Caballeros del Cielo'},
+    {fecha:'2026-10-09',grupo:'Emanuel'},
+    {fecha:'2026-10-23',grupo:'Embajadores del Rey'},
+    {fecha:'2026-11-06',grupo:'Centinelas'},
+    {fecha:'2026-11-20',grupo:'Caballeros del Cielo'},
+    {fecha:'2026-12-04',grupo:'Emanuel'},
+    {fecha:'2026-12-18',grupo:'Embajadores del Rey'},
+    {fecha:'2027-01-01',grupo:'Centinelas'},
+    {fecha:'2027-01-15',grupo:'Caballeros del Cielo'},
+    {fecha:'2027-01-29',grupo:'Emanuel'},
+    {fecha:'2027-02-12',grupo:'Embajadores del Rey'},
+  ];
+  const proxEstudio=ESTUDIOS.find(e=>e.fecha>=todayStr);
+  if(proxEstudio){
+    items.push({tipo:'estudio',fecha:new Date(proxEstudio.fecha+'T00:00:00'),grupo:proxEstudio.grupo});
   }
 
   // 3. Todos los eventos de DB.eventos con fecha calculada
@@ -1881,18 +1909,14 @@ function renderEventosPV(){
     }
 
     if(item.tipo==='estudio'){
-      const {cl}=item;
-      const grupoTxt=cl&&cl.grupoResp
-        ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
-        :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
       return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${cl&&cl.tema?cl.tema:'Estudio de las Dispensaciones'}</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
           <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
-          ${grupoTxt}
+          <div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${item.grupo}</div>
         </div>
         <div style="flex-shrink:0;">${badgeEv(n)}</div>
       </div>`;
