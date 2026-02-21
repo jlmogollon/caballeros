@@ -552,7 +552,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
               <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
               <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
             </div>
-            <input id="pet-nombre" placeholder="Tu nombre (opcional)" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'">
+            <span id="pet-nombre-display" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#6d28d9;font-family:'Lato',sans-serif;font-size:13px;font-weight:600;"></span>
             <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
           </div>
         </div>
@@ -1364,7 +1364,7 @@ function showPvTab(tab){
     document.getElementById('pvtab-'+t+'-btn').classList.toggle('active',t===tab);
   });
   if(tab==='eventos') renderEventosPV();
-  if(tab==='oracion') cargarPeticiones();
+  if(tab==='oracion'){cargarPeticiones();updatePetNombreDisplay();}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2076,7 +2076,7 @@ function toggleAnon(){
   const box=document.getElementById('pet-anon-box');
   const lbl=document.getElementById('pet-anon-lbl');
   const toggle=document.getElementById('pet-anon-toggle');
-  const nombreInp=document.getElementById('pet-nombre');
+  const nombreDisp=document.getElementById('pet-nombre-display');
   box.textContent=petAnon?'✓':'';
   box.style.background=petAnon?'#8b5cf6':'white';
   box.style.borderColor=petAnon?'#8b5cf6':'#d1d5db';
@@ -2084,22 +2084,30 @@ function toggleAnon(){
   toggle.style.borderColor=petAnon?'#8b5cf6':'#e9edf2';
   toggle.style.background=petAnon?'rgba(139,92,246,0.08)':'#f9fafb';
   lbl.style.color=petAnon?'#6d28d9':'#4b5563';
-  nombreInp.style.display=petAnon?'none':'';
+  if(petAnon){nombreDisp.style.display='none';}else{updatePetNombreDisplay();}
+}
+
+function updatePetNombreDisplay(){
+  const disp=document.getElementById('pet-nombre-display');
+  if(!disp)return;
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(c){disp.textContent='A nombre de: '+c.nombre;disp.style.display='';}
+  else{disp.textContent='';disp.style.display='none';}
 }
 
 async function enviarPeticion(){
   const texto=document.getElementById('pet-texto').value.trim();
   if(!texto){toast('Escribe tu petición primero','err');return;}
-  const nombre=petAnon?'Anónimo':(document.getElementById('pet-nombre').value.trim()||'Anónimo');
+  let nombre='Anónimo';
+  if(!petAnon){const c=DB.caballeros.find(x=>x.id===currentCabId);nombre=c?c.nombre:'Anónimo';}
   const id='pet_'+Date.now();
-  const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
+  const peticion={id,texto,nombre,cabId:petAnon?null:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
   if(!DB.peticiones)DB.peticiones=[];
   DB.peticiones.push(peticion);
   try{
     toast('💾 Enviando...','info');
     await saveDB();
     document.getElementById('pet-texto').value='';
-    document.getElementById('pet-nombre').value='';
     if(petAnon){petAnon=false;toggleAnon();}
     toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
     cargarPeticiones();
