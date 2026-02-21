@@ -552,7 +552,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
               <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
               <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
             </div>
-            <span id="pet-nombre-display" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#6d28d9;font-family:'Lato',sans-serif;font-size:13px;font-weight:600;"></span>
+            <input id="pet-nombre" placeholder="Tu nombre (opcional)" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'">
             <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
           </div>
         </div>
@@ -620,13 +620,13 @@ let currentCabId = null;
 let gradeClaseId = null;
 
 // ═══════════════════════════════════════════════════════════════
-// NUBE — Proxy seguro vía Netlify Functions
+// NUBE — Proxy seguro vía Cloudflare Pages Functions
 // Las credenciales de JSONBin viven en el servidor, nunca aquí.
 // ═══════════════════════════════════════════════════════════════
 
 // Token de app: confirma que las solicitudes vienen de esta página.
-// Debe coincidir con la variable APP_TOKEN en Netlify.
-const APP_TOKEN = 'hdv2026_miClaveSecreta123';
+// Debe coincidir con la variable APP_TOKEN en Cloudflare.
+const APP_TOKEN = 'REEMPLAZA_CON_TU_APP_TOKEN';
 
 const API_URL = '/api/db';
 
@@ -1039,7 +1039,7 @@ function openFormCab(id){
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
     <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
       <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
-        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Aquel que ha nacido de nuevo y tiene una vida espiritual, da frutos visibles en su vida pública, en su hogar, su trabajo y la Iglesia. El caballero también puede marcarse a sí mismo desde su perfil personal.</span>
+        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. El caballero también puede marcarse a sí mismo desde su perfil personal.</span>
       </div>
     </div>
     <div class="fr">
@@ -1364,7 +1364,7 @@ function showPvTab(tab){
     document.getElementById('pvtab-'+t+'-btn').classList.toggle('active',t===tab);
   });
   if(tab==='eventos') renderEventosPV();
-  if(tab==='oracion'){cargarPeticiones();updatePetNombreDisplay();}
+  if(tab==='oracion') cargarPeticiones();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1418,7 +1418,7 @@ function renderDevotoCard(c){
         </div>
         <div style="margin-top:10px;background:${esDevoto?'rgba(5,150,105,0.08)':'rgba(156,163,175,0.07)'};border-radius:8px;padding:8px 10px;">
           <div style="font-size:10px;color:${esDevoto?'#065f46':'#6b7280'};line-height:1.6;">
-            <span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que ha nacido de nuevo y tiene una vida espiritual, da frutos visibles en su vida pública, en su hogar, su trabajo y la Iglesia. No es solo asistir, sino vivir la fe con coherencia.
+            <span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. No es solo asistir, sino vivir la fe con coherencia.
           </div>
         </div>
       </div>
@@ -2076,7 +2076,7 @@ function toggleAnon(){
   const box=document.getElementById('pet-anon-box');
   const lbl=document.getElementById('pet-anon-lbl');
   const toggle=document.getElementById('pet-anon-toggle');
-  const nombreDisp=document.getElementById('pet-nombre-display');
+  const nombreInp=document.getElementById('pet-nombre');
   box.textContent=petAnon?'✓':'';
   box.style.background=petAnon?'#8b5cf6':'white';
   box.style.borderColor=petAnon?'#8b5cf6':'#d1d5db';
@@ -2084,30 +2084,22 @@ function toggleAnon(){
   toggle.style.borderColor=petAnon?'#8b5cf6':'#e9edf2';
   toggle.style.background=petAnon?'rgba(139,92,246,0.08)':'#f9fafb';
   lbl.style.color=petAnon?'#6d28d9':'#4b5563';
-  if(petAnon){nombreDisp.style.display='none';}else{updatePetNombreDisplay();}
-}
-
-function updatePetNombreDisplay(){
-  const disp=document.getElementById('pet-nombre-display');
-  if(!disp)return;
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
-  if(c){disp.textContent='A nombre de: '+c.nombre;disp.style.display='';}
-  else{disp.textContent='';disp.style.display='none';}
+  nombreInp.style.display=petAnon?'none':'';
 }
 
 async function enviarPeticion(){
   const texto=document.getElementById('pet-texto').value.trim();
   if(!texto){toast('Escribe tu petición primero','err');return;}
-  let nombre='Anónimo';
-  if(!petAnon){const c=DB.caballeros.find(x=>x.id===currentCabId);nombre=c?c.nombre:'Anónimo';}
+  const nombre=petAnon?'Anónimo':(document.getElementById('pet-nombre').value.trim()||'Anónimo');
   const id='pet_'+Date.now();
-  const peticion={id,texto,nombre,cabId:petAnon?null:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
+  const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
   if(!DB.peticiones)DB.peticiones=[];
   DB.peticiones.push(peticion);
   try{
     toast('💾 Enviando...','info');
     await saveDB();
     document.getElementById('pet-texto').value='';
+    document.getElementById('pet-nombre').value='';
     if(petAnon){petAnon=false;toggleAnon();}
     toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
     cargarPeticiones();
