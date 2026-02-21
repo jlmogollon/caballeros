@@ -305,23 +305,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 #photo-input-modal{display:none;}
 
 @media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr);}.pg{padding:20px;}.pv-body{padding:22px 24px 40px;}}
-
-/* === Mejoras legibilidad móvil === */
-.ntab{font-size:12px;padding:13px 15px;}
-.pv-ntab{font-size:12px;padding:13px 8px;}
-.cab-nm,.cl-nm,.gr-nm,.gr-rname,.gname{font-size:15px;}
-.cab-mt,.cl-mt,.sh-sub,.gr-rdist,.cab-sc{font-size:13px;}
-.bdg{font-size:10px;}
-.chip{font-size:12px;}
-.chk-lbl{font-size:14px;}
-.btn{font-size:13px;}
-.bfull{font-size:15px;}
-.dtable{font-size:13px;}
-.sec-ttl{font-size:15px;}
-.bl{font-size:13px;}
-.info-box{font-size:13px;}
-.confirm-box p{font-size:14px;}
-.lf input,.lf select,.fr input,.fr select,.fr textarea,.search-wrap input{font-size:16px;}
 </style>
 </head>
 <body>
@@ -514,21 +497,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
           <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
         </div>
       </a>
-
-      <!-- WHATSAPP GRUPO -->
-      <a href="https://chat.whatsapp.com/Ez9mi53lO57G59mmEdrIfV?mode=gi_t" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
-        <div style="background:linear-gradient(135deg,#0a1f0f 0%,#0d2b14 50%,#145222 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(37,211,102,0.3);box-shadow:0 4px 20px rgba(37,211,102,0.15);position:relative;overflow:hidden;">
-          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(37,211,102,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-          <div style="width:42px;height:42px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px rgba(37,211,102,0.4);">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          </div>
-          <div style="flex:1;">
-            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Comunidad</div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#25d366;letter-spacing:0.5px;">Únete al Grupo de WhatsApp</div>
-          </div>
-          <div style="font-size:18px;color:rgba(37,211,102,0.7);flex-shrink:0;">→</div>
-        </div>
-      </a>
       <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
       <div id="pv-bars"></div>
       <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">⚔️</div><div class="vine-line r"></div></div>
@@ -584,7 +552,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
               <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
               <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
             </div>
-
+            <input id="pet-nombre" placeholder="Tu nombre (opcional)" style="flex:1;min-width:120px;padding:8px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'">
             <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
           </div>
         </div>
@@ -658,7 +626,7 @@ let gradeClaseId = null;
 
 // Token de app: confirma que las solicitudes vienen de esta página.
 // Debe coincidir con la variable APP_TOKEN en Cloudflare.
-const APP_TOKEN = 'hdv2026_miClave123';
+const APP_TOKEN = 'REEMPLAZA_CON_TU_APP_TOKEN';
 
 const API_URL = '/api/db';
 
@@ -1071,7 +1039,7 @@ function openFormCab(id){
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
     <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
       <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
-        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</span>
+        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. El caballero también puede marcarse a sí mismo desde su perfil personal.</span>
       </div>
     </div>
     <div class="fr">
@@ -1450,7 +1418,7 @@ function renderDevotoCard(c){
         </div>
         <div style="margin-top:10px;background:${esDevoto?'rgba(5,150,105,0.08)':'rgba(156,163,175,0.07)'};border-radius:8px;padding:8px 10px;">
           <div style="font-size:10px;color:${esDevoto?'#065f46':'#6b7280'};line-height:1.6;">
-            <span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.
+            <span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que tiene una vida espiritual en Dios, dando frutos visibles en su vida pública — en su hogar, su trabajo y su iglesia. No es solo asistir, sino vivir la fe con coherencia.
           </div>
         </div>
       </div>
@@ -1825,15 +1793,11 @@ function renderEventosPV(){
     ym.setMonth(ym.getMonth()+1);
   }
 
-  // 2. Próximo Estudio (siguiente clase futura de DB.clases, o fallback al estudio activo)
+  // 2. Próximo Estudio (siguiente clase futura de DB.clases)
   const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(futureClases.length>0){
     const cl=futureClases[0];
     items.push({tipo:'estudio',fecha:new Date(cl.fecha+'T00:00:00'),cl});
-  } else {
-    // Fallback: mostrar el estudio activo sin fecha específica
-    // Sin fecha específica → no ordenar, añadir al inicio después del culto
-    items.push({tipo:'estudio-link',fecha:new Date(today.getTime()+1)});
   }
 
   // 3. Todos los eventos de DB.eventos con fecha calculada
@@ -1883,20 +1847,6 @@ function renderEventosPV(){
         </div>
         <div style="flex-shrink:0;">${badgeEv(n)}</div>
       </div>`;
-    }
-
-    if(item.tipo==='estudio-link'){
-      return`<a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;">
-        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
-        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio en Curso</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-          <div style="display:inline-flex;align-items:center;gap:5px;background:#fef9c3;color:#92400e;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">📖 Ver material →</div>
-        </div>
-        </div>
-      </a>`;
     }
 
     if(item.tipo==='evento'){
@@ -2126,6 +2076,7 @@ function toggleAnon(){
   const box=document.getElementById('pet-anon-box');
   const lbl=document.getElementById('pet-anon-lbl');
   const toggle=document.getElementById('pet-anon-toggle');
+  const nombreInp=document.getElementById('pet-nombre');
   box.textContent=petAnon?'✓':'';
   box.style.background=petAnon?'#8b5cf6':'white';
   box.style.borderColor=petAnon?'#8b5cf6':'#d1d5db';
@@ -2133,13 +2084,13 @@ function toggleAnon(){
   toggle.style.borderColor=petAnon?'#8b5cf6':'#e9edf2';
   toggle.style.background=petAnon?'rgba(139,92,246,0.08)':'#f9fafb';
   lbl.style.color=petAnon?'#6d28d9':'#4b5563';
+  nombreInp.style.display=petAnon?'none':'';
 }
 
 async function enviarPeticion(){
   const texto=document.getElementById('pet-texto').value.trim();
   if(!texto){toast('Escribe tu petición primero','err');return;}
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
-  const nombre=petAnon?'Anónimo':(c?c.nombre:'Anónimo');
+  const nombre=petAnon?'Anónimo':(document.getElementById('pet-nombre').value.trim()||'Anónimo');
   const id='pet_'+Date.now();
   const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
   if(!DB.peticiones)DB.peticiones=[];
@@ -2148,6 +2099,7 @@ async function enviarPeticion(){
     toast('💾 Enviando...','info');
     await saveDB();
     document.getElementById('pet-texto').value='';
+    document.getElementById('pet-nombre').value='';
     if(petAnon){petAnon=false;toggleAnon();}
     toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
     cargarPeticiones();
