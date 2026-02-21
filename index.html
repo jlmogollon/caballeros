@@ -1842,11 +1842,13 @@ function renderEventosPV(){
     ym.setMonth(ym.getMonth()+1);
   }
 
-  // 2. Próximo Estudio (siguiente clase futura de DB.clases)
+  // 2. Próximo Estudio (siguiente clase futura de DB.clases, o tarjeta fija si no hay)
   const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(futureClases.length>0){
     const cl=futureClases[0];
     items.push({tipo:'estudio',fecha:new Date(cl.fecha+'T00:00:00'),cl});
+  } else {
+    items.push({tipo:'estudio',fecha:new Date(9999,0,1),cl:null});
   }
 
   // 3. Todos los eventos de DB.eventos con fecha calculada
@@ -1882,7 +1884,7 @@ function renderEventosPV(){
 
     if(item.tipo==='estudio'){
       const {cl}=item;
-      const grupoTxt=cl.grupoResp
+      const grupoTxt=cl&&cl.grupoResp
         ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
         :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
       return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
@@ -1891,10 +1893,10 @@ function renderEventosPV(){
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
           <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-          <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+          ${cl?`<div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>`:'<div style="font-size:11px;color:#9ca3af;margin-top:3px;">📅 Fecha por confirmar</div>'}
           ${grupoTxt}
         </div>
-        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+        <div style="flex-shrink:0;">${cl?badgeEv(n):''}</div>
       </div>`;
     }
 
@@ -2138,7 +2140,7 @@ async function enviarPeticion(){
   const texto=document.getElementById('pet-texto').value.trim();
   if(!texto){toast('Escribe tu petición primero','err');return;}
   const cab=DB.caballeros.find(x=>x.id===currentCabId);
-  const nombre=petAnon?'Anónimo':(cab?cab.nom:'Hermano');
+  const nombre=petAnon?'Anónimo':(cab?cab.nombre:'Hermano');
   const id='pet_'+Date.now();
   const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
   if(!DB.peticiones)DB.peticiones=[];
