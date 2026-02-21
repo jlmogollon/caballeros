@@ -1842,13 +1842,11 @@ function renderEventosPV(){
     ym.setMonth(ym.getMonth()+1);
   }
 
-  // 2. Próximo Estudio (siguiente clase futura de DB.clases, o tarjeta fija si no hay)
+  // 2. Próximo Estudio (siguiente clase futura de DB.clases)
   const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(futureClases.length>0){
     const cl=futureClases[0];
     items.push({tipo:'estudio',fecha:new Date(cl.fecha+'T00:00:00'),cl});
-  } else {
-    items.push({tipo:'estudio',fecha:new Date(9999,0,1),cl:null});
   }
 
   // 3. Todos los eventos de DB.eventos con fecha calculada
@@ -1892,11 +1890,11 @@ function renderEventosPV(){
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-          ${cl?`<div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>`:'<div style="font-size:11px;color:#9ca3af;margin-top:3px;">📅 Fecha por confirmar</div>'}
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${cl&&cl.tema?cl.tema:'Estudio de las Dispensaciones'}</div>
+          <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
           ${grupoTxt}
         </div>
-        <div style="flex-shrink:0;">${cl?badgeEv(n):''}</div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
       </div>`;
     }
 
