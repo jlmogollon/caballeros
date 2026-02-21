@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -306,13 +305,28 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 #photo-input-modal{display:none;}
 
 @media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr);}.pg{padding:20px;}.pv-body{padding:22px 24px 40px;}}
-</style>
 
+/* === Mejoras legibilidad móvil === */
+.ntab{font-size:12px;padding:13px 15px;}
+.pv-ntab{font-size:12px;padding:13px 8px;}
+.cab-nm,.cl-nm,.gr-nm,.gr-rname,.gname{font-size:15px;}
+.cab-mt,.cl-mt,.sh-sub,.gr-rdist,.cab-sc{font-size:13px;}
+.bdg{font-size:10px;}
+.chip{font-size:12px;}
+.chk-lbl{font-size:14px;}
+.btn{font-size:13px;}
+.bfull{font-size:15px;}
+.dtable{font-size:13px;}
+.sec-ttl{font-size:15px;}
+.bl{font-size:13px;}
+.info-box{font-size:13px;}
+.confirm-box p{font-size:14px;}
+.lf input,.lf select,.fr input,.fr select,.fr textarea,.search-wrap input{font-size:16px;}
+</style>
 </head>
 <body>
 
 <!-- ════ LOGIN ════ -->
-
 <div id="screen-login" class="screen active">
   <div class="login-box">
     <div class="login-logo">
@@ -339,7 +353,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 </div>
 
 <!-- ════ ADMIN ════ -->
-
 <div id="screen-admin" class="screen">
   <div class="app-header">
     <div class="hbrand">
@@ -365,7 +378,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
 
   <!-- DASHBOARD -->
-
   <div id="t-dash" class="tab active">
     <div class="pg">
       <!-- EVIDENCIAS BANNER -->
@@ -384,7 +396,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
 
   <!-- CABALLEROS -->
-
   <div id="t-cabs" class="tab">
     <div class="pg">
       <!-- MATERIAL DE ESTUDIO -->
@@ -400,27 +411,22 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         </div>
       </a>
 
-```
-  <div class="sec-ttl">Caballeros <button class="btn bteal" onclick="openFormCab(null)" style="font-size:11px;padding:7px 12px">+ Agregar</button></div>
-  <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-inp" placeholder="Buscar caballero..." oninput="onSearch()"></div>
-  <!-- Row 1: group chips -->
-  <div class="chips-row" id="chips-grupo"></div>
-  <!-- Row 2: badge chips -->
-  <div class="chips-row" id="chips-badge"></div>
-  <div id="cabs-list" class="card-list"></div>
-</div>
-```
-
+      <div class="sec-ttl">Caballeros <button class="btn bteal" onclick="openFormCab(null)" style="font-size:11px;padding:7px 12px">+ Agregar</button></div>
+      <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-inp" placeholder="Buscar caballero..." oninput="onSearch()"></div>
+      <!-- Row 1: group chips -->
+      <div class="chips-row" id="chips-grupo"></div>
+      <!-- Row 2: badge chips -->
+      <div class="chips-row" id="chips-badge"></div>
+      <div id="cabs-list" class="card-list"></div>
+    </div>
   </div>
 
   <!-- GRUPOS -->
-
   <div id="t-grupos" class="tab">
     <div class="pg" id="grupos-pg"></div>
   </div>
 
   <!-- CLASES -->
-
   <div id="t-clases" class="tab">
     <div class="pg">
       <div class="sec-ttl">Clases / Estudios <button class="btn bteal" onclick="openNuevaClase()" style="font-size:11px;padding:7px 12px">+ Nueva</button></div>
@@ -429,13 +435,11 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
 
   <!-- CAL GRUPOS -->
-
   <div id="t-calgr" class="tab">
     <div class="pg" id="calgr-pg"></div>
   </div>
 
   <!-- PETICIONES -->
-
   <div id="t-peticiones" class="tab">
     <div class="pg">
       <div class="sec-ttl">🙏 Peticiones de Oración <span class="tag" id="admin-pet-badge">—</span></div>
@@ -449,7 +453,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
 
   <!-- EVENTOS ADMIN -->
-
   <div id="t-eventos-admin" class="tab">
     <div class="pg">
       <div class="sec-ttl">🗓 Eventos <button class="btn bteal" onclick="openFormEvento(null)" style="font-size:11px;padding:7px 12px">+ Nuevo</button></div>
@@ -459,7 +462,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 </div>
 
 <!-- ════ PERSONAL VIEW ════ -->
-
 <div id="screen-personal" class="screen">
   <div class="app-header">
     <div class="hbrand"><div class="hbrand-icon">⚔</div>
@@ -482,7 +484,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
 
   <!-- PESTAÑAS NAVEGACIÓN -->
-
   <nav class="pv-nav">
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
@@ -490,7 +491,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
-
   <div class="pv-tab active" id="pvtab-perfil">
     <div class="pv-body">
       <div class="score-hero">
@@ -515,34 +515,30 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         </div>
       </a>
 
-```
-  <!-- WHATSAPP GRUPO -->
-  <a href="https://chat.whatsapp.com/Ez9mi53lO57G59mmEdrIfV?mode=gi_t" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
-    <div style="background:linear-gradient(135deg,#0a1f0f 0%,#0d2b14 50%,#145222 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(37,211,102,0.3);box-shadow:0 4px 20px rgba(37,211,102,0.15);position:relative;overflow:hidden;">
-      <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(37,211,102,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="width:42px;height:42px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px rgba(37,211,102,0.4);">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      </div>
-      <div style="flex:1;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Comunidad</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#25d366;letter-spacing:0.5px;">Únete al Grupo de WhatsApp</div>
-      </div>
-      <div style="font-size:18px;color:rgba(37,211,102,0.7);flex-shrink:0;">→</div>
+      <!-- WHATSAPP GRUPO -->
+      <a href="https://chat.whatsapp.com/Ez9mi53lO57G59mmEdrIfV?mode=gi_t" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
+        <div style="background:linear-gradient(135deg,#0a1f0f 0%,#0d2b14 50%,#145222 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(37,211,102,0.3);box-shadow:0 4px 20px rgba(37,211,102,0.15);position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(37,211,102,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+          <div style="width:42px;height:42px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px rgba(37,211,102,0.4);">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Comunidad</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#25d366;letter-spacing:0.5px;">Únete al Grupo de WhatsApp</div>
+          </div>
+          <div style="font-size:18px;color:rgba(37,211,102,0.7);flex-shrink:0;">→</div>
+        </div>
+      </a>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
+      <div id="pv-bars"></div>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">⚔️</div><div class="vine-line r"></div></div>
+      <div id="pv-grupo-section"></div>
+      <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
+      <div id="pv-hist"></div>
     </div>
-  </a>
-  <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📊</div><div class="vine-line r"></div></div>
-  <div id="pv-bars"></div>
-  <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">⚔️</div><div class="vine-line r"></div></div>
-  <div id="pv-grupo-section"></div>
-  <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
-  <div id="pv-hist"></div>
-</div>
-```
-
   </div>
 
   <!-- ── TAB: EVENTOS ── -->
-
   <div class="pv-tab" id="pvtab-eventos">
     <div class="pv-body">
       <div class="sec-ttl">🗓 Próximos Eventos</div>
@@ -551,7 +547,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
 
   <!-- ── TAB: ORACIÓN Y PETICIONES ── -->
-
   <div class="pv-tab" id="pvtab-oracion">
     <div class="pv-body">
       <!-- BANNER: RECORDATORIO DE ORACIÓN -->
@@ -574,40 +569,36 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         </div>
       </div>
 
-```
-  <!-- SECCIÓN: PETICIONES DE ORACIÓN -->
-  <div>
-    <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
-      <span>🕊️ Peticiones de Oración</span>
-      <span style="font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,0.1);color:#6d28d9;border:1px solid rgba(139,92,246,0.2);" id="peticiones-count-badge">cargando...</span>
-    </div>
-    <!-- Formulario nueva petición -->
-    <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
-      <div style="font-size:11px;color:#9ca3af;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Nueva Petición</div>
-      <textarea id="pet-texto" placeholder="Escribe tu petición de oración..." rows="3" style="width:100%;padding:10px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color .2s;line-height:1.5;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'"></textarea>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        <div id="pet-anon-toggle" onclick="toggleAnon()" style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .15s;">
-          <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
-          <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
+      <!-- SECCIÓN: PETICIONES DE ORACIÓN -->
+      <div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+          <span>🕊️ Peticiones de Oración</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,0.1);color:#6d28d9;border:1px solid rgba(139,92,246,0.2);" id="peticiones-count-badge">cargando...</span>
         </div>
+        <!-- Formulario nueva petición -->
+        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
+          <div style="font-size:11px;color:#9ca3af;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Nueva Petición</div>
+          <textarea id="pet-texto" placeholder="Escribe tu petición de oración..." rows="3" style="width:100%;padding:10px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color .2s;line-height:1.5;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'"></textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <div id="pet-anon-toggle" onclick="toggleAnon()" style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .15s;">
+              <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
+              <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
+            </div>
 
-        <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
+            <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
+          </div>
+        </div>
+        <!-- Lista de peticiones -->
+        <div id="peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando peticiones...</div>
+        </div>
       </div>
     </div>
-    <!-- Lista de peticiones -->
-    <div id="peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
-      <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando peticiones...</div>
-    </div>
-  </div>
-</div>
-```
-
   </div>
 
 </div>
 
 <!-- ════ GRADING FULL-SCREEN ════ -->
-
 <div class="grade-screen" id="grade-screen">
   <div class="grade-top">
     <button onclick="closeGrade()" style="background:none;border:none;color:white;font-size:22px;cursor:pointer;flex-shrink:0;">←</button>
@@ -637,7 +628,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 </div>
 
 <!-- ════ MODAL ════ -->
-
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
   <div class="sheet" id="sheet">
     <div class="sh-handle"></div>
@@ -668,7 +658,7 @@ let gradeClaseId = null;
 
 // Token de app: confirma que las solicitudes vienen de esta página.
 // Debe coincidir con la variable APP_TOKEN en Cloudflare.
-const APP_TOKEN = 'REEMPLAZA_CON_TU_APP_TOKEN';
+const APP_TOKEN = 'hdv2026_miClave123';
 
 const API_URL = '/api/db';
 
@@ -682,84 +672,80 @@ function showLoading(msg){
     el=document.createElement('div');el.id='fb-loading';
     el.style.cssText='position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:Lato,sans-serif;gap:14px;';
     el.innerHTML=`<div style="font-size:42px">🛡️</div><div style="font-family:Montserrat,sans-serif;font-size:18px;font-weight:800;color:#1a1f2e">Hombres de Verdad</div><div id="fb-load-msg" style="color:#3aabba;font-size:13px;font-weight:600">${msg}</div><div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#3aabba;border-radius:50%;animation:spin 0.7s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
-
-```
-document.body.appendChild(el);
-```
-
-}else{const m=document.getElementById(‘fb-load-msg’);if(m)m.textContent=msg;}
+    document.body.appendChild(el);
+  }else{const m=document.getElementById('fb-load-msg');if(m)m.textContent=msg;}
 }
-function hideLoading(){const el=document.getElementById(‘fb-loading’);if(el)el.remove();}
+function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
 
 function seedDB(){
-return{
-adminPw:‘1234’,
-caballeros:JSON.parse(JSON.stringify(SEED_CABS)),
-clases:JSON.parse(JSON.stringify(SEED_CLASES)),
-peticiones:[],
-eventos:JSON.parse(JSON.stringify(SEED_EVENTOS))
-};
+  return{
+    adminPw:'1234',
+    caballeros:JSON.parse(JSON.stringify(SEED_CABS)),
+    clases:JSON.parse(JSON.stringify(SEED_CLASES)),
+    peticiones:[],
+    eventos:JSON.parse(JSON.stringify(SEED_EVENTOS))
+  };
 }
 
 async function cloudLoad(){
-const r=await fetch(API_URL,{headers:apiHeaders()});
-if(!r.ok)throw new Error(’cloudLoad ’+r.status);
-return await r.json();
+  const r=await fetch(API_URL,{headers:apiHeaders()});
+  if(!r.ok)throw new Error('cloudLoad '+r.status);
+  return await r.json();
 }
 
 async function cloudSave(data){
-const r=await fetch(API_URL,{
-method:‘PUT’,
-headers:apiHeaders(),
-body:JSON.stringify(data)
-});
-if(!r.ok)throw new Error(’cloudSave ’+r.status);
+  const r=await fetch(API_URL,{
+    method:'PUT',
+    headers:apiHeaders(),
+    body:JSON.stringify(data)
+  });
+  if(!r.ok)throw new Error('cloudSave '+r.status);
 }
 
 async function loadDB(){
-showLoading(‘Cargando datos…’);
-try{
-const data=await cloudLoad();
-if(data&&data.caballeros&&data.caballeros.length>0){
-DB=data;
-DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw=’’;});
-if(!DB.peticiones)DB.peticiones=[];
-if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
-hideLoading();return;
-}
-// Bin vacío — inicializar con seed
-showLoading(‘Cargando datos iniciales…’);
-DB=seedDB();
-await cloudSave(DB);
-hideLoading();return;
-}catch(e){
-console.warn(‘Proxy falló, usando localStorage como respaldo:’,e);
-toast(‘⚠️ Sin conexión al servidor. Usando datos locales.’,‘err’);
-}
-// Respaldo local
-try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
-if(!DB||!DB.caballeros)DB=seedDB();
-DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw=’’;});
-if(!DB.peticiones)DB.peticiones=[];
-if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
-try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-hideLoading();
+  showLoading('Cargando datos...');
+  try{
+    const data=await cloudLoad();
+    if(data&&data.caballeros&&data.caballeros.length>0){
+      DB=data;
+      DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+      if(!DB.peticiones)DB.peticiones=[];
+      if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
+      hideLoading();return;
+    }
+    // Bin vacío — inicializar con seed
+    showLoading('Cargando datos iniciales...');
+    DB=seedDB();
+    await cloudSave(DB);
+    hideLoading();return;
+  }catch(e){
+    console.warn('Proxy falló, usando localStorage como respaldo:',e);
+    toast('⚠️ Sin conexión al servidor. Usando datos locales.','err');
+  }
+  // Respaldo local
+  try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
+  if(!DB||!DB.caballeros)DB=seedDB();
+  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+  if(!DB.peticiones)DB.peticiones=[];
+  if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
+  hideLoading();
 }
 
 async function saveDB(){
-invalidateCache();
-try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-try{await cloudSave(DB);}
-catch(e){toast(‘⚠️ Error al guardar en el servidor’,‘err’);console.error(e);}
+  invalidateCache();
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
+  try{await cloudSave(DB);}
+  catch(e){toast('⚠️ Error al guardar en el servidor','err');console.error(e);}
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
-const GRUPOS=[‘CABALLEROS DEL CIELO’,‘CENTINELAS’,‘EMBAJADORES DEL REY’,‘EMANUEL’,‘SIN GRUPO’];
-const GCOL={‘CABALLEROS DEL CIELO’:’#3aabba’,‘CENTINELAS’:’#ef4444’,‘EMBAJADORES DEL REY’:’#22c55e’,‘EMANUEL’:’#f59e0b’,‘SIN GRUPO’:’#8b5cf6’};
-const CHECKS=[‘bautizado’,‘sellado’,‘servidor’,‘directivo’,‘predicador’,‘evangelista’,‘devoto’];
-const CLBL={bautizado:‘Bautizado’,sellado:‘Sellado’,servidor:‘Servidor Activo’,directivo:‘Directivo’,predicador:‘Predicador’,evangelista:‘Evangelista’,devoto:‘Devoto’};
+const GRUPOS=['CABALLEROS DEL CIELO','CENTINELAS','EMBAJADORES DEL REY','EMANUEL','SIN GRUPO'];
+const GCOL={'CABALLEROS DEL CIELO':'#3aabba','CENTINELAS':'#ef4444','EMBAJADORES DEL REY':'#22c55e','EMANUEL':'#f59e0b','SIN GRUPO':'#8b5cf6'};
+const CHECKS=['bautizado','sellado','servidor','directivo','predicador','evangelista','devoto'];
+const CLBL={bautizado:'Bautizado',sellado:'Sellado',servidor:'Servidor Activo',directivo:'Directivo',predicador:'Predicador',evangelista:'Evangelista',devoto:'Devoto'};
 // Stars auto-calculation based on checkboxes
 function autoVal(c){return CHECKS.filter(k=>c[k]).length;}
 
@@ -767,78 +753,78 @@ function autoVal(c){return CHECKS.filter(k=>c[k]).length;}
 // SEED DATA
 // ═══════════════════════════════════════════════════════════════
 const SEED_CABS=[
-{id:‘c1’, nombre:‘Alejandro Ocampo’,    grupo:‘CABALLEROS DEL CIELO’, dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:0,devoto:0,photo:’’},
-{id:‘c2’, nombre:‘Alexander Catalán’,   grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c3’, nombre:‘Alfredo (Fredy)’,      grupo:‘EMBAJADORES DEL REY’,   dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c4’, nombre:‘Andrés Jaramillo’,    grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c5’, nombre:‘Andrés Loaiza’,       grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c6’, nombre:‘Andrés Sepúlveda’,    grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:’’},
-{id:‘c7’, nombre:‘Arturo Rodríguez’,    grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:’’},
-{id:‘c8’, nombre:‘Aurelio Rodríguez’,   grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:0,photo:’’},
-{id:‘c9’, nombre:‘Carlos Rodríguez’,    grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:’’},
-{id:‘c10’,nombre:‘César Pulido’,        grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c11’,nombre:‘Cristian Monterrubio’,grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c12’,nombre:‘Diego (Tito)’,        grupo:‘EMBAJADORES DEL REY’,   dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c13’,nombre:‘Eliuth Albornoz’,     grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c14’,nombre:‘Emerson Reina’,       grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c15’,nombre:‘Erwin Liñan’,         grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c16’,nombre:‘Felipe García’,       grupo:‘EMBAJADORES DEL REY’,   dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c17’,nombre:‘Felipe Salguero’,     grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c18’,nombre:‘Fran Lizardo’,        grupo:‘CENTINELAS’,            dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c19’,nombre:‘Francisco Mendieta’,  grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:1,evangelista:0,devoto:0,photo:’’},
-{id:‘c20’,nombre:‘Fredis Hernández’,    grupo:‘SIN GRUPO’,             dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c21’,nombre:‘Gabriel Ávila’,       grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c22’,nombre:‘Genaro Ocampo’,       grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c23’,nombre:‘Gino Castro’,         grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:0,photo:’’},
-{id:‘c24’,nombre:‘Henry Ramírez’,       grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c25’,nombre:‘Javier Miranda’,      grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c26’,nombre:‘Jesús Contreras’,     grupo:‘CENTINELAS’,            dist:‘Hermano’,bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:1,devoto:1,photo:’’},
-{id:‘c27’,nombre:‘José Hernán Díaz’,    grupo:‘SIN GRUPO’,             dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:’’},
-{id:‘c28’,nombre:‘José Mogollón’,       grupo:‘SIN GRUPO’,             dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:’’},
-{id:‘c29’,nombre:‘Juan Ramón’,          grupo:‘CENTINELAS’,            dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c30’,nombre:‘Kartal Demir’,        grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c31’,nombre:‘Leonardo Delgado’,    grupo:‘EMANUEL’,               dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c32’,nombre:‘Mauricio Lozano’,     grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c33’,nombre:‘Michael Rodríguez’,   grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:0,devoto:1,photo:’’},
-{id:‘c34’,nombre:‘Miguel Fajardo’,      grupo:‘CABALLEROS DEL CIELO’,  dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c35’,nombre:‘Miguel Lozano’,       grupo:‘EMANUEL’,               dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c36’,nombre:‘Pierre Morales’,      grupo:‘CABALLEROS DEL CIELO’,  dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:1,photo:’’},
-{id:‘c37’,nombre:‘Ramiro Pacheco’,      grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c38’,nombre:‘Ricardo Pérez’,       grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c39’,nombre:‘Roque García’,        grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:0,predicador:1,evangelista:1,devoto:1,photo:’’},
-{id:‘c40’,nombre:‘Samir Jaramillo’,     grupo:‘SIN GRUPO’,             dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c41’,nombre:‘Samuel Giraldo’,      grupo:‘EMBAJADORES DEL REY’,   dist:‘Hermano’,bautizado:1,sellado:1,servidor:1,directivo:0,predicador:0,evangelista:0,devoto:1,photo:’’},
-{id:‘c42’,nombre:‘Sebastián Quintero’,  grupo:‘CABALLEROS DEL CIELO’,  dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c43’,nombre:‘Yadir Pérez’,         grupo:‘EMANUEL’,               dist:‘Hermano’,bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’},
-{id:‘c44’,nombre:‘Yefri Palacios’,      grupo:‘CENTINELAS’,            dist:‘Amigo’,  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’}
+  {id:'c1', nombre:'Alejandro Ocampo',    grupo:'CABALLEROS DEL CIELO', dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:0,devoto:0,photo:''},
+  {id:'c2', nombre:'Alexander Catalán',   grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c3', nombre:'Alfredo (Fredy)',      grupo:'EMBAJADORES DEL REY',   dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c4', nombre:'Andrés Jaramillo',    grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c5', nombre:'Andrés Loaiza',       grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c6', nombre:'Andrés Sepúlveda',    grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c7', nombre:'Arturo Rodríguez',    grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c8', nombre:'Aurelio Rodríguez',   grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:0,photo:''},
+  {id:'c9', nombre:'Carlos Rodríguez',    grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c10',nombre:'César Pulido',        grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c11',nombre:'Cristian Monterrubio',grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c12',nombre:'Diego (Tito)',        grupo:'EMBAJADORES DEL REY',   dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c13',nombre:'Eliuth Albornoz',     grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c14',nombre:'Emerson Reina',       grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c15',nombre:'Erwin Liñan',         grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c16',nombre:'Felipe García',       grupo:'EMBAJADORES DEL REY',   dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c17',nombre:'Felipe Salguero',     grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c18',nombre:'Fran Lizardo',        grupo:'CENTINELAS',            dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c19',nombre:'Francisco Mendieta',  grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:1,evangelista:0,devoto:0,photo:''},
+  {id:'c20',nombre:'Fredis Hernández',    grupo:'SIN GRUPO',             dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c21',nombre:'Gabriel Ávila',       grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c22',nombre:'Genaro Ocampo',       grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c23',nombre:'Gino Castro',         grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:0,photo:''},
+  {id:'c24',nombre:'Henry Ramírez',       grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c25',nombre:'Javier Miranda',      grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c26',nombre:'Jesús Contreras',     grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:1,devoto:1,photo:''},
+  {id:'c27',nombre:'José Hernán Díaz',    grupo:'SIN GRUPO',             dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c28',nombre:'José Mogollón',       grupo:'SIN GRUPO',             dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c29',nombre:'Juan Ramón',          grupo:'CENTINELAS',            dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c30',nombre:'Kartal Demir',        grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c31',nombre:'Leonardo Delgado',    grupo:'EMANUEL',               dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c32',nombre:'Mauricio Lozano',     grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c33',nombre:'Michael Rodríguez',   grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:0,devoto:1,photo:''},
+  {id:'c34',nombre:'Miguel Fajardo',      grupo:'CABALLEROS DEL CIELO',  dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c35',nombre:'Miguel Lozano',       grupo:'EMANUEL',               dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c36',nombre:'Pierre Morales',      grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:1,photo:''},
+  {id:'c37',nombre:'Ramiro Pacheco',      grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c38',nombre:'Ricardo Pérez',       grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c39',nombre:'Roque García',        grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:0,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c40',nombre:'Samir Jaramillo',     grupo:'SIN GRUPO',             dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c41',nombre:'Samuel Giraldo',      grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
+  {id:'c42',nombre:'Sebastián Quintero',  grupo:'CABALLEROS DEL CIELO',  dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c43',nombre:'Yadir Pérez',         grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c44',nombre:'Yefri Palacios',      grupo:'CENTINELAS',            dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''}
 ];
 
 const SEED_CLASES=[
-{id:‘cl1’,fecha:‘2026-02-13’,grupoResp:‘CABALLEROS DEL CIELO’,tema:‘Clase de Estudios’,cal:{
-‘c1’:{a:1,i:9,p:10,d:9,pa:9},‘c4’:{a:1,i:9,p:10,d:1,pa:3},‘c6’:{a:1,i:5,p:5,d:1,pa:1},
-‘c7’:{a:1,i:10,p:9,d:5,pa:5},‘c9’:{a:1,i:10,p:9,d:5,pa:5},‘c11’:{a:1,i:10,p:7,d:1,pa:5},
-‘c13’:{a:1,i:7,p:7,d:1,pa:1},‘c14’:{a:1,i:10,p:10,d:1,pa:5},‘c15’:{a:1,i:10,p:7,d:1,pa:3},
-‘c16’:{a:1,i:10,p:9,d:3,pa:5},‘c21’:{a:1,i:10,p:10,d:3,pa:2},‘c22’:{a:1,i:7,p:7,d:2,pa:1},
-‘c26’:{a:1,i:10,p:10,d:3,pa:3},‘c30’:{a:1,i:10,p:10,d:5,pa:10},‘c34’:{a:1,i:10,p:5,d:1,pa:1},
-‘c36’:{a:1,i:10,p:10,d:9,pa:10},‘c39’:{a:1,i:10,p:9,d:1,pa:7}
-}},
-{id:‘cl2’,fecha:‘2026-02-27’,grupoResp:‘EMANUEL’,tema:‘Clase de Estudios’,cal:{
-‘c1’:{a:1,i:0,p:0,d:0,pa:0},‘c4’:{a:1,i:9,p:10,d:1,pa:3},‘c6’:{a:1,i:5,p:5,d:1,pa:1},
-‘c7’:{a:1,i:10,p:9,d:5,pa:5},‘c9’:{a:1,i:10,p:9,d:5,pa:5},
-‘c30’:{a:1,i:10,p:10,d:5,pa:10},‘c36’:{a:1,i:10,p:10,d:9,pa:10}
-}}
+  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Clase de Estudios',cal:{
+    'c1':{a:1,i:9,p:10,d:9,pa:9},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
+    'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},'c11':{a:1,i:10,p:7,d:1,pa:5},
+    'c13':{a:1,i:7,p:7,d:1,pa:1},'c14':{a:1,i:10,p:10,d:1,pa:5},'c15':{a:1,i:10,p:7,d:1,pa:3},
+    'c16':{a:1,i:10,p:9,d:3,pa:5},'c21':{a:1,i:10,p:10,d:3,pa:2},'c22':{a:1,i:7,p:7,d:2,pa:1},
+    'c26':{a:1,i:10,p:10,d:3,pa:3},'c30':{a:1,i:10,p:10,d:5,pa:10},'c34':{a:1,i:10,p:5,d:1,pa:1},
+    'c36':{a:1,i:10,p:10,d:9,pa:10},'c39':{a:1,i:10,p:9,d:1,pa:7}
+  }},
+  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Clase de Estudios',cal:{
+    'c1':{a:1,i:0,p:0,d:0,pa:0},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
+    'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},
+    'c30':{a:1,i:10,p:10,d:5,pa:10},'c36':{a:1,i:10,p:10,d:9,pa:10}
+  }}
 ];
 
 // ═══════════════════════════════════════════════════════════════
 // SEED EVENTOS
 // ═══════════════════════════════════════════════════════════════
 const SEED_EVENTOS=[
-{id:‘ev1’,nombre:‘Vigilia (Pro recepción del Espíritu Santo)’,fecha:‘2026-04-03’,fechaFin:’’,icono:‘🕯️’,color:’#8b5cf6’,nota:’’},
-{id:‘ev2’,nombre:‘Congreso Nacional’,fecha:‘2026-04-18’,fechaFin:’’,icono:‘🏟️’,color:’#ef4444’,nota:‘Lema: El fruto del Espíritu Santo’},
-{id:‘ev3’,nombre:‘Culto dirigido por los niños’,fecha:‘2026-05-26’,fechaFin:’’,icono:‘👧’,color:’#f59e0b’,nota:’’},
-{id:‘ev4’,nombre:‘Ayuno Caballeros’,fecha:‘recurrente_ultimo_domingo’,fechaFin:’’,icono:‘✝️’,color:’#6d28d9’,nota:‘Último domingo de cada mes’},
-{id:‘ev5’,nombre:‘Reunión Mensual de Caballeros’,fecha:‘por_definir’,fechaFin:’’,icono:‘👥’,color:’#3aabba’,nota:‘A fin de mes se votará por el día y la sede’},
-{id:‘ev6’,nombre:‘Campamento Nacional de Caballeros’,fecha:‘2026-11-13’,fechaFin:‘2026-11-15’,icono:‘⛺’,color:’#22c55e’,nota:‘Del 13 al 15 de noviembre’},
+  {id:'ev1',nombre:'Vigilia (Pro recepción del Espíritu Santo)',fecha:'2026-04-03',fechaFin:'',icono:'🕯️',color:'#8b5cf6',nota:''},
+  {id:'ev2',nombre:'Congreso Nacional',fecha:'2026-04-18',fechaFin:'',icono:'🏟️',color:'#ef4444',nota:'Lema: El fruto del Espíritu Santo'},
+  {id:'ev3',nombre:'Culto dirigido por los niños',fecha:'2026-05-26',fechaFin:'',icono:'👧',color:'#f59e0b',nota:''},
+  {id:'ev4',nombre:'Ayuno Caballeros',fecha:'recurrente_ultimo_domingo',fechaFin:'',icono:'✝️',color:'#6d28d9',nota:'Último domingo de cada mes'},
+  {id:'ev5',nombre:'Reunión Mensual de Caballeros',fecha:'por_definir',fechaFin:'',icono:'👥',color:'#3aabba',nota:'A fin de mes se votará por el día y la sede'},
+  {id:'ev6',nombre:'Campamento Nacional de Caballeros',fecha:'2026-11-13',fechaFin:'2026-11-15',icono:'⛺',color:'#22c55e',nota:'Del 13 al 15 de noviembre'},
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -850,152 +836,159 @@ function invalidateCache(){_calcCache={};_rankCache=null;}
 
 function rowTotal(q){return+((q.i*0.3)+(q.p*0.3)+(q.d*0.2)+(q.pa*0.2)).toFixed(2);}
 function calcCab(id){
-if(_calcCache[id])return _calcCache[id];
-let si=0,sp=0,sd=0,spa=0,n=0,tot=0;
-DB.clases.forEach(cl=>{const q=cl.cal[id];if(q){tot+=(q.a?rowTotal(q):0);if(q.a){si+=q.i;sp+=q.p;sd+=q.d;spa+=q.pa;n++;}}});
-const result={i:n?+(si/n).toFixed(1):0,p:n?+(sp/n).toFixed(1):0,d:n?+(sd/n).toFixed(1):0,pa:n?+(spa/n).toFixed(1):0,asist:n,totalClases:DB.clases.length,total:+tot.toFixed(1)};
-_calcCache[id]=result;
-return result;
+  if(_calcCache[id])return _calcCache[id];
+  let si=0,sp=0,sd=0,spa=0,n=0,tot=0;
+  DB.clases.forEach(cl=>{const q=cl.cal[id];if(q){tot+=(q.a?rowTotal(q):0);if(q.a){si+=q.i;sp+=q.p;sd+=q.d;spa+=q.pa;n++;}}});
+  const result={i:n?+(si/n).toFixed(1):0,p:n?+(sp/n).toFixed(1):0,d:n?+(sd/n).toFixed(1):0,pa:n?+(spa/n).toFixed(1):0,asist:n,totalClases:DB.clases.length,total:+tot.toFixed(1)};
+  _calcCache[id]=result;
+  return result;
 }
 function claseAvg(cl){const vs=Object.values(cl.cal).filter(q=>q.a);return vs.length?+(vs.reduce((s,q)=>s+rowTotal(q),0)/vs.length).toFixed(2):0;}
 function ranking(){
-if(_rankCache)return _rankCache;
-_rankCache=[…DB.caballeros].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
-return _rankCache;
+  if(_rankCache)return _rankCache;
+  _rankCache=[...DB.caballeros].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+  return _rankCache;
 }
 function getRank(id){return ranking().findIndex(c=>c.id===id)+1;}
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
-function ini(n){return n.split(’ ‘).map(w=>w[0]||’’).join(’’).substring(0,2).toUpperCase();}
-function fmtDate(f){if(!f)return’’;const[y,m,d]=f.split(’-’);const M=[‘ene’,‘feb’,‘mar’,‘abr’,‘may’,‘jun’,‘jul’,‘ago’,‘sep’,‘oct’,‘nov’,‘dic’];return`${+d} ${M[+m-1]} ${y}`;}
-function fmtBox(f){const[y,m,d]=f.split(’-’);const M=[‘ENE’,‘FEB’,‘MAR’,‘ABR’,‘MAY’,‘JUN’,‘JUL’,‘AGO’,‘SEP’,‘OCT’,‘NOV’,‘DIC’];return{d,m:M[+m-1]};}
-function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}">${CLBL[k]}</span>`).join(’’);}
-function scCls(v){return v>=7?‘sc-hi’:v>=4?‘sc-mid’:‘sc-lo’;}
+function ini(n){return n.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();}
+function fmtDate(f){if(!f)return'';const[y,m,d]=f.split('-');const M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${+d} ${M[+m-1]} ${y}`;}
+function fmtBox(f){const[y,m,d]=f.split('-');const M=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];return{d,m:M[+m-1]};}
+function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}">${CLBL[k]}</span>`).join('');}
+function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
 function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%">`;return ini(c.nombre);}
 
 // Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
 function mkHistoryTable(cabId){
-const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,…cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-if(!hist.length)return’<p style="color:var(--text3);font-size:13px">Sin clases.</p>’;
-return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Tot</th></tr></thead><tbody>${ hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:10px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tema||’—’}</td><td>${r.a?r.i:’—’}</td><td>${r.a?r.p:’—’}</td><td>${r.a?r.d:’—’}</td><td>${r.a?r.pa:’—’}</td><td>${r.a?‘✅’:‘❌’}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):’—’}</td></tr>`).join('') }</tbody></table>`;
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
+  return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Tot</th></tr></thead><tbody>${
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:10px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tema||'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
+  }</tbody></table>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════════════════════
-let loginMode=‘admin’;
+let loginMode='admin';
 function setMode(m){
-loginMode=m;
-document.getElementById(‘btn-admin’).classList.toggle(‘active’,m===‘admin’);
-document.getElementById(‘btn-miembro’).classList.toggle(‘active’,m===‘miembro’);
-document.getElementById(‘admin-fields’).style.display=m===‘admin’?’’:‘none’;
-document.getElementById(‘miembro-fields’).style.display=m===‘miembro’?’’:‘none’;
+  loginMode=m;
+  document.getElementById('btn-admin').classList.toggle('active',m==='admin');
+  document.getElementById('btn-miembro').classList.toggle('active',m==='miembro');
+  document.getElementById('admin-fields').style.display=m==='admin'?'':'none';
+  document.getElementById('miembro-fields').style.display=m==='miembro'?'':'none';
 }
 function buildSel(){
-const sel=document.getElementById(‘miembro-sel’);
-if(!sel)return;
-sel.innerHTML=’<option value="">— Seleccionar —</option>’;
-if(!DB||!DB.caballeros)return;
-[…DB.caballeros].sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(c=>{
-const o=document.createElement(‘option’);o.value=c.id;o.textContent=c.nombre;sel.appendChild(o);
-});
+  const sel=document.getElementById('miembro-sel');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Seleccionar —</option>';
+  if(!DB||!DB.caballeros)return;
+  [...DB.caballeros].sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(c=>{
+    const o=document.createElement('option');o.value=c.id;o.textContent=c.nombre;sel.appendChild(o);
+  });
 }
 function onMiembroSelChange(){
-const v=document.getElementById(‘miembro-sel’).value;
-const wrap=document.getElementById(‘miembro-pw-wrap’);
-const hint=document.getElementById(‘miembro-pw-hint’);
-const lbl=document.getElementById(‘miembro-pw-label’);
-document.getElementById(‘miembro-pw’).value=’’;
-if(!v){wrap.style.display=‘none’;return;}
-const c=DB.caballeros.find(x=>x.id===v);
-if(!c){wrap.style.display=‘none’;return;}
-wrap.style.display=’’;
-if(!c.pw){
-lbl.textContent=‘Crear contraseña personal’;
-hint.style.display=’’;
-}else{
-lbl.textContent=‘Contraseña’;
-hint.style.display=‘none’;
-}
+  const v=document.getElementById('miembro-sel').value;
+  const wrap=document.getElementById('miembro-pw-wrap');
+  const hint=document.getElementById('miembro-pw-hint');
+  const lbl=document.getElementById('miembro-pw-label');
+  document.getElementById('miembro-pw').value='';
+  if(!v){wrap.style.display='none';return;}
+  const c=DB.caballeros.find(x=>x.id===v);
+  if(!c){wrap.style.display='none';return;}
+  wrap.style.display='';
+  if(!c.pw){
+    lbl.textContent='Crear contraseña personal';
+    hint.style.display='';
+  }else{
+    lbl.textContent='Contraseña';
+    hint.style.display='none';
+  }
 }
 function doLogin(){
-const err=document.getElementById(‘login-err’);err.style.display=‘none’;
-if(loginMode===‘admin’){
-if(document.getElementById(‘admin-pw’).value===DB.adminPw){showSc(‘screen-admin’);initAdmin();}
-else{err.textContent=‘Contraseña incorrecta.’;err.style.display=‘block’;}
-}else{
-const v=document.getElementById(‘miembro-sel’).value;
-if(!v){err.textContent=‘Selecciona tu nombre.’;err.style.display=‘block’;return;}
-const c=DB.caballeros.find(x=>x.id===v);if(!c)return;
-const pw=document.getElementById(‘miembro-pw’).value;
-if(!c.pw){
-// Primera vez — crear contraseña
-if(pw.length<4){err.textContent=‘Crea una contraseña de al menos 4 caracteres.’;err.style.display=‘block’;return;}
-c.pw=pw;saveDB();toast(‘🔑 ¡Contraseña creada! Recuérdala bien.’,‘ok’);
-}else{
-// Verificar: contraseña propia O contraseña maestra (admin)
-if(pw!==c.pw&&pw!==DB.adminPw){err.textContent=‘Contraseña incorrecta.’;err.style.display=‘block’;return;}
+  const err=document.getElementById('login-err');err.style.display='none';
+  if(loginMode==='admin'){
+    if(document.getElementById('admin-pw').value===DB.adminPw){showSc('screen-admin');initAdmin();}
+    else{err.textContent='Contraseña incorrecta.';err.style.display='block';}
+  }else{
+    const v=document.getElementById('miembro-sel').value;
+    if(!v){err.textContent='Selecciona tu nombre.';err.style.display='block';return;}
+    const c=DB.caballeros.find(x=>x.id===v);if(!c)return;
+    const pw=document.getElementById('miembro-pw').value;
+    if(!c.pw){
+      // Primera vez — crear contraseña
+      if(pw.length<4){err.textContent='Crea una contraseña de al menos 4 caracteres.';err.style.display='block';return;}
+      c.pw=pw;saveDB();toast('🔑 ¡Contraseña creada! Recuérdala bien.','ok');
+    }else{
+      // Verificar: contraseña propia O contraseña maestra (admin)
+      if(pw!==c.pw&&pw!==DB.adminPw){err.textContent='Contraseña incorrecta.';err.style.display='block';return;}
+    }
+    currentCabId=v;showSc('screen-personal');renderPersonal(v);
+  }
 }
-currentCabId=v;showSc(‘screen-personal’);renderPersonal(v);
-}
-}
-function logout(){document.getElementById(‘admin-pw’).value=’’;document.getElementById(‘miembro-pw’).value=’’;document.getElementById(‘miembro-sel’).value=’’;document.getElementById(‘miembro-pw-wrap’).style.display=‘none’;document.getElementById(‘login-err’).style.display=‘none’;showSc(‘screen-login’);}
+function logout(){document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
 // ═══════════════════════════════════════════════════════════════
-function showSc(id){document.querySelectorAll(’.screen’).forEach(s=>s.classList.remove(‘active’));document.getElementById(id).classList.add(‘active’);}
+function showSc(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function showTab(id,el){
-document.querySelectorAll(’.tab’).forEach(t=>t.classList.remove(‘active’));
-document.querySelectorAll(’.ntab’).forEach(t=>t.classList.remove(‘active’));
-document.getElementById(id).classList.add(‘active’);el.classList.add(‘active’);
-if(id===‘t-grupos’)renderGrupos();
-if(id===‘t-clases’)renderClases();
-if(id===‘t-calgr’)renderCalGr();
-if(id===‘t-peticiones’){cargarPeticionesAdmin();}
-if(id===‘t-eventos-admin’){renderEventosAdmin();}
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');el.classList.add('active');
+  if(id==='t-grupos')renderGrupos();
+  if(id==='t-clases')renderClases();
+  if(id==='t-calgr')renderCalGr();
+  if(id==='t-peticiones'){cargarPeticionesAdmin();}
+  if(id==='t-eventos-admin'){renderEventosAdmin();}
 }
 function initAdmin(){buildSel();renderDash();renderCabs();}
 
 function renderDash(){
-document.getElementById(‘stats-grid’).innerHTML=`<div class="stat-card"><div class="stat-num">${DB.caballeros.length}</div><div class="stat-lbl">Caballeros</div></div> <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div> <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div> <div class="stat-card gold"><div class="stat-num">${DB.clases.length}</div><div class="stat-lbl">Clases</div></div>`;
-const list=ranking();
-document.getElementById(‘top5’).innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join(’’);
-const recent=[…DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,4);
-document.getElementById(‘recent-cl’).innerHTML=recent.length?recent.map(mkClaseCard).join(’’):’<p style="color:var(--text3);font-size:13px">Sin clases aún.</p>’;
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${DB.caballeros.length}</div><div class="stat-lbl">Caballeros</div></div>
+    <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div>
+    <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
+    <div class="stat-card gold"><div class="stat-num">${DB.clases.length}</div><div class="stat-lbl">Clases</div></div>
+  `;
+  const list=ranking();
+  document.getElementById('top5').innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
+  const recent=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,4);
+  document.getElementById('recent-cl').innerHTML=recent.length?recent.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases aún.</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CABALLEROS LIST
 // ═══════════════════════════════════════════════════════════════
-let fGrupo=‘TODOS’, fBadge=‘TODOS’;
+let fGrupo='TODOS', fBadge='TODOS';
 let _lastFGrupo=null, _lastFBadge=null;
 
 function renderCabs(){
-// Solo reconstruir chips si cambió el filtro activo
-if(fGrupo!==_lastFGrupo){
-_lastFGrupo=fGrupo;
-document.getElementById(‘chips-grupo’).innerHTML=
-[‘TODOS’,…GRUPOS].map(g=>`<div class="chip ${g===fGrupo?'active':''}" onclick="setFG('${g}')">${g==='TODOS'?'Todos':g}</div>`).join(’’);
-}
-if(fBadge!==_lastFBadge){
-_lastFBadge=fBadge;
-const badgeOpts=[{id:‘TODOS’,l:‘Todos’},{id:‘Hermano’,l:‘Hermanos’},{id:‘Amigo’,l:‘Amigos’},
-…CHECKS.map(k=>({id:k,l:CLBL[k]}))];
-document.getElementById(‘chips-badge’).innerHTML=
-badgeOpts.map(b=>`<div class="chip bdg-filter ${b.id===fBadge?'active':''}" onclick="setFB('${b.id}')">${b.l}</div>`).join(’’);
-}
+  // Solo reconstruir chips si cambió el filtro activo
+  if(fGrupo!==_lastFGrupo){
+    _lastFGrupo=fGrupo;
+    document.getElementById('chips-grupo').innerHTML=
+      ['TODOS',...GRUPOS].map(g=>`<div class="chip ${g===fGrupo?'active':''}" onclick="setFG('${g}')">${g==='TODOS'?'Todos':g}</div>`).join('');
+  }
+  if(fBadge!==_lastFBadge){
+    _lastFBadge=fBadge;
+    const badgeOpts=[{id:'TODOS',l:'Todos'},{id:'Hermano',l:'Hermanos'},{id:'Amigo',l:'Amigos'},
+      ...CHECKS.map(k=>({id:k,l:CLBL[k]}))];
+    document.getElementById('chips-badge').innerHTML=
+      badgeOpts.map(b=>`<div class="chip bdg-filter ${b.id===fBadge?'active':''}" onclick="setFB('${b.id}')">${b.l}</div>`).join('');
+  }
 
-const q=(document.getElementById(‘search-inp’).value||’’).toLowerCase();
-let list=[…DB.caballeros];
-if(fGrupo!==‘TODOS’)list=list.filter(c=>c.grupo===fGrupo);
-if(fBadge===‘Hermano’||fBadge===‘Amigo’)list=list.filter(c=>c.dist===fBadge);
-else if(CHECKS.includes(fBadge))list=list.filter(c=>c[fBadge]);
-if(q)list=list.filter(c=>c.nombre.toLowerCase().includes(q));
-list.sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
-document.getElementById(‘cabs-list’).innerHTML=list.length?list.map(c=>mkCabCard(c)).join(’’):’<p style="color:var(--text3);font-size:13px">Sin resultados.</p>’;
+  const q=(document.getElementById('search-inp').value||'').toLowerCase();
+  let list=[...DB.caballeros];
+  if(fGrupo!=='TODOS')list=list.filter(c=>c.grupo===fGrupo);
+  if(fBadge==='Hermano'||fBadge==='Amigo')list=list.filter(c=>c.dist===fBadge);
+  else if(CHECKS.includes(fBadge))list=list.filter(c=>c[fBadge]);
+  if(q)list=list.filter(c=>c.nombre.toLowerCase().includes(q));
+  list.sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+  document.getElementById('cabs-list').innerHTML=list.length?list.map(c=>mkCabCard(c)).join(''):'<p style="color:var(--text3);font-size:13px">Sin resultados.</p>';
 }
 function setFG(g){fGrupo=g;_lastFGrupo=null;renderCabs();}
 function setFB(b){fBadge=b;_lastFBadge=null;renderCabs();}
@@ -1005,12 +998,16 @@ let _searchTimer=null;
 function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCabs,220);}
 
 function mkCabCard(c,rank){
-const cal=calcCab(c.id);
-const bd=mkBadges(c);
-return`<div class="cab-card" onclick="openCabDetail('${c.id}')"> <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(c.nombre)}</span>`)}</div> <div class="cab-inf"> <div class="cab-nm">${c.nombre}</div> <div class="cab-mt">${c.dist} · ${c.grupo}</div> ${bd?`<div class="badges">${bd}</div>`:’’}
-</div>
-<div class="cab-sc">${cal.total.toFixed(1)}</div>
-
+  const cal=calcCab(c.id);
+  const bd=mkBadges(c);
+  return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
+    <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(c.nombre)}</span>`)}</div>
+    <div class="cab-inf">
+      <div class="cab-nm">${c.nombre}</div>
+      <div class="cab-mt">${c.dist} · ${c.grupo}</div>
+      ${bd?`<div class="badges">${bd}</div>`:''}
+    </div>
+    <div class="cab-sc">${cal.total.toFixed(1)}</div>
   </div>`;
 }
 
@@ -1018,167 +1015,196 @@ return`<div class="cab-card" onclick="openCabDetail('${c.id}')"> <div class="av"
 // CAB DETAIL MODAL
 // ═══════════════════════════════════════════════════════════════
 function openCabDetail(id){
-const c=DB.caballeros.find(x=>x.id===id);if(!c)return;
-const cal=calcCab(id);const rank=getRank(id);
-const avH2=c.photo?`<img src="${c.photo}">`:(ini(c.nombre));
-const val=autoVal(c);
-const starH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join(’’);
-const barK=[{k:‘i’,l:‘Interés’},{k:‘p’,l:‘Puntualidad’},{k:‘d’,l:‘Dominio’},{k:‘pa’,l:‘Participación’}];
-const bars=barK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join(’’);
-const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,…cl.cal[id],t:rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
-const histH=mkHistoryTable(id);
-openSheet(avH2,c.nombre,`${c.dist} · Rank #${rank} · ${c.grupo}`,`<div class="dsec"><div class="dhead">Estado Espiritual</div> <div class="badges">${mkBadges(c)||'<span style="color:var(--text3);font-size:12px">Sin distinciones</span>'}</div> <div class="star-row" style="margin-top:10px">${starH}</div> <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px">Valoración automática por estado</div> </div> <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total.toFixed(1)} pts</span> · Asist: ${cal.asist}/${cal.totalClases}</div>${bars}</div> <div class="dsec"><div class="dhead">Historial de Clases</div>${histH}</div> <div class="btn-row"> <button class="btn boutline" onclick="closeModal();openFormCab('${id}')">✏️ Editar</button> <button class="btn bred" onclick="confirmDelCab('${id}')">🗑 Eliminar</button> </div>`);
+  const c=DB.caballeros.find(x=>x.id===id);if(!c)return;
+  const cal=calcCab(id);const rank=getRank(id);
+  const avH2=c.photo?`<img src="${c.photo}">`:(ini(c.nombre));
+  const val=autoVal(c);
+  const starH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
+  const barK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
+  const bars=barK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
+  const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const histH=mkHistoryTable(id);
+  openSheet(avH2,c.nombre,`${c.dist} · Rank #${rank} · ${c.grupo}`,`
+    <div class="dsec"><div class="dhead">Estado Espiritual</div>
+      <div class="badges">${mkBadges(c)||'<span style="color:var(--text3);font-size:12px">Sin distinciones</span>'}</div>
+      <div class="star-row" style="margin-top:10px">${starH}</div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px">Valoración automática por estado</div>
+    </div>
+    <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total.toFixed(1)} pts</span> · Asist: ${cal.asist}/${cal.totalClases}</div>${bars}</div>
+    <div class="dsec"><div class="dhead">Historial de Clases</div>${histH}</div>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal();openFormCab('${id}')">✏️ Editar</button>
+      <button class="btn bred" onclick="confirmDelCab('${id}')">🗑 Eliminar</button>
+    </div>
+  `);
 }
 
 function confirmDelCab(id){
-const c=DB.caballeros.find(x=>x.id===id);
-document.getElementById(‘m-body’).innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
+  const c=DB.caballeros.find(x=>x.id===id);
+  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
 }
 async function doDelCab(id){
-DB.caballeros=DB.caballeros.filter(c=>c.id!==id);
-DB.clases.forEach(cl=>delete cl.cal[id]);
-closeModal();initAdmin();buildSel();toast(‘💾 Guardando…’,‘info’);
-await saveDB();toast(‘Caballero eliminado’,‘ok’);
+  DB.caballeros=DB.caballeros.filter(c=>c.id!==id);
+  DB.clases.forEach(cl=>delete cl.cal[id]);
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  await saveDB();toast('Caballero eliminado','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // FORM CABALLERO — Fixed checkboxes + auto stars
 // ═══════════════════════════════════════════════════════════════
 function openFormCab(id){
-const isNew=!id;
-const c=id?DB.caballeros.find(x=>x.id===id):{nombre:’’,grupo:‘CABALLEROS DEL CIELO’,dist:‘Hermano’,bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:’’};
-const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join(’’);
-const chkH=`<div class="chk-grid">${CHECKS.map(k=>`
-<div class="chk-item ${c[k]?'on':''}" id="chk-wrap-${k}" onclick="toggleChk('${k}')">
-<div class="chk-box" id="chk-box-${k}"><span class="chk-box-tick" id="chk-tick-${k}">✓</span></div>
-<span class="chk-lbl">${CLBL[k]}</span>
-<input type=“checkbox” id=“fc-${k}” ${c[k]?‘checked’:’’} style=“display:none”>
-</div>`).join('')}</div>`;
-const curVal=autoVal(c);
-const starsH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<curVal?'lit':''}" id="fstar-${i}">★</span>`).join(’’);
-openSheet(isNew?‘✚’:(c.photo?`<img src="${c.photo}">`:(ini(c.nombre))),isNew?‘Nuevo Caballero’:`Editar: ${c.nombre}`,’’,` <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${c.nombre}" placeholder="Nombre y apellido"></div> <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div> <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div> <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH} <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;"> <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</span> </div> </div> <div class="fr"> <label>Valoración automática ⭐</label> <div class="star-row" id="fc-stars">${starsH}</div> <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px" id="fc-val-lbl">${curVal}/7 estrellas</div> </div> ${!isNew&&c.photo?`<div class="fr"><label>Foto actual</label><img src="${c.photo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2)"><button class="btn boutline" style="margin-left:12px;font-size:11px" onclick="document.getElementById('photo-input-modal').click()">Cambiar foto</button></div>`:''} <button class="btn bteal bfull" onclick="${isNew?'doAddCab()':'doSaveCab(\''+id+'\')'}" style="margin-top:4px">${isNew?'✚ Agregar Caballero':'💾 Guardar Cambios'}</button> ${!isNew?`<button class="btn bred bfull" onclick="confirmDelCab('${id}')" style="margin-top:10px">🗑 Eliminar Caballero</button>`:''} `);
-// Set data-id for photo modal
-document.getElementById(‘photo-input-modal’).dataset.cabId=id||’’;
-updateFormStars();
+  const isNew=!id;
+  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''};
+  const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join('');
+  const chkH=`<div class="chk-grid">${CHECKS.map(k=>`
+    <div class="chk-item ${c[k]?'on':''}" id="chk-wrap-${k}" onclick="toggleChk('${k}')">
+      <div class="chk-box" id="chk-box-${k}"><span class="chk-box-tick" id="chk-tick-${k}">✓</span></div>
+      <span class="chk-lbl">${CLBL[k]}</span>
+      <input type="checkbox" id="fc-${k}" ${c[k]?'checked':''} style="display:none">
+    </div>`).join('')}</div>`;
+  const curVal=autoVal(c);
+  const starsH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<curVal?'lit':''}" id="fstar-${i}">★</span>`).join('');
+  openSheet(isNew?'✚':(c.photo?`<img src="${c.photo}">`:(ini(c.nombre))),isNew?'Nuevo Caballero':`Editar: ${c.nombre}`,'',`
+    <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${c.nombre}" placeholder="Nombre y apellido"></div>
+    <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
+    <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
+    <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
+      <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
+        <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</span>
+      </div>
+    </div>
+    <div class="fr">
+      <label>Valoración automática ⭐</label>
+      <div class="star-row" id="fc-stars">${starsH}</div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px" id="fc-val-lbl">${curVal}/7 estrellas</div>
+    </div>
+    ${!isNew&&c.photo?`<div class="fr"><label>Foto actual</label><img src="${c.photo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2)"><button class="btn boutline" style="margin-left:12px;font-size:11px" onclick="document.getElementById('photo-input-modal').click()">Cambiar foto</button></div>`:''}
+    <button class="btn bteal bfull" onclick="${isNew?'doAddCab()':'doSaveCab(\''+id+'\')'}" style="margin-top:4px">${isNew?'✚ Agregar Caballero':'💾 Guardar Cambios'}</button>
+    ${!isNew?`<button class="btn bred bfull" onclick="confirmDelCab('${id}')" style="margin-top:10px">🗑 Eliminar Caballero</button>`:''}
+  `);
+  // Set data-id for photo modal
+  document.getElementById('photo-input-modal').dataset.cabId=id||'';
+  updateFormStars();
 }
 
 // FIXED: Toggle checkbox properly updates visual + auto-updates stars
 function toggleChk(key){
-const inp=document.getElementById(‘fc-’+key);
-const wrap=document.getElementById(‘chk-wrap-’+key);
-const box=document.getElementById(‘chk-box-’+key);
-const tick=document.getElementById(‘chk-tick-’+key);
-inp.checked=!inp.checked;
-const on=inp.checked;
-wrap.classList.toggle(‘on’,on);
-box.style.background=on?‘var(–teal)’:‘white’;
-box.style.borderColor=on?‘var(–teal)’:’#d1d5db’;
-tick.style.display=on?‘block’:‘none’;
-updateFormStars();
+  const inp=document.getElementById('fc-'+key);
+  const wrap=document.getElementById('chk-wrap-'+key);
+  const box=document.getElementById('chk-box-'+key);
+  const tick=document.getElementById('chk-tick-'+key);
+  inp.checked=!inp.checked;
+  const on=inp.checked;
+  wrap.classList.toggle('on',on);
+  box.style.background=on?'var(--teal)':'white';
+  box.style.borderColor=on?'var(--teal)':'#d1d5db';
+  tick.style.display=on?'block':'none';
+  updateFormStars();
 }
 
 function updateFormStars(){
-// Count checked boxes
-const count=CHECKS.filter(k=>document.getElementById(‘fc-’+k)?.checked).length;
-// Update star display
-for(let i=0;i<7;i++){
-const s=document.getElementById(‘fstar-’+i);
-if(s){s.classList.toggle(‘lit’,i<count);}
-}
-const lbl=document.getElementById(‘fc-val-lbl’);
-if(lbl)lbl.textContent=`${count}/7 estrellas`;
+  // Count checked boxes
+  const count=CHECKS.filter(k=>document.getElementById('fc-'+k)?.checked).length;
+  // Update star display
+  for(let i=0;i<7;i++){
+    const s=document.getElementById('fstar-'+i);
+    if(s){s.classList.toggle('lit',i<count);}
+  }
+  const lbl=document.getElementById('fc-val-lbl');
+  if(lbl)lbl.textContent=`${count}/7 estrellas`;
 }
 
 function compressPhoto(file, callback){
-const reader=new FileReader();
-reader.onload=ev=>{
-const img=new Image();
-img.onload=()=>{
-const MAX=200; // máximo 200px — suficiente para avatar
-let w=img.width, h=img.height;
-if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
-else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
-const canvas=document.createElement(‘canvas’);
-canvas.width=w;canvas.height=h;
-canvas.getContext(‘2d’).drawImage(img,0,0,w,h);
-callback(canvas.toDataURL(‘image/jpeg’,0.7));
-};
-img.src=ev.target.result;
-};
-reader.readAsDataURL(file);
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const MAX=200; // máximo 200px — suficiente para avatar
+      let w=img.width, h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      callback(canvas.toDataURL('image/jpeg',0.7));
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function handlePhoto(e,ctx){
-const file=e.target.files[0];if(!file)return;
-if(file.size>10*1024*1024){toast(‘Imagen demasiado grande (max 10MB)’,‘err’);return;}
-toast(‘📷 Procesando foto…’,‘info’);
-compressPhoto(file, async function(data){
-if(ctx===‘pv’){
-const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
-c.photo=data;
-const av=document.getElementById(‘pv-av’);
-av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
-await saveDB();toast(‘📷 Foto actualizada’,‘ok’);
-}else{
-const cabId=document.getElementById(‘photo-input-modal’).dataset.cabId;
-if(cabId){
-const c=DB.caballeros.find(x=>x.id===cabId);
-if(c){c.photo=data;await saveDB();toast(‘📷 Foto guardada’,‘ok’);}
-}
-}
-});
-e.target.value=’’;
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>10*1024*1024){toast('Imagen demasiado grande (max 10MB)','err');return;}
+  toast('📷 Procesando foto...','info');
+  compressPhoto(file, async function(data){
+    if(ctx==='pv'){
+      const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+      c.photo=data;
+      const av=document.getElementById('pv-av');
+      av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
+      await saveDB();toast('📷 Foto actualizada','ok');
+    }else{
+      const cabId=document.getElementById('photo-input-modal').dataset.cabId;
+      if(cabId){
+        const c=DB.caballeros.find(x=>x.id===cabId);
+        if(c){c.photo=data;await saveDB();toast('📷 Foto guardada','ok');}
+      }
+    }
+  });
+  e.target.value='';
 }
 
 function readForm(){
-return{
-nombre:document.getElementById(‘fc-nombre’).value.trim(),
-grupo:document.getElementById(‘fc-grupo’).value,
-dist:document.getElementById(‘fc-dist’).value,
-…Object.fromEntries(CHECKS.map(k=>[k,document.getElementById(‘fc-’+k).checked?1:0]))
-};
+  return{
+    nombre:document.getElementById('fc-nombre').value.trim(),
+    grupo:document.getElementById('fc-grupo').value,
+    dist:document.getElementById('fc-dist').value,
+    ...Object.fromEntries(CHECKS.map(k=>[k,document.getElementById('fc-'+k).checked?1:0]))
+  };
 }
 async function doAddCab(){
-const d=readForm();if(!d.nombre){toast(‘Ingresa el nombre’,‘err’);return;}
-DB.caballeros.push({id:‘c’+Date.now(),photo:’’,pw:’’,…d});
-closeModal();initAdmin();buildSel();toast(‘💾 Guardando…’,‘info’);
-await saveDB();toast(‘✅ Caballero agregado’,‘ok’);
+  const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
+  DB.caballeros.push({id:'c'+Date.now(),photo:'',pw:'',...d});
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Caballero agregado','ok');
 }
 async function doSaveCab(id){
-const d=readForm();if(!d.nombre){toast(‘Ingresa el nombre’,‘err’);return;}
-const c=DB.caballeros.find(x=>x.id===id);Object.assign(c,d);
-closeModal();initAdmin();buildSel();toast(‘💾 Guardando…’,‘info’);
-await saveDB();toast(‘✅ Guardado’,‘ok’);
+  const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
+  const c=DB.caballeros.find(x=>x.id===id);Object.assign(c,d);
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Guardado','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // GRUPOS
 // ═══════════════════════════════════════════════════════════════
 function renderGrupos(){
-const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
-let h=’<div class="sec-ttl">Grupos</div>’;
-GRUPOS.forEach(g=>{
-const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
-const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):‘0.0’;
-const col=GCOL[g]||‘var(–teal)’;
-h+=`<div class="gr-card"><div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} · Prom: ${avg}</div></div> ${ms.map(c=>`<div class="gr-row" onclick="openCabDetail('${c.id}')"><div><span class="gr-rname">${c.nombre}</span><span class="gr-rdist">${c.dist}</span></div><span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div>`;
-});
-document.getElementById(‘grupos-pg’).innerHTML=h;
+  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  let h='<div class="sec-ttl">Grupos</div>';
+  GRUPOS.forEach(g=>{
+    const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+    const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
+    const col=GCOL[g]||'var(--teal)';
+    h+=`<div class="gr-card"><div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} · Prom: ${avg}</div></div>
+      ${ms.map(c=>`<div class="gr-row" onclick="openCabDetail('${c.id}')"><div><span class="gr-rname">${c.nombre}</span><span class="gr-rdist">${c.dist}</span></div><span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div>`;
+  });
+  document.getElementById('grupos-pg').innerHTML=h;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CLASES
 // ═══════════════════════════════════════════════════════════════
 function mkClaseCard(cl){
-const{d,m}=fmtBox(cl.fecha);
-const avg=claseAvg(cl);
-const sc=avg>=7?’#15803d’:avg>=4?‘var(–gold2)’:‘var(–text3)’;
-const asist=Object.values(cl.cal).filter(q=>q.a).length;
-return`<div class="cl-card" onclick="openClaseDetail('${cl.id}')">
-<div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
-<div class="cl-inf"><div class="cl-nm">${cl.tema||‘Clase de Estudios’}</div><div class="cl-mt">${cl.grupoResp||‘Sin grupo’} · ${asist} asistentes</div></div>
-<div class="cl-avg" style="color:${sc}">${avg.toFixed(1)}</div>
-
+  const{d,m}=fmtBox(cl.fecha);
+  const avg=claseAvg(cl);
+  const sc=avg>=7?'#15803d':avg>=4?'var(--gold2)':'var(--text3)';
+  const asist=Object.values(cl.cal).filter(q=>q.a).length;
+  return`<div class="cl-card" onclick="openClaseDetail('${cl.id}')">
+    <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
+    <div class="cl-inf"><div class="cl-nm">${cl.tema||'Clase de Estudios'}</div><div class="cl-mt">${cl.grupoResp||'Sin grupo'} · ${asist} asistentes</div></div>
+    <div class="cl-avg" style="color:${sc}">${avg.toFixed(1)}</div>
   </div>`;
 }
 function renderClases(){
@@ -1190,190 +1216,220 @@ function renderClases(){
 // CLASE DETAIL
 // ═══════════════════════════════════════════════════════════════
 function openClaseDetail(id){
-const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
-const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,…cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
-const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(’ ‘).slice(0,2).join(’ ‘)}</td><td>${r.a?r.i:’—’}</td><td>${r.a?r.p:’—’}</td><td>${r.a?r.d:’—’}</td><td>${r.a?r.pa:’—’}</td><td>${r.a?‘✅’:‘❌’}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):’—’}</td></tr>`).join('')}</tbody></table>`;
-openSheet(‘📅’,cl.tema||‘Clase’,`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`<div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div> <div class="btn-row"> <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar</button> <button class="btn bred" onclick="confirmDelClase('${id}')">🗑</button> </div>`);
+  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
+  const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
+  const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`;
+  openSheet('📅',cl.tema||'Clase',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
+    <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
+    <div class="btn-row">
+      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar</button>
+      <button class="btn bred" onclick="confirmDelClase('${id}')">🗑</button>
+    </div>
+  `);
 }
 function confirmDelClase(id){
-const cl=DB.clases.find(x=>x.id===id);
-document.getElementById(‘m-body’).innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${id}')">Eliminar</button></div></div>`;
+  const cl=DB.clases.find(x=>x.id===id);
+  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${id}')">Eliminar</button></div></div>`;
 }
-async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModal();renderClases();renderDash();toast(‘💾 Guardando…’,‘info’);await saveDB();toast(‘Clase eliminada’,‘ok’);}
+async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModal();renderClases();renderDash();toast('💾 Guardando...','info');await saveDB();toast('Clase eliminada','ok');}
 
 // ═══════════════════════════════════════════════════════════════
 // NUEVA CLASE
 // ═══════════════════════════════════════════════════════════════
 function openNuevaClase(){
-const today=new Date().toISOString().split(‘T’)[0];
-const gOpts=[’<option value="">Sin grupo responsable</option>’,…GRUPOS.map(g=>`<option value="${g}">${g}</option>`)].join(’’);
-openSheet(‘📅’,‘Nueva Clase’,‘Registrar sesión de estudios’,`<div class="fr"><label>Fecha de la clase</label><input type="date" id="nc-fecha" value="${today}"></div> <div class="fr"><label>Tema del estudio</label><input id="nc-tema" placeholder="Ej: La oración, Liderazgo cristiano..."></div> <div class="fr"><label>Grupo Responsable</label><select id="nc-grupo">${gOpts}</select></div> <div class="info-box">💡 Después podrás marcar asistencia y calificar a cada caballero del 0 al 10.</div> <button class="btn bteal bfull" onclick="doCrearClase()">📋 Ir a Calificar →</button>`);
+  const today=new Date().toISOString().split('T')[0];
+  const gOpts=['<option value="">Sin grupo responsable</option>',...GRUPOS.map(g=>`<option value="${g}">${g}</option>`)].join('');
+  openSheet('📅','Nueva Clase','Registrar sesión de estudios',`
+    <div class="fr"><label>Fecha de la clase</label><input type="date" id="nc-fecha" value="${today}"></div>
+    <div class="fr"><label>Tema del estudio</label><input id="nc-tema" placeholder="Ej: La oración, Liderazgo cristiano..."></div>
+    <div class="fr"><label>Grupo Responsable</label><select id="nc-grupo">${gOpts}</select></div>
+    <div class="info-box">💡 Después podrás marcar asistencia y calificar a cada caballero del 0 al 10.</div>
+    <button class="btn bteal bfull" onclick="doCrearClase()">📋 Ir a Calificar →</button>
+  `);
 }
 async function doCrearClase(){
-const fecha=document.getElementById(‘nc-fecha’).value;
-if(!fecha){toast(‘Selecciona la fecha’,‘err’);return;}
-const dup=DB.clases.find(c=>c.fecha===fecha);
-if(dup&&!confirm(`Ya hay una clase el ${fmtDate(fecha)}. ¿Continuar?`))return;
-const id=‘cl’+Date.now();
-DB.clases.push({id,fecha,tema:document.getElementById(‘nc-tema’).value.trim()||‘Clase de Estudios’,grupoResp:document.getElementById(‘nc-grupo’).value,cal:{}});
-await saveDB();closeModal();openGrade(id);
+  const fecha=document.getElementById('nc-fecha').value;
+  if(!fecha){toast('Selecciona la fecha','err');return;}
+  const dup=DB.clases.find(c=>c.fecha===fecha);
+  if(dup&&!confirm(`Ya hay una clase el ${fmtDate(fecha)}. ¿Continuar?`))return;
+  const id='cl'+Date.now();
+  DB.clases.push({id,fecha,tema:document.getElementById('nc-tema').value.trim()||'Clase de Estudios',grupoResp:document.getElementById('nc-grupo').value,cal:{}});
+  await saveDB();closeModal();openGrade(id);
 }
 
 // ═══════════════════════════════════════════════════════════════
 // GRADING — full screen, table layout, FIXED
 // ═══════════════════════════════════════════════════════════════
 function openGrade(claseId){
-const cl=DB.clases.find(x=>x.id===claseId);if(!cl)return;
-gradeClaseId=claseId;
-document.getElementById(‘gs-ttl’).textContent=cl.tema||‘Calificar Clase’;
-document.getElementById(‘gs-sub’).textContent=fmtDate(cl.fecha)+’ · Toca ○ para marcar asistencia · Notas del 0 al 10’;
+  const cl=DB.clases.find(x=>x.id===claseId);if(!cl)return;
+  gradeClaseId=claseId;
+  document.getElementById('gs-ttl').textContent=cl.tema||'Calificar Clase';
+  document.getElementById('gs-sub').textContent=fmtDate(cl.fecha)+' · Toca ○ para marcar asistencia · Notas del 0 al 10';
 
-const sorted=[…DB.caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
-let html=’’;let lastG=’’;
-sorted.forEach(c=>{
-if(c.grupo!==lastG){
-lastG=c.grupo;
-const col=GCOL[c.grupo]||‘var(–teal)’;
-html+=`<tr class="grp-sep"><td colspan="7" style="color:${col}">${c.grupo}</td></tr>`;
-}
-const q=cl.cal[c.id]||{a:0,i:’’,p:’’,d:’’,pa:’’};
-const pres=!!q.a;
-const nombre=c.nombre.split(’ ‘).slice(0,2).join(’ ’);
-html+=`<tr id="tr-${c.id}"> <td><div class="gname">${nombre}</div></td> <td><button class="att-btn ${pres?'yes':''}" id="att-${c.id}" onclick="togAtt('${c.id}')">${pres?'✅':'○'}</button></td> <td><input class="sc-inp" id="si-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.i!==''?q.i:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td> <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td> <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td> <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td> <td class="total-cell" id="tot-${c.id}">${pres?rowTotal(q).toFixed(2):'—'}</td> </tr>`;
-});
-document.getElementById(‘grade-tbody’).innerHTML=html;
-document.getElementById(‘grade-screen’).classList.add(‘open’);
-document.getElementById(‘grade-screen’).scrollTop=0;
+  const sorted=[...DB.caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
+  let html='';let lastG='';
+  sorted.forEach(c=>{
+    if(c.grupo!==lastG){
+      lastG=c.grupo;
+      const col=GCOL[c.grupo]||'var(--teal)';
+      html+=`<tr class="grp-sep"><td colspan="7" style="color:${col}">${c.grupo}</td></tr>`;
+    }
+    const q=cl.cal[c.id]||{a:0,i:'',p:'',d:'',pa:''};
+    const pres=!!q.a;
+    const nombre=c.nombre.split(' ').slice(0,2).join(' ');
+    html+=`<tr id="tr-${c.id}">
+      <td><div class="gname">${nombre}</div></td>
+      <td><button class="att-btn ${pres?'yes':''}" id="att-${c.id}" onclick="togAtt('${c.id}')">${pres?'✅':'○'}</button></td>
+      <td><input class="sc-inp" id="si-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.i!==''?q.i:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
+      <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
+      <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
+      <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
+      <td class="total-cell" id="tot-${c.id}">${pres?rowTotal(q).toFixed(2):'—'}</td>
+    </tr>`;
+  });
+  document.getElementById('grade-tbody').innerHTML=html;
+  document.getElementById('grade-screen').classList.add('open');
+  document.getElementById('grade-screen').scrollTop=0;
 }
 
 function togAtt(cabId){
-const btn=document.getElementById(‘att-’+cabId);
-const now=!btn.classList.contains(‘yes’);
-btn.classList.toggle(‘yes’,now);
-btn.textContent=now?‘✅’:‘○’;
-[‘si’,‘sp’,‘sd’,‘spa’].forEach(p=>{
-const inp=document.getElementById(p+’-’+cabId);
-if(!inp)return;
-inp.disabled=!now;
-if(!now)inp.value=’’;
-});
-const tot=document.getElementById(‘tot-’+cabId);
-if(tot)tot.textContent=now?‘0.00’:’—’;
+  const btn=document.getElementById('att-'+cabId);
+  const now=!btn.classList.contains('yes');
+  btn.classList.toggle('yes',now);
+  btn.textContent=now?'✅':'○';
+  ['si','sp','sd','spa'].forEach(p=>{
+    const inp=document.getElementById(p+'-'+cabId);
+    if(!inp)return;
+    inp.disabled=!now;
+    if(!now)inp.value='';
+  });
+  const tot=document.getElementById('tot-'+cabId);
+  if(tot)tot.textContent=now?'0.00':'—';
 }
 function clamp(inp){if(+inp.value>10)inp.value=10;if(+inp.value<0)inp.value=0;}
 function updTotal(cabId){
-const tot=document.getElementById(‘tot-’+cabId);
-if(!tot||!document.getElementById(‘att-’+cabId).classList.contains(‘yes’))return;
-const i=+document.getElementById(‘si-’+cabId).value||0;
-const p=+document.getElementById(‘sp-’+cabId).value||0;
-const d=+document.getElementById(‘sd-’+cabId).value||0;
-const pa=+document.getElementById(‘spa-’+cabId).value||0;
-tot.textContent=rowTotal({i,p,d,pa}).toFixed(2);
+  const tot=document.getElementById('tot-'+cabId);
+  if(!tot||!document.getElementById('att-'+cabId).classList.contains('yes'))return;
+  const i=+document.getElementById('si-'+cabId).value||0;
+  const p=+document.getElementById('sp-'+cabId).value||0;
+  const d=+document.getElementById('sd-'+cabId).value||0;
+  const pa=+document.getElementById('spa-'+cabId).value||0;
+  tot.textContent=rowTotal({i,p,d,pa}).toFixed(2);
 }
-function closeGrade(){document.getElementById(‘grade-screen’).classList.remove(‘open’);gradeClaseId=null;}
+function closeGrade(){document.getElementById('grade-screen').classList.remove('open');gradeClaseId=null;}
 
 async function doSaveGrade(){
-if(!gradeClaseId)return;
-const cl=DB.clases.find(x=>x.id===gradeClaseId);if(!cl)return;
-const missing=[];const newCal={};let saved=0;
-DB.caballeros.forEach(c=>{
-const btn=document.getElementById(‘att-’+c.id);if(!btn)return;
-const pres=btn.classList.contains(‘yes’);
-if(pres){
-const iv=document.getElementById(‘si-’+c.id);
-const pv=document.getElementById(‘sp-’+c.id);
-const dv=document.getElementById(‘sd-’+c.id);
-const pav=document.getElementById(‘spa-’+c.id);
-if([iv,pv,dv,pav].some(x=>!x||x.value===’’)){missing.push(c.nombre.split(’ ’)[0]);return;}
-const i=Math.min(10,Math.max(0,+iv.value));
-const p=Math.min(10,Math.max(0,+pv.value));
-const d=Math.min(10,Math.max(0,+dv.value));
-const pa=Math.min(10,Math.max(0,+pav.value));
-newCal[c.id]={a:1,i,p,d,pa};saved++;
-}
-});
-if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''}`,‘err’);return;}
-cl.cal=newCal;closeGrade();
-renderClases();renderDash();renderCalGr();
-toast(‘💾 Guardando calificaciones…’,‘info’);
-await saveDB();
-toast(`✅ ${saved} calificaciones guardadas`,‘ok’);
+  if(!gradeClaseId)return;
+  const cl=DB.clases.find(x=>x.id===gradeClaseId);if(!cl)return;
+  const missing=[];const newCal={};let saved=0;
+  DB.caballeros.forEach(c=>{
+    const btn=document.getElementById('att-'+c.id);if(!btn)return;
+    const pres=btn.classList.contains('yes');
+    if(pres){
+      const iv=document.getElementById('si-'+c.id);
+      const pv=document.getElementById('sp-'+c.id);
+      const dv=document.getElementById('sd-'+c.id);
+      const pav=document.getElementById('spa-'+c.id);
+      if([iv,pv,dv,pav].some(x=>!x||x.value==='')){missing.push(c.nombre.split(' ')[0]);return;}
+      const i=Math.min(10,Math.max(0,+iv.value));
+      const p=Math.min(10,Math.max(0,+pv.value));
+      const d=Math.min(10,Math.max(0,+dv.value));
+      const pa=Math.min(10,Math.max(0,+pav.value));
+      newCal[c.id]={a:1,i,p,d,pa};saved++;
+    }
+  });
+  if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''}`,'err');return;}
+  cl.cal=newCal;closeGrade();
+  renderClases();renderDash();renderCalGr();
+  toast('💾 Guardando calificaciones...','info');
+  await saveDB();
+  toast(`✅ ${saved} calificaciones guardadas`,'ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CAL GRUPOS
 // ═══════════════════════════════════════════════════════════════
 function renderCalGr(){
-const el=document.getElementById(‘calgr-pg’);if(!el)return;
-const sorted=[…DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-if(!sorted.length){el.innerHTML=’<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>’;return;}
-let h=’<div class="sec-ttl">Calificaciones por Grupo</div>’;
-sorted.forEach(cl=>{
-const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
-h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}</div> ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`; const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100); const sc=+avg>=7?'#15803d':+avg>=4?'var(--gold2)':'var(--text3)';const col=GCOL[g]||'var(--teal)'; return`<div style="padding:6px 0;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:${col}">${g}</span><span style="font-family:Montserrat;font-weight:800;font-size:13px;color:${sc}">${avg}<span style="font-size:10px;color:var(--text3);font-weight:400"> (${d.n})</span></span></div><div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div></div>`; }).join('')}</div>`;
-});
-el.innerHTML=h;
+  const el=document.getElementById('calgr-pg');if(!el)return;
+  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
+  let h='<div class="sec-ttl">Calificaciones por Grupo</div>';
+  sorted.forEach(cl=>{
+    const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
+    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}</div>
+      ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
+      const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
+      const sc=+avg>=7?'#15803d':+avg>=4?'var(--gold2)':'var(--text3)';const col=GCOL[g]||'var(--teal)';
+      return`<div style="padding:6px 0;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:${col}">${g}</span><span style="font-family:Montserrat;font-weight:800;font-size:13px;color:${sc}">${avg}<span style="font-size:10px;color:var(--text3);font-weight:400"> (${d.n})</span></span></div><div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div></div>`;
+      }).join('')}</div>`;
+  });
+  el.innerHTML=h;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // PERSONAL VIEW
 // ═══════════════════════════════════════════════════════════════
 function renderPersonal(cabId){
-const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
-const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
-// Avatar
-const av=document.getElementById(‘pv-av’);
-av.innerHTML=c.photo?`<img src="${c.photo}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:26px;font-weight:900;color:white">${ini(c.nombre)}</span>`;
-document.getElementById(‘pv-name’).textContent=c.nombre;
-document.getElementById(‘pv-meta’).textContent=`${c.dist} · ${c.grupo}`;
-document.getElementById(‘pv-bdg’).innerHTML=mkBadges(c);
-document.getElementById(‘pv-total’).textContent=cal.total.toFixed(1);
-document.getElementById(‘pv-rank’).textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
-document.getElementById(‘pv-stars’).innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join(’’);
-const bK=[{k:‘i’,l:‘Interés’},{k:‘p’,l:‘Puntualidad’},{k:‘d’,l:‘Dominio’},{k:‘pa’,l:‘Participación’}];
-document.getElementById(‘pv-bars’).innerHTML=bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join(’’);
-document.getElementById(‘pv-hist’).innerHTML=mkHistoryTable(cabId);
-renderGrupoSection(c);
-renderDevotoCard(c);
-// Tab perfil activo por defecto al entrar
-showPvTab(‘perfil’);
+  const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
+  const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
+  // Avatar
+  const av=document.getElementById('pv-av');
+  av.innerHTML=c.photo?`<img src="${c.photo}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:26px;font-weight:900;color:white">${ini(c.nombre)}</span>`;
+  document.getElementById('pv-name').textContent=c.nombre;
+  document.getElementById('pv-meta').textContent=`${c.dist} · ${c.grupo}`;
+  document.getElementById('pv-bdg').innerHTML=mkBadges(c);
+  document.getElementById('pv-total').textContent=cal.total.toFixed(1);
+  document.getElementById('pv-rank').textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
+  document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
+  const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
+  document.getElementById('pv-bars').innerHTML=bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
+  document.getElementById('pv-hist').innerHTML=mkHistoryTable(cabId);
+  renderGrupoSection(c);
+  renderDevotoCard(c);
+  // Tab perfil activo por defecto al entrar
+  showPvTab('perfil');
 }
 
 function showPvTab(tab){
-[‘perfil’,‘eventos’,‘oracion’].forEach(t=>{
-document.getElementById(‘pvtab-’+t).classList.toggle(‘active’,t===tab);
-document.getElementById(‘pvtab-’+t+’-btn’).classList.toggle(‘active’,t===tab);
-});
-if(tab===‘eventos’) renderEventosPV();
-if(tab===‘oracion’) cargarPeticiones();
+  ['perfil','eventos','oracion'].forEach(t=>{
+    document.getElementById('pvtab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('pvtab-'+t+'-btn').classList.toggle('active',t===tab);
+  });
+  if(tab==='eventos') renderEventosPV();
+  if(tab==='oracion') cargarPeticiones();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CAMBIAR CONTRASEÑA
 // ═══════════════════════════════════════════════════════════════
 function openChangePw(){
-openSheet(‘🔑’,‘Cambiar Contraseña’,‘Solo el administrador’,`<div class="fr"><label>Contraseña actual</label><input type="password" id="pw-curr" placeholder="••••••••"></div> <div class="fr"><label>Nueva contraseña</label><input type="password" id="pw-new" placeholder="Mínimo 4 caracteres"></div> <div class="fr"><label>Confirmar nueva contraseña</label><input type="password" id="pw-conf" placeholder="Repetir nueva contraseña"></div> <div class="login-err" id="pw-err" style="display:none;margin-bottom:10px"></div> <button class="btn bteal bfull" onclick="doChangePw()">🔒 Cambiar Contraseña</button>`);
+  openSheet('🔑','Cambiar Contraseña','Solo el administrador',`
+    <div class="fr"><label>Contraseña actual</label><input type="password" id="pw-curr" placeholder="••••••••"></div>
+    <div class="fr"><label>Nueva contraseña</label><input type="password" id="pw-new" placeholder="Mínimo 4 caracteres"></div>
+    <div class="fr"><label>Confirmar nueva contraseña</label><input type="password" id="pw-conf" placeholder="Repetir nueva contraseña"></div>
+    <div class="login-err" id="pw-err" style="display:none;margin-bottom:10px"></div>
+    <button class="btn bteal bfull" onclick="doChangePw()">🔒 Cambiar Contraseña</button>
+  `);
 }
 async function doChangePw(){
-const curr=document.getElementById(‘pw-curr’).value;
-const nw=document.getElementById(‘pw-new’).value;
-const conf=document.getElementById(‘pw-conf’).value;
-const err=document.getElementById(‘pw-err’);err.style.display=‘none’;
-if(curr!==DB.adminPw){err.textContent=‘Contraseña actual incorrecta.’;err.style.display=‘block’;return;}
-if(nw.length<4){err.textContent=‘Mínimo 4 caracteres.’;err.style.display=‘block’;return;}
-if(nw!==conf){err.textContent=‘Las contraseñas no coinciden.’;err.style.display=‘block’;return;}
-DB.adminPw=nw;closeModal();toast(‘💾 Guardando…’,‘info’);await saveDB();toast(‘✅ Contraseña actualizada’,‘ok’);
+  const curr=document.getElementById('pw-curr').value;
+  const nw=document.getElementById('pw-new').value;
+  const conf=document.getElementById('pw-conf').value;
+  const err=document.getElementById('pw-err');err.style.display='none';
+  if(curr!==DB.adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
+  if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
+  if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
+  DB.adminPw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña actualizada','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // AUTOCALIFICACIÓN DEVOTO
 // ═══════════════════════════════════════════════════════════════
 function renderDevotoCard(c){
-const el=document.getElementById(‘pv-devoto-card’);
-if(!el)return;
-const esDevoto=!!c.devoto;
-el.innerHTML=`
-
+  const el=document.getElementById('pv-devoto-card');
+  if(!el)return;
+  const esDevoto=!!c.devoto;
+  el.innerHTML=`
   <div style="background:${esDevoto?'linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%)':'white'};border:1.5px solid ${esDevoto?'#6ee7b7':'#e9edf2'};border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);transition:all .3s;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
       <div style="font-size:26px;flex-shrink:0;margin-top:2px;">${esDevoto?'🌿':'🕊️'}</div>
@@ -1403,70 +1459,68 @@ el.innerHTML=`
 }
 
 async function toggleDevoto(){
-const c=DB.caballeros.find(x=>x.id===currentCabId);
-if(!c)return;
-c.devoto=c.devoto?0:1;
-// Actualizar badges en header y stars
-document.getElementById(‘pv-bdg’).innerHTML=mkBadges(c);
-const val=autoVal(c);
-document.getElementById(‘pv-stars’).innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join(’’);
-// Re-renderizar la tarjeta
-renderDevotoCard(c);
-toast(‘💾 Guardando…’,‘info’);
-try{
-await saveDB();
-toast(c.devoto?‘🌿 ¡Distinción Devoto añadida a tu perfil!’:‘Distinción Devoto removida’,‘ok’);
-}catch(e){
-// Revertir si falla
-c.devoto=c.devoto?0:1;
-renderDevotoCard(c);
-toast(‘⚠️ Error al guardar. Intenta de nuevo.’,‘err’);
-}
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c)return;
+  c.devoto=c.devoto?0:1;
+  // Actualizar badges en header y stars
+  document.getElementById('pv-bdg').innerHTML=mkBadges(c);
+  const val=autoVal(c);
+  document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
+  // Re-renderizar la tarjeta
+  renderDevotoCard(c);
+  toast('💾 Guardando...','info');
+  try{
+    await saveDB();
+    toast(c.devoto?'🌿 ¡Distinción Devoto añadida a tu perfil!':'Distinción Devoto removida','ok');
+  }catch(e){
+    // Revertir si falla
+    c.devoto=c.devoto?0:1;
+    renderDevotoCard(c);
+    toast('⚠️ Error al guardar. Intenta de nuevo.','err');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
 // SECCIÓN GRUPO — Vista Personal
 // ═══════════════════════════════════════════════════════════════
 function renderGrupoSection(c){
-const el=document.getElementById(‘pv-grupo-section’);
-if(!el)return;
-const GRUPOS_ACTIVOS=GRUPOS.filter(g=>g!==‘SIN GRUPO’);
-const miGrupo=c.grupo;
+  const el=document.getElementById('pv-grupo-section');
+  if(!el)return;
+  const GRUPOS_ACTIVOS=GRUPOS.filter(g=>g!=='SIN GRUPO');
+  const miGrupo=c.grupo;
 
-// Calcular stats por grupo (solo grupos activos)
-const grupoStats={};
-GRUPOS_ACTIVOS.forEach(g=>{
-const miembros=DB.caballeros.filter(x=>x.grupo===g);
-const totalPts=miembros.reduce((s,x)=>s+calcCab(x.id).total,0);
-const avgPts=miembros.length?+(totalPts/miembros.length).toFixed(1):0;
-// Asistencia total / clases posibles
-const asistTot=miembros.reduce((s,x)=>s+calcCab(x.id).asist,0);
-const posTot=miembros.length*DB.clases.length;
-const pctAsist=posTot?Math.round((asistTot/posTot)*100):0;
-grupoStats[g]={miembros,totalPts:+totalPts.toFixed(1),avgPts,asistTot,pctAsist};
-});
+  // Calcular stats por grupo (solo grupos activos)
+  const grupoStats={};
+  GRUPOS_ACTIVOS.forEach(g=>{
+    const miembros=DB.caballeros.filter(x=>x.grupo===g);
+    const totalPts=miembros.reduce((s,x)=>s+calcCab(x.id).total,0);
+    const avgPts=miembros.length?+(totalPts/miembros.length).toFixed(1):0;
+    // Asistencia total / clases posibles
+    const asistTot=miembros.reduce((s,x)=>s+calcCab(x.id).asist,0);
+    const posTot=miembros.length*DB.clases.length;
+    const pctAsist=posTot?Math.round((asistTot/posTot)*100):0;
+    grupoStats[g]={miembros,totalPts:+totalPts.toFixed(1),avgPts,asistTot,pctAsist};
+  });
 
-// Ordenar grupos por avgPts para ranking
-const ranking=[…GRUPOS_ACTIVOS].sort((a,b)=>grupoStats[b].avgPts-grupoStats[a].avgPts);
-const maxAvg=grupoStats[ranking[0]]?.avgPts||1;
+  // Ordenar grupos por avgPts para ranking
+  const ranking=[...GRUPOS_ACTIVOS].sort((a,b)=>grupoStats[b].avgPts-grupoStats[a].avgPts);
+  const maxAvg=grupoStats[ranking[0]]?.avgPts||1;
 
-// Mi grupo — miembros ordenados por puntuación
-const misMiembros=[…grupoStats[miGrupo]?.miembros||[]].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
-const col=GCOL[miGrupo]||‘var(–teal)’;
+  // Mi grupo — miembros ordenados por puntuación
+  const misMiembros=[...grupoStats[miGrupo]?.miembros||[]].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+  const col=GCOL[miGrupo]||'var(--teal)';
 
-// Clases con calificaciones del grupo
-const clasesGrupo=DB.clases
-.filter(cl=>misMiembros.some(m=>cl.cal[m.id]&&cl.cal[m.id].a))
-.sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  // Clases con calificaciones del grupo
+  const clasesGrupo=DB.clases
+    .filter(cl=>misMiembros.some(m=>cl.cal[m.id]&&cl.cal[m.id].a))
+    .sort((a,b)=>b.fecha.localeCompare(a.fecha));
 
-const miRank=ranking.indexOf(miGrupo)+1;
-const medal=miRank===1?‘🥇’:miRank===2?‘🥈’:miRank===3?‘🥉’:’’;
+  const miRank=ranking.indexOf(miGrupo)+1;
+  const medal=miRank===1?'🥇':miRank===2?'🥈':miRank===3?'🥉':'';
 
-// ── HTML ──
-let h=`
-
+  // ── HTML ──
+  let h=`
   <!-- ENCABEZADO MI GRUPO -->
-
   <div style="background:linear-gradient(135deg,var(--dark) 0%,var(--dark2) 60%,${col}33 100%);border-radius:14px;padding:14px 18px;margin-bottom:12px;border:1px solid ${col}44;box-shadow:0 4px 20px rgba(0,0,0,0.15);position:relative;overflow:hidden;">
     <div style="position:absolute;right:-20px;top:-20px;width:110px;height:110px;background:radial-gradient(circle,${col}22 0%,transparent 70%);pointer-events:none;"></div>
     <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Mi Grupo</div>
@@ -1492,7 +1546,6 @@ let h=`
   </div>
 
   <!-- MIEMBROS DEL GRUPO -->
-
   <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
     <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${col}33;">Caballeros del Grupo</div>
     ${misMiembros.map((m,i)=>{
@@ -1513,7 +1566,6 @@ let h=`
   </div>
 
   <!-- COMPARACIÓN ENTRE GRUPOS -->
-
   <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
     <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal2);font-weight:700;margin-bottom:12px;padding-bottom:6px;border-bottom:1.5px solid var(--border);">Comparación de Grupos</div>
     ${ranking.map((g,i)=>{
@@ -1543,67 +1595,79 @@ let h=`
   </div>
 
   <!-- HISTORIAL POR CLASE — MI GRUPO -->
-
-${clasesGrupo.length?`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);"> <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${col}33;">Clases de Mi Grupo</div> ${clasesGrupo.map(cl=>{ const presentes=misMiembros.filter(m=>cl.cal[m.id]&&cl.cal[m.id].a); const avgCl=presentes.length?+(presentes.reduce((s,m)=>s+rowTotal(cl.cal[m.id]),0)/presentes.length).toFixed(1):0; const sc=avgCl>=7?'#15803d':avgCl>=4?'var(--gold2)':'var(--text3)'; const{d,m}=fmtBox(cl.fecha); return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
-<div style="background:linear-gradient(135deg,${col},${col}bb);border-radius:8px;padding:6px 8px;text-align:center;flex-shrink:0;min-width:38px;">
-<div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:white;line-height:1;">${d}</div>
-<div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;">${m}</div>
-</div>
-<div style="flex:1;min-width:0;">
-<div style="font-size:12px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cl.tema||‘Clase’}</div>
-<div style="font-size:10px;color:var(--text3);margin-top:2px;">${presentes.length} de ${misMiembros.length} asistieron</div>
-</div>
-<div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:${sc};">${avgCl.toFixed(1)}</div>
-</div>`;
-}).join(’’)}
-
+  ${clasesGrupo.length?`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${col}33;">Clases de Mi Grupo</div>
+    ${clasesGrupo.map(cl=>{
+      const presentes=misMiembros.filter(m=>cl.cal[m.id]&&cl.cal[m.id].a);
+      const avgCl=presentes.length?+(presentes.reduce((s,m)=>s+rowTotal(cl.cal[m.id]),0)/presentes.length).toFixed(1):0;
+      const sc=avgCl>=7?'#15803d':avgCl>=4?'var(--gold2)':'var(--text3)';
+      const{d,m}=fmtBox(cl.fecha);
+      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
+        <div style="background:linear-gradient(135deg,${col},${col}bb);border-radius:8px;padding:6px 8px;text-align:center;flex-shrink:0;min-width:38px;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:white;line-height:1;">${d}</div>
+          <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;">${m}</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cl.tema||'Clase'}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">${presentes.length} de ${misMiembros.length} asistieron</div>
+        </div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:${sc};">${avgCl.toFixed(1)}</div>
+      </div>`;
+    }).join('')}
   </div>`:''}
   `;
 
-el.innerHTML=h;
+  el.innerHTML=h;
 }
 
+
 function openChangeCabPw(){
-const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
-const tienePass=!!c.pw;
-openSheet(‘🔑’,‘Mi Contraseña’,c.nombre,` ${tienePass?`<div class="fr"><label>Contraseña actual</label><input type="password" id="cpw-curr" placeholder="Tu contraseña actual"></div>`:'<div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--teal2)">🔑 Todavía no tienes contraseña personal. Crea una para proteger tu perfil.</div>'} <div class="fr"><label>${tienePass?'Nueva contraseña':'Crear contraseña'}</label><input type="password" id="cpw-new" placeholder="Mínimo 4 caracteres"></div> <div class="fr"><label>Confirmar contraseña</label><input type="password" id="cpw-conf" placeholder="Repetir contraseña"></div> <div class="login-err" id="cpw-err" style="display:none;margin-bottom:10px"></div> <button class="btn bteal bfull" onclick="doChangeCabPw(${tienePass})">🔒 ${tienePass?'Cambiar Contraseña':'Crear Contraseña'}</button> `);
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const tienePass=!!c.pw;
+  openSheet('🔑','Mi Contraseña',c.nombre,`
+    ${tienePass?`<div class="fr"><label>Contraseña actual</label><input type="password" id="cpw-curr" placeholder="Tu contraseña actual"></div>`:'<div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--teal2)">🔑 Todavía no tienes contraseña personal. Crea una para proteger tu perfil.</div>'}
+    <div class="fr"><label>${tienePass?'Nueva contraseña':'Crear contraseña'}</label><input type="password" id="cpw-new" placeholder="Mínimo 4 caracteres"></div>
+    <div class="fr"><label>Confirmar contraseña</label><input type="password" id="cpw-conf" placeholder="Repetir contraseña"></div>
+    <div class="login-err" id="cpw-err" style="display:none;margin-bottom:10px"></div>
+    <button class="btn bteal bfull" onclick="doChangeCabPw(${tienePass})">🔒 ${tienePass?'Cambiar Contraseña':'Crear Contraseña'}</button>
+  `);
 }
 async function doChangeCabPw(tienePass){
-const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
-const err=document.getElementById(‘cpw-err’);err.style.display=‘none’;
-if(tienePass){
-const curr=document.getElementById(‘cpw-curr’).value;
-// Acepta contraseña propia O contraseña maestra
-if(curr!==c.pw&&curr!==DB.adminPw){err.textContent=‘Contraseña actual incorrecta.’;err.style.display=‘block’;return;}
-}
-const nw=document.getElementById(‘cpw-new’).value;
-const conf=document.getElementById(‘cpw-conf’).value;
-if(nw.length<4){err.textContent=‘Mínimo 4 caracteres.’;err.style.display=‘block’;return;}
-if(nw!==conf){err.textContent=‘Las contraseñas no coinciden.’;err.style.display=‘block’;return;}
-c.pw=nw;closeModal();toast(‘💾 Guardando…’,‘info’);await saveDB();toast(‘✅ Contraseña ‘+(tienePass?‘actualizada’:‘creada’)+’ con éxito’,‘ok’);
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const err=document.getElementById('cpw-err');err.style.display='none';
+  if(tienePass){
+    const curr=document.getElementById('cpw-curr').value;
+    // Acepta contraseña propia O contraseña maestra
+    if(curr!==c.pw&&curr!==DB.adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
+  }
+  const nw=document.getElementById('cpw-new').value;
+  const conf=document.getElementById('cpw-conf').value;
+  if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
+  if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
+  c.pw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña '+(tienePass?'actualizada':'creada')+' con éxito','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // MODAL HELPERS
 // ═══════════════════════════════════════════════════════════════
 function openSheet(av,ttl,sub,body){
-const avEl=document.getElementById(‘m-av’);
-if(typeof av===‘string’&&av.startsWith(’<’))avEl.innerHTML=av;
-else avEl.textContent=av;
-document.getElementById(‘m-ttl’).textContent=ttl;
-document.getElementById(‘m-sub’).textContent=sub;
-document.getElementById(‘m-body’).innerHTML=body;
-document.getElementById(‘overlay’).classList.add(‘open’);
-document.getElementById(‘sheet’).scrollTop=0;
+  const avEl=document.getElementById('m-av');
+  if(typeof av==='string'&&av.startsWith('<'))avEl.innerHTML=av;
+  else avEl.textContent=av;
+  document.getElementById('m-ttl').textContent=ttl;
+  document.getElementById('m-sub').textContent=sub;
+  document.getElementById('m-body').innerHTML=body;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('sheet').scrollTop=0;
 }
-function closeModal(){document.getElementById(‘overlay’).classList.remove(‘open’);}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
 
 // ═══════════════════════════════════════════════════════════════
 // TOAST
 // ═══════════════════════════════════════════════════════════════
-function toast(msg,type=‘info’){
-const t=document.createElement(‘div’);t.className=`toast ${type}`;t.textContent=msg;
-document.body.appendChild(t);setTimeout(()=>t.remove(),2800);
+function toast(msg,type='info'){
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2800);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1611,335 +1675,402 @@ document.body.appendChild(t);setTimeout(()=>t.remove(),2800);
 // ═══════════════════════════════════════════════════════════════
 // (llamar desde consola o botón oculto: showGDriveGuide())
 function showGDriveGuide(){
-openSheet(‘☁️’,‘Cómo compartir en Google Drive’,‘Acceso desde móvil para todos’,`<div style="font-size:13px;line-height:1.8;color:var(--text2)"> <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#856404"> ⚠️ <strong>Importante:</strong> Google Drive solo puede abrir archivos HTML, no ejecutarlos. Para que la app funcione necesitas una de las opciones abajo. </div> <p style="font-weight:800;color:var(--dark);margin-bottom:8px;font-family:Montserrat">Opción 1 — GitHub Pages (Recomendado, GRATIS)</p> <ol style="margin-left:16px;margin-bottom:14px"> <li>Crea cuenta en <strong>github.com</strong></li> <li>Crea repositorio nuevo (público)</li> <li>Sube el archivo <strong>caballeros_app.html</strong> renombrándolo a <strong>index.html</strong></li> <li>Ve a Settings → Pages → Source: main → /root</li> <li>Tu URL será: <em>tunombre.github.io/repositorio</em></li> <li>Comparte ese enlace por WhatsApp ✅</li> </ol> <p style="font-weight:800;color:var(--dark);margin-bottom:8px;font-family:Montserrat">Opción 2 — Netlify Drop (MÁS FÁCIL)</p> <ol style="margin-left:16px;margin-bottom:14px"> <li>Ve a <strong>netlify.com/drop</strong> desde el computador</li> <li>Arrastra el archivo <strong>caballeros_app.html</strong></li> <li>Renómbralo a <strong>index.html</strong> antes de subir</li> <li>¡Listo! Te da un enlace público al instante</li> <li>Comparte por WhatsApp ✅</li> </ol> <p style="font-weight:800;color:var(--dark);margin-bottom:8px;font-family:Montserrat">📦 ¿Y los datos (calificaciones, fotos)?</p> <div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--teal2)"> Cada persona guarda los datos en su propio celular (<strong>localStorage</strong>). Solo el <strong>Administrador</strong> puede calificar y sus datos se guardan en el dispositivo desde donde administra.<br><br> Para llevar los datos de un celular a otro: usa el botón <strong>Exportar / Importar datos</strong> (abajo). </div> </div> <div style="margin-top:14px"> <button class="btn bteal bfull" onclick="exportData()">📤 Exportar datos (JSON)</button> <button class="btn boutline bfull" onclick="document.getElementById('import-file').click()" style="margin-top:8px">📥 Importar datos</button> <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"> </div>`);
+  openSheet('☁️','Cómo compartir en Google Drive','Acceso desde móvil para todos',`
+    <div style="font-size:13px;line-height:1.8;color:var(--text2)">
+      <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:#856404">
+        ⚠️ <strong>Importante:</strong> Google Drive solo puede abrir archivos HTML, no ejecutarlos. Para que la app funcione necesitas una de las opciones abajo.
+      </div>
+      <p style="font-weight:800;color:var(--dark);margin-bottom:8px;font-family:Montserrat">Opción 1 — GitHub Pages (Recomendado, GRATIS)</p>
+      <ol style="margin-left:16px;margin-bottom:14px">
+        <li>Crea cuenta en <strong>github.com</strong></li>
+        <li>Crea repositorio nuevo (público)</li>
+        <li>Sube el archivo <strong>caballeros_app.html</strong> renombrándolo a <strong>index.html</strong></li>
+        <li>Ve a Settings → Pages → Source: main → /root</li>
+        <li>Tu URL será: <em>tunombre.github.io/repositorio</em></li>
+        <li>Comparte ese enlace por WhatsApp ✅</li>
+      </ol>
+      <p style="font-weight:800;color:var(--dark);margin-bottom:8px;font-family:Montserrat">Opción 2 — Netlify Drop (MÁS FÁCIL)</p>
+      <ol style="margin-left:16px;margin-bottom:14px">
+        <li>Ve a <strong>netlify.com/drop</strong> desde el computador</li>
+        <li>Arrastra el archivo <strong>caballeros_app.html</strong></li>
+        <li>Renómbralo a <strong>index.html</strong> antes de subir</li>
+        <li>¡Listo! Te da un enlace público al instante</li>
+        <li>Comparte por WhatsApp ✅</li>
+      </ol>
+      <p style="font-weight:800;color:var(--dark);margin-bottom:8px;font-family:Montserrat">📦 ¿Y los datos (calificaciones, fotos)?</p>
+      <div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--teal2)">
+        Cada persona guarda los datos en su propio celular (<strong>localStorage</strong>). Solo el <strong>Administrador</strong> puede calificar y sus datos se guardan en el dispositivo desde donde administra.<br><br>
+        Para llevar los datos de un celular a otro: usa el botón <strong>Exportar / Importar datos</strong> (abajo).
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <button class="btn bteal bfull" onclick="exportData()">📤 Exportar datos (JSON)</button>
+      <button class="btn boutline bfull" onclick="document.getElementById('import-file').click()" style="margin-top:8px">📥 Importar datos</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  `);
 }
 
 // Export / Import data
 function exportData(){
-const blob=new Blob([JSON.stringify(DB,null,2)],{type:‘application/json’});
-const a=document.createElement(‘a’);a.href=URL.createObjectURL(blob);
-a.download=‘caballeros_datos_’+new Date().toISOString().split(‘T’)[0]+’.json’;
-a.click();toast(‘📤 Datos exportados’,‘ok’);
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='caballeros_datos_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();toast('📤 Datos exportados','ok');
 }
 function importData(e){
-const file=e.target.files[0];if(!file)return;
-const reader=new FileReader();
-reader.onload=async ev=>{
-try{
-const data=JSON.parse(ev.target.result);
-if(!data.caballeros||!data.clases)throw new Error(‘Formato incorrecto’);
-if(confirm(’¿Importar estos datos? Se reemplazará todo lo actual.’)){
-DB=data;closeModal();initAdmin();buildSel();
-toast(‘💾 Guardando en la nube…’,‘info’);
-await saveDB();
-toast(‘✅ Datos importados correctamente’,‘ok’);
-}
-}catch(err){toast(‘⚠️ Archivo inválido’,‘err’);}
-};
-reader.readAsText(file);
-e.target.value=’’;
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.caballeros||!data.clases)throw new Error('Formato incorrecto');
+      if(confirm('¿Importar estos datos? Se reemplazará todo lo actual.')){
+        DB=data;closeModal();initAdmin();buildSel();
+        toast('💾 Guardando en la nube...','info');
+        await saveDB();
+        toast('✅ Datos importados correctamente','ok');
+      }
+    }catch(err){toast('⚠️ Archivo inválido','err');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
 }
 
 // ═══════════════════════════════════════════════════════════════
 // EVENTOS — helpers compartidos
 // ═══════════════════════════════════════════════════════════════
 function lastSundayOfMonth(year,month){
-// Retrocede desde el último día del mes hasta encontrar domingo (0)
-const fin=new Date(year,month,0); // día 0 del mes+1 = último día del mes
-fin.setHours(0,0,0,0);
-while(fin.getDay()!==0) fin.setDate(fin.getDate()-1);
-return fin;
+  // Retrocede desde el último día del mes hasta encontrar domingo (0)
+  const fin=new Date(year,month,0); // día 0 del mes+1 = último día del mes
+  fin.setHours(0,0,0,0);
+  while(fin.getDay()!==0) fin.setDate(fin.getDate()-1);
+  return fin;
 }
 
 function proximaFechaEvento(ev, desde){
-if(ev.fecha===‘por_definir’) return null;
-if(ev.fecha===‘recurrente_ultimo_domingo’){
-// Buscar el próximo último domingo desde ‘desde’
-let y=desde.getFullYear(), m=desde.getMonth()+1;
-for(let i=0;i<14;i++){
-const d=lastSundayOfMonth(y,m);
-if(d>=desde) return d;
-m++;if(m>12){m=1;y++;}
-}
-return null;
-}
-const d=new Date(ev.fecha+‘T00:00:00’);
-return d>=desde?d:null;
+  if(ev.fecha==='por_definir') return null;
+  if(ev.fecha==='recurrente_ultimo_domingo'){
+    // Buscar el próximo último domingo desde 'desde'
+    let y=desde.getFullYear(), m=desde.getMonth()+1;
+    for(let i=0;i<14;i++){
+      const d=lastSundayOfMonth(y,m);
+      if(d>=desde) return d;
+      m++;if(m>12){m=1;y++;}
+    }
+    return null;
+  }
+  const d=new Date(ev.fecha+'T00:00:00');
+  return d>=desde?d:null;
 }
 
 function fmtEvDate(d){
-const dias=[‘Domingo’,‘Lunes’,‘Martes’,‘Miércoles’,‘Jueves’,‘Viernes’,‘Sábado’];
-const meses=[‘enero’,‘febrero’,‘marzo’,‘abril’,‘mayo’,‘junio’,‘julio’,‘agosto’,‘septiembre’,‘octubre’,‘noviembre’,‘diciembre’];
-return`${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return`${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
 }
 
 function diffDaysEv(d,today){return Math.round((d-today)/(1000*60*60*24));}
 
 function badgeEv(n){
-if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
-if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
-return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
+  if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
+  if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
+  return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // EVENTOS: Vista Personal — todos ordenados por fecha
 // ═══════════════════════════════════════════════════════════════
 function renderEventosPV(){
-const el=document.getElementById(‘pv-eventos’);
-if(!el)return;
+  const el=document.getElementById('pv-eventos');
+  if(!el)return;
 
-const TEMAS=[
-{mes:1,titulo:‘Evidencia de una Muerte’,sub:‘Arrepentimiento’,ref:‘Romanos 6:6’},
-{mes:2,titulo:‘Evidencia de una Resurrección’,sub:‘Nueva Vida’,ref:‘Juan 5:24’},
-{mes:3,titulo:‘Evidencia de una Experiencia’,sub:‘Bautismo del Espíritu Santo’,ref:‘Hechos 2:33’},
-{mes:4,titulo:‘Evidencia de Gozo’,sub:’’,ref:‘Hechos 8:38-39 NBV’},
-{mes:5,titulo:‘Evidencia de la Paz’,sub:‘Tranquilidad en medio de las pruebas’,ref:‘Hechos 16:25 / Filipenses 4:9’},
-{mes:6,titulo:‘Evidencia de Comunión’,sub:’’,ref:‘Hechos 2:42-44 / 1 Juan 1:7’},
-{mes:7,titulo:‘Evidencia de Testimonio’,sub:‘Ejemplo’,ref:‘Daniel 3 / Mateo 5:16 PDT’},
-{mes:8,titulo:‘Evidencia de una Marca’,sub:‘Enseñanza para hermanos apartados’,ref:‘Mateo 26:73’},
-{mes:9,titulo:‘Evidencia de Dependencia’,sub:‘Enseñanza para hermanos apartados’,ref:‘2 Corintios 3:4-5’},
-{mes:10,titulo:‘Evidencia de una Herida’,sub:‘Pruebas’,ref:‘2 Corintios 4:8-9’},
-{mes:11,titulo:‘Evidencia de un Servicio’,sub:‘Especial nativos / Las marcas de Cristo’,ref:‘Gálatas 6:17’},
-{mes:12,titulo:‘Evidencia de una Perseverancia al fin’,sub:’’,ref:‘Filipenses 3:12-14’},
-];
+  const TEMAS=[
+    {mes:1,titulo:'Evidencia de una Muerte',sub:'Arrepentimiento',ref:'Romanos 6:6'},
+    {mes:2,titulo:'Evidencia de una Resurrección',sub:'Nueva Vida',ref:'Juan 5:24'},
+    {mes:3,titulo:'Evidencia de una Experiencia',sub:'Bautismo del Espíritu Santo',ref:'Hechos 2:33'},
+    {mes:4,titulo:'Evidencia de Gozo',sub:'',ref:'Hechos 8:38-39 NBV'},
+    {mes:5,titulo:'Evidencia de la Paz',sub:'Tranquilidad en medio de las pruebas',ref:'Hechos 16:25 / Filipenses 4:9'},
+    {mes:6,titulo:'Evidencia de Comunión',sub:'',ref:'Hechos 2:42-44 / 1 Juan 1:7'},
+    {mes:7,titulo:'Evidencia de Testimonio',sub:'Ejemplo',ref:'Daniel 3 / Mateo 5:16 PDT'},
+    {mes:8,titulo:'Evidencia de una Marca',sub:'Enseñanza para hermanos apartados',ref:'Mateo 26:73'},
+    {mes:9,titulo:'Evidencia de Dependencia',sub:'Enseñanza para hermanos apartados',ref:'2 Corintios 3:4-5'},
+    {mes:10,titulo:'Evidencia de una Herida',sub:'Pruebas',ref:'2 Corintios 4:8-9'},
+    {mes:11,titulo:'Evidencia de un Servicio',sub:'Especial nativos / Las marcas de Cristo',ref:'Gálatas 6:17'},
+    {mes:12,titulo:'Evidencia de una Perseverancia al fin',sub:'',ref:'Filipenses 3:12-14'},
+  ];
 
-const today=new Date();today.setHours(0,0,0,0);
-const todayStr=today.toISOString().split(‘T’)[0];
-const meses=[‘enero’,‘febrero’,‘marzo’,‘abril’,‘mayo’,‘junio’,‘julio’,‘agosto’,‘septiembre’,‘octubre’,‘noviembre’,‘diciembre’];
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().split('T')[0];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
-function firstThursdayOfMonth(year,month){
-const d=new Date(year,month-1,1);
-d.setDate(1+((4-d.getDay()+7)%7));return d;
-}
-function getCultoDate(y,m){
-if(y===2026&&m===2)return new Date(2026,1,26);
-return firstThursdayOfMonth(y,m);
-}
+  function firstThursdayOfMonth(year,month){
+    const d=new Date(year,month-1,1);
+    d.setDate(1+((4-d.getDay()+7)%7));return d;
+  }
+  function getCultoDate(y,m){
+    if(y===2026&&m===2)return new Date(2026,1,26);
+    return firstThursdayOfMonth(y,m);
+  }
 
-// ── Recopilar todos los ítems con su fecha ──
-const items=[];
+  // ── Recopilar todos los ítems con su fecha ──
+  const items=[];
 
-// 1. Próximo Culto de Caballeros (solo el siguiente)
-let ym=new Date(today.getFullYear(),today.getMonth(),1);
-for(let i=0;i<18;i++){
-const y=ym.getFullYear(),m=ym.getMonth()+1;
-const d=getCultoDate(y,m);
-if(d>=today){items.push({tipo:‘culto’,fecha:d,tema:TEMAS.find(t=>t.mes===m)||null});break;}
-ym.setMonth(ym.getMonth()+1);
-}
+  // 1. Próximo Culto de Caballeros (solo el siguiente)
+  let ym=new Date(today.getFullYear(),today.getMonth(),1);
+  for(let i=0;i<18;i++){
+    const y=ym.getFullYear(),m=ym.getMonth()+1;
+    const d=getCultoDate(y,m);
+    if(d>=today){items.push({tipo:'culto',fecha:d,tema:TEMAS.find(t=>t.mes===m)||null});break;}
+    ym.setMonth(ym.getMonth()+1);
+  }
 
-// 2. Próximo Estudio (siguiente clase futura de DB.clases, o fallback al estudio activo)
-const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
-if(futureClases.length>0){
-const cl=futureClases[0];
-items.push({tipo:‘estudio’,fecha:new Date(cl.fecha+‘T00:00:00’),cl});
-} else {
-// Fallback: mostrar el estudio activo sin fecha específica
-// Sin fecha específica → no ordenar, añadir al inicio después del culto
-items.push({tipo:‘estudio-link’,fecha:new Date(today.getTime()+1)});
-}
+  // 2. Próximo Estudio (siguiente clase futura de DB.clases, o fallback al estudio activo)
+  const futureClases=(DB.clases||[]).filter(cl=>cl.fecha>=todayStr).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(futureClases.length>0){
+    const cl=futureClases[0];
+    items.push({tipo:'estudio',fecha:new Date(cl.fecha+'T00:00:00'),cl});
+  } else {
+    // Fallback: mostrar el estudio activo sin fecha específica
+    // Sin fecha específica → no ordenar, añadir al inicio después del culto
+    items.push({tipo:'estudio-link',fecha:new Date(today.getTime()+1)});
+  }
 
-// 3. Todos los eventos de DB.eventos con fecha calculada
-(DB.eventos||[]).forEach(ev=>{
-const d=proximaFechaEvento(ev,today);
-if(d) items.push({tipo:‘evento’,fecha:d,ev});
-});
+  // 3. Todos los eventos de DB.eventos con fecha calculada
+  (DB.eventos||[]).forEach(ev=>{
+    const d=proximaFechaEvento(ev,today);
+    if(d) items.push({tipo:'evento',fecha:d,ev});
+  });
 
-// ── Ordenar cronológicamente ──
-items.sort((a,b)=>a.fecha-b.fecha);
+  // ── Ordenar cronológicamente ──
+  items.sort((a,b)=>a.fecha-b.fecha);
 
-// ── Renderizar en orden ──
-const html=items.map(item=>{
-const n=diffDaysEv(item.fecha,today);
+  // ── Renderizar en orden ──
+  const html=items.map(item=>{
+    const n=diffDaysEv(item.fecha,today);
 
-```
-if(item.tipo==='culto'){
-  const {tema}=item;
-  const temaLine=tema
-    ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
-      ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
-      <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
-  return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
-    <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
-      <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
-      ${temaLine}
-    </div>
-    <div style="flex-shrink:0;">${badgeEv(n)}</div>
-  </div>`;
-}
+    if(item.tipo==='culto'){
+      const {tema}=item;
+      const temaLine=tema
+        ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
+          ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
+          <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
+          <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
+          ${temaLine}
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
+    }
 
-if(item.tipo==='estudio'){
-  const {cl}=item;
-  const grupoTxt=cl.grupoResp
-    ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
-    :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
-  return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
-    <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-      <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
-      ${grupoTxt}
-    </div>
-    <div style="flex-shrink:0;">${badgeEv(n)}</div>
-  </div>`;
-}
+    if(item.tipo==='estudio'){
+      const {cl}=item;
+      const grupoTxt=cl.grupoResp
+        ?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${cl.grupoResp}</div>`
+        :`<div style="display:inline-flex;align-items:center;gap:5px;background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Grupo expositor por confirmar</div>`;
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
+          <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+          ${grupoTxt}
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
+    }
 
-if(item.tipo==='estudio-link'){
-  return`<a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;">
-    <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
-    <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio en Curso</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
-      <div style="display:inline-flex;align-items:center;gap:5px;background:#fef9c3;color:#92400e;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">📖 Ver material →</div>
-    </div>
-    </div>
-  </a>`;
-}
+    if(item.tipo==='estudio-link'){
+      return`<a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;">
+        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio en Curso</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
+          <div style="display:inline-flex;align-items:center;gap:5px;background:#fef9c3;color:#92400e;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">📖 Ver material →</div>
+        </div>
+        </div>
+      </a>`;
+    }
 
-if(item.tipo==='evento'){
-  const {ev}=item;
-  const fechaRango=ev.fechaFin
-    ?` – ${new Date(ev.fechaFin+'T00:00:00').getDate()} de ${meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]}`
-    :'';
-  return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
-    <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${ev.nombre}</div>
-      ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
-      <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
-    </div>
-    <div style="flex-shrink:0;">${badgeEv(n)}</div>
-  </div>`;
-}
-return'';
-```
+    if(item.tipo==='evento'){
+      const {ev}=item;
+      const fechaRango=ev.fechaFin
+        ?` – ${new Date(ev.fechaFin+'T00:00:00').getDate()} de ${meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]}`
+        :'';
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${ev.nombre}</div>
+          ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
+          <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
+    }
+    return'';
+  }).join('');
 
-}).join(’’);
-
-el.innerHTML=html||’<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>’;
+  el.innerHTML=html||'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>';
 }
 // ═══════════════════════════════════════════════════════════════
 // EVENTOS — Admin: lista y formulario
 // ═══════════════════════════════════════════════════════════════
 function renderEventosAdmin(){
-const el=document.getElementById(‘eventos-admin-lista’);
-if(!el)return;
-const evs=DB.eventos||[];
-const today=new Date();today.setHours(0,0,0,0);
+  const el=document.getElementById('eventos-admin-lista');
+  if(!el)return;
+  const evs=DB.eventos||[];
+  const today=new Date();today.setHours(0,0,0,0);
 
-if(!evs.length){
-el.innerHTML=`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos. Crea el primero con + Nuevo.</div>`;
-return;
+  if(!evs.length){
+    el.innerHTML=`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos. Crea el primero con + Nuevo.</div>`;
+    return;
+  }
+
+  el.innerHTML=evs.map(ev=>{
+    const fechaLegible=ev.fecha==='recurrente_ultimo_domingo'
+      ?'Último domingo de cada mes'
+      :ev.fecha==='por_definir'
+      ?'Fecha por definir'
+      :fmtEvDate(new Date(ev.fecha+'T00:00:00'))+(ev.fechaFin?` — ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}`:'');
+    const proxFecha=proximaFechaEvento(ev,today);
+    let diasStr='—';
+    if(proxFecha){const n=diffDaysEv(proxFecha,today);diasStr=n===0?'¡HOY!':n===1?'Mañana':'En '+n+' días';}
+    return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:${ev.color}18;border:1.5px solid ${ev.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${ev.icono}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.nombre}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${fechaLegible}</div>
+        ${ev.nota?`<div style="font-size:10px;color:#6b7280;margin-top:1px;font-style:italic;">${ev.nota}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${ev.color};">${diasStr}</div>
+        <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+          <button onclick="openFormEvento('${ev.id}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">✏️</button>
+          <button onclick="confirmarDelEvento('${ev.id}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-el.innerHTML=evs.map(ev=>{
-const fechaLegible=ev.fecha===‘recurrente_ultimo_domingo’
-?‘Último domingo de cada mes’
-:ev.fecha===‘por_definir’
-?‘Fecha por definir’
-:fmtEvDate(new Date(ev.fecha+‘T00:00:00’))+(ev.fechaFin?` — ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}`:’’);
-const proxFecha=proximaFechaEvento(ev,today);
-let diasStr=’—’;
-if(proxFecha){const n=diffDaysEv(proxFecha,today);diasStr=n===0?’¡HOY!’:n===1?‘Mañana’:‘En ‘+n+’ días’;}
-return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;"> <div style="width:40px;height:40px;border-radius:10px;background:${ev.color}18;border:1.5px solid ${ev.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${ev.icono}</div> <div style="flex:1;min-width:0;"> <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.nombre}</div> <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${fechaLegible}</div> ${ev.nota?`<div style="font-size:10px;color:#6b7280;margin-top:1px;font-style:italic;">${ev.nota}</div>`:''} </div> <div style="text-align:right;flex-shrink:0;"> <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${ev.color};">${diasStr}</div> <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;"> <button onclick="openFormEvento('${ev.id}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">✏️</button> <button onclick="confirmarDelEvento('${ev.id}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">🗑</button> </div> </div> </div>`;
-}).join(’’);
-}
-
-const ICONOS_EV=[‘📅’,‘⚔️’,‘🏟️’,‘⛺’,‘🕯️’,‘✝️’,‘👥’,‘📚’,‘🙏’,‘🎉’,‘👧’,‘🌿’,‘📖’,‘🎵’];
-const COLORES_EV=[’#3aabba’,’#ef4444’,’#22c55e’,’#f59e0b’,’#8b5cf6’,’#6d28d9’,’#ec4899’,’#14b8a6’,’#f97316’,’#64748b’];
+const ICONOS_EV=['📅','⚔️','🏟️','⛺','🕯️','✝️','👥','📚','🙏','🎉','👧','🌿','📖','🎵'];
+const COLORES_EV=['#3aabba','#ef4444','#22c55e','#f59e0b','#8b5cf6','#6d28d9','#ec4899','#14b8a6','#f97316','#64748b'];
 
 function openFormEvento(id){
-const isNew=!id;
-const ev=id?(DB.eventos||[]).find(e=>e.id===id):{nombre:’’,fecha:’’,fechaFin:’’,icono:‘📅’,color:’#3aabba’,nota:’’};
-if(!ev)return;
+  const isNew=!id;
+  const ev=id?(DB.eventos||[]).find(e=>e.id===id):{nombre:'',fecha:'',fechaFin:'',icono:'📅',color:'#3aabba',nota:''};
+  if(!ev)return;
 
-const tipoFecha=ev.fecha===‘recurrente_ultimo_domingo’?‘recurrente’:ev.fecha===‘por_definir’?‘por_definir’:‘fija’;
-const fechaVal=tipoFecha===‘fija’?ev.fecha:’’;
-const fechaFinVal=ev.fechaFin||’’;
+  const tipoFecha=ev.fecha==='recurrente_ultimo_domingo'?'recurrente':ev.fecha==='por_definir'?'por_definir':'fija';
+  const fechaVal=tipoFecha==='fija'?ev.fecha:'';
+  const fechaFinVal=ev.fechaFin||'';
 
-const iconoOpts=ICONOS_EV.map(i=>`<span onclick="selectEvIcon('${i}')" id="ev-ico-${i}" style="font-size:22px;cursor:pointer;padding:6px;border-radius:8px;border:2px solid ${ev.icono===i?'var(--teal)':'transparent'};background:${ev.icono===i?'var(--teal-bg)':'transparent'};transition:all .15s;">${i}</span>`).join(’’);
-const colorOpts=COLORES_EV.map(c=>`<div onclick="selectEvColor('${c}')" id="ev-col-${c.replace('#','')}" style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${ev.color===c?'#1a1f2e':'transparent'};box-shadow:${ev.color===c?'0 0 0 2px white inset':'none'};transition:all .15s;flex-shrink:0;"></div>`).join(’’);
+  const iconoOpts=ICONOS_EV.map(i=>`<span onclick="selectEvIcon('${i}')" id="ev-ico-${i}" style="font-size:22px;cursor:pointer;padding:6px;border-radius:8px;border:2px solid ${ev.icono===i?'var(--teal)':'transparent'};background:${ev.icono===i?'var(--teal-bg)':'transparent'};transition:all .15s;">${i}</span>`).join('');
+  const colorOpts=COLORES_EV.map(c=>`<div onclick="selectEvColor('${c}')" id="ev-col-${c.replace('#','')}" style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${ev.color===c?'#1a1f2e':'transparent'};box-shadow:${ev.color===c?'0 0 0 2px white inset':'none'};transition:all .15s;flex-shrink:0;"></div>`).join('');
 
-openSheet(ev.icono||‘📅’,isNew?‘Nuevo Evento’:`Editar Evento`,’’,`<div class="fr"><label>Nombre del evento</label><input id="ev-nombre" value="${ev.nombre}" placeholder="Ej: Congreso Nacional"></div> <div class="fr"><label>Ícono</label><div style="display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--off);border-radius:10px;">${iconoOpts}</div></div> <div class="fr"><label>Color</label><div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:var(--off);border-radius:10px;">${colorOpts}</div></div> <div class="fr"><label>Tipo de fecha</label> <select id="ev-tipofecha" onchange="onEvTipoFechaChange()" style="width:100%;padding:11px 14px;background:var(--off);border:1.5px solid #e9edf2;border-radius:10px;font-family:'Lato',sans-serif;font-size:14px;outline:none;"> <option value="fija" ${tipoFecha==='fija'?'selected':''}>Fecha fija</option> <option value="recurrente" ${tipoFecha==='recurrente'?'selected':''}>Último domingo de cada mes</option> <option value="por_definir" ${tipoFecha==='por_definir'?'selected':''}>Por definir</option> </select> </div> <div id="ev-fecha-wrap" style="display:${tipoFecha==='fija'?'block':'none'}"> <div class="fr"><label>Fecha</label><input type="date" id="ev-fecha" value="${fechaVal}"></div> <div class="fr"><label>Fecha fin (opcional, para eventos de varios días)</label><input type="date" id="ev-fechafin" value="${fechaFinVal}"></div> </div> <div class="fr"><label>Nota / descripción breve (opcional)</label><input id="ev-nota" value="${ev.nota||''}" placeholder="Ej: Lema: El fruto del Espíritu Santo"></div> <input type="hidden" id="ev-icono-val" value="${ev.icono||'📅'}"> <input type="hidden" id="ev-color-val" value="${ev.color||'#3aabba'}"> <button class="btn bteal bfull" onclick="${isNew?'doAddEvento()':'doSaveEvento(\''+id+'\')'}" style="margin-top:4px">${isNew?'✚ Crear Evento':'💾 Guardar Cambios'}</button>`);
+  openSheet(ev.icono||'📅',isNew?'Nuevo Evento':`Editar Evento`,'',`
+    <div class="fr"><label>Nombre del evento</label><input id="ev-nombre" value="${ev.nombre}" placeholder="Ej: Congreso Nacional"></div>
+    <div class="fr"><label>Ícono</label><div style="display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:var(--off);border-radius:10px;">${iconoOpts}</div></div>
+    <div class="fr"><label>Color</label><div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:var(--off);border-radius:10px;">${colorOpts}</div></div>
+    <div class="fr"><label>Tipo de fecha</label>
+      <select id="ev-tipofecha" onchange="onEvTipoFechaChange()" style="width:100%;padding:11px 14px;background:var(--off);border:1.5px solid #e9edf2;border-radius:10px;font-family:'Lato',sans-serif;font-size:14px;outline:none;">
+        <option value="fija" ${tipoFecha==='fija'?'selected':''}>Fecha fija</option>
+        <option value="recurrente" ${tipoFecha==='recurrente'?'selected':''}>Último domingo de cada mes</option>
+        <option value="por_definir" ${tipoFecha==='por_definir'?'selected':''}>Por definir</option>
+      </select>
+    </div>
+    <div id="ev-fecha-wrap" style="display:${tipoFecha==='fija'?'block':'none'}">
+      <div class="fr"><label>Fecha</label><input type="date" id="ev-fecha" value="${fechaVal}"></div>
+      <div class="fr"><label>Fecha fin (opcional, para eventos de varios días)</label><input type="date" id="ev-fechafin" value="${fechaFinVal}"></div>
+    </div>
+    <div class="fr"><label>Nota / descripción breve (opcional)</label><input id="ev-nota" value="${ev.nota||''}" placeholder="Ej: Lema: El fruto del Espíritu Santo"></div>
+    <input type="hidden" id="ev-icono-val" value="${ev.icono||'📅'}">
+    <input type="hidden" id="ev-color-val" value="${ev.color||'#3aabba'}">
+    <button class="btn bteal bfull" onclick="${isNew?'doAddEvento()':'doSaveEvento(\''+id+'\')'}" style="margin-top:4px">${isNew?'✚ Crear Evento':'💾 Guardar Cambios'}</button>
+  `);
 }
 
 function onEvTipoFechaChange(){
-const v=document.getElementById(‘ev-tipofecha’).value;
-document.getElementById(‘ev-fecha-wrap’).style.display=v===‘fija’?‘block’:‘none’;
+  const v=document.getElementById('ev-tipofecha').value;
+  document.getElementById('ev-fecha-wrap').style.display=v==='fija'?'block':'none';
 }
 function selectEvIcon(ico){
-document.getElementById(‘ev-icono-val’).value=ico;
-ICONOS_EV.forEach(i=>{
-const el=document.getElementById(‘ev-ico-’+i);
-if(el){el.style.border=i===ico?‘2px solid var(–teal)’:‘2px solid transparent’;el.style.background=i===ico?‘var(–teal-bg)’:‘transparent’;}
-});
-// update sheet avatar
-document.getElementById(‘m-av’).textContent=ico;
+  document.getElementById('ev-icono-val').value=ico;
+  ICONOS_EV.forEach(i=>{
+    const el=document.getElementById('ev-ico-'+i);
+    if(el){el.style.border=i===ico?'2px solid var(--teal)':'2px solid transparent';el.style.background=i===ico?'var(--teal-bg)':'transparent';}
+  });
+  // update sheet avatar
+  document.getElementById('m-av').textContent=ico;
 }
 function selectEvColor(col){
-document.getElementById(‘ev-color-val’).value=col;
-COLORES_EV.forEach(c=>{
-const el=document.getElementById(‘ev-col-’+c.replace(’#’,’’));
-if(el){el.style.border=c===col?‘3px solid #1a1f2e’:‘3px solid transparent’;el.style.boxShadow=c===col?‘0 0 0 2px white inset’:‘none’;}
-});
+  document.getElementById('ev-color-val').value=col;
+  COLORES_EV.forEach(c=>{
+    const el=document.getElementById('ev-col-'+c.replace('#',''));
+    if(el){el.style.border=c===col?'3px solid #1a1f2e':'3px solid transparent';el.style.boxShadow=c===col?'0 0 0 2px white inset':'none';}
+  });
 }
 
 function readFormEvento(){
-const tipo=document.getElementById(‘ev-tipofecha’).value;
-let fecha=’’,fechaFin=’’;
-if(tipo===‘fija’){fecha=document.getElementById(‘ev-fecha’).value;fechaFin=document.getElementById(‘ev-fechafin’).value;}
-else if(tipo===‘recurrente’)fecha=‘recurrente_ultimo_domingo’;
-else fecha=‘por_definir’;
-return{
-nombre:document.getElementById(‘ev-nombre’).value.trim(),
-fecha,fechaFin,
-icono:document.getElementById(‘ev-icono-val’).value,
-color:document.getElementById(‘ev-color-val’).value,
-nota:document.getElementById(‘ev-nota’).value.trim()
-};
+  const tipo=document.getElementById('ev-tipofecha').value;
+  let fecha='',fechaFin='';
+  if(tipo==='fija'){fecha=document.getElementById('ev-fecha').value;fechaFin=document.getElementById('ev-fechafin').value;}
+  else if(tipo==='recurrente')fecha='recurrente_ultimo_domingo';
+  else fecha='por_definir';
+  return{
+    nombre:document.getElementById('ev-nombre').value.trim(),
+    fecha,fechaFin,
+    icono:document.getElementById('ev-icono-val').value,
+    color:document.getElementById('ev-color-val').value,
+    nota:document.getElementById('ev-nota').value.trim()
+  };
 }
 
 async function doAddEvento(){
-const d=readFormEvento();
-if(!d.nombre){toast(‘Escribe el nombre del evento’,‘err’);return;}
-if(!DB.eventos)DB.eventos=[];
-DB.eventos.push({id:‘ev’+Date.now(),…d});
-closeModal();toast(‘💾 Guardando…’,‘info’);
-await saveDB();toast(‘✅ Evento creado’,‘ok’);
-renderEventosAdmin();
+  const d=readFormEvento();
+  if(!d.nombre){toast('Escribe el nombre del evento','err');return;}
+  if(!DB.eventos)DB.eventos=[];
+  DB.eventos.push({id:'ev'+Date.now(),...d});
+  closeModal();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Evento creado','ok');
+  renderEventosAdmin();
 }
 async function doSaveEvento(id){
-const d=readFormEvento();
-if(!d.nombre){toast(‘Escribe el nombre del evento’,‘err’);return;}
-const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
-Object.assign(ev,d);
-closeModal();toast(‘💾 Guardando…’,‘info’);
-await saveDB();toast(‘✅ Evento actualizado’,‘ok’);
-renderEventosAdmin();
+  const d=readFormEvento();
+  if(!d.nombre){toast('Escribe el nombre del evento','err');return;}
+  const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
+  Object.assign(ev,d);
+  closeModal();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Evento actualizado','ok');
+  renderEventosAdmin();
 }
 function confirmarDelEvento(id){
-const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
-const lista=document.getElementById(‘eventos-admin-lista’);
-// Insertar confirmación inline
-const conf=document.createElement(‘div’);
-conf.id=‘ev-conf-’+id;
-conf.style.cssText=‘background:var(–red-bg);border:1.5px solid rgba(239,68,68,0.25);border-radius:12px;padding:13px 14px;margin-top:6px;’;
-conf.innerHTML=`<p style="font-size:13px;color:var(--text);margin-bottom:10px;">¿Eliminar <strong>${ev.nombre}</strong>?</p> <div style="display:flex;gap:8px;"> <button class="btn boutline" onclick="document.getElementById('ev-conf-${id}').remove()" style="flex:1;">Cancelar</button> <button class="btn bred" onclick="doDelEvento('${id}')" style="flex:1;">Eliminar</button> </div>`;
-lista.appendChild(conf);
+  const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
+  const lista=document.getElementById('eventos-admin-lista');
+  // Insertar confirmación inline
+  const conf=document.createElement('div');
+  conf.id='ev-conf-'+id;
+  conf.style.cssText='background:var(--red-bg);border:1.5px solid rgba(239,68,68,0.25);border-radius:12px;padding:13px 14px;margin-top:6px;';
+  conf.innerHTML=`<p style="font-size:13px;color:var(--text);margin-bottom:10px;">¿Eliminar <strong>${ev.nombre}</strong>?</p>
+    <div style="display:flex;gap:8px;">
+      <button class="btn boutline" onclick="document.getElementById('ev-conf-${id}').remove()" style="flex:1;">Cancelar</button>
+      <button class="btn bred" onclick="doDelEvento('${id}')" style="flex:1;">Eliminar</button>
+    </div>`;
+  lista.appendChild(conf);
 }
 async function doDelEvento(id){
-DB.eventos=(DB.eventos||[]).filter(e=>e.id!==id);
-toast(‘💾 Guardando…’,‘info’);await saveDB();toast(‘Evento eliminado’,‘ok’);
-renderEventosAdmin();
+  DB.eventos=(DB.eventos||[]).filter(e=>e.id!==id);
+  toast('💾 Guardando...','info');await saveDB();toast('Evento eliminado','ok');
+  renderEventosAdmin();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1950,39 +2081,39 @@ let prayerSeconds=20*60;
 let prayerRunning=false;
 
 function togglePrayerTimer(){
-if(prayerRunning){
-clearInterval(prayerInterval);
-prayerRunning=false;
-prayerSeconds=20*60;
-document.getElementById(‘prayer-timer-display’).textContent=‘20:00’;
-document.getElementById(‘prayer-timer-label’).textContent=‘INICIAR’;
-document.getElementById(‘prayer-banner’).style.boxShadow=‘0 4px 20px rgba(139,92,246,0.2)’;
-} else {
-prayerRunning=true;
-document.getElementById(‘prayer-timer-label’).textContent=‘DETENER’;
-document.getElementById(‘prayer-banner’).style.boxShadow=‘0 4px 24px rgba(139,92,246,0.5)’;
-prayerInterval=setInterval(()=>{
-prayerSeconds–;
-if(prayerSeconds<=0){
-clearInterval(prayerInterval);
-prayerRunning=false;
-document.getElementById(‘prayer-timer-display’).textContent=‘✅’;
-document.getElementById(‘prayer-timer-label’).textContent=’¡AMÉN!’;
-document.getElementById(‘prayer-banner’).style.boxShadow=‘0 4px 24px rgba(22,163,74,0.5)’;
-toast(‘🙏 ¡20 minutos de oración completados! Amén.’,‘ok’);
-setTimeout(()=>{
-prayerSeconds=20*60;
-document.getElementById(‘prayer-timer-display’).textContent=‘20:00’;
-document.getElementById(‘prayer-timer-label’).textContent=‘INICIAR’;
-document.getElementById(‘prayer-banner’).style.boxShadow=‘0 4px 20px rgba(139,92,246,0.2)’;
-},4000);
-return;
-}
-const m=Math.floor(prayerSeconds/60);
-const s=prayerSeconds%60;
-document.getElementById(‘prayer-timer-display’).textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-},1000);
-}
+  if(prayerRunning){
+    clearInterval(prayerInterval);
+    prayerRunning=false;
+    prayerSeconds=20*60;
+    document.getElementById('prayer-timer-display').textContent='20:00';
+    document.getElementById('prayer-timer-label').textContent='INICIAR';
+    document.getElementById('prayer-banner').style.boxShadow='0 4px 20px rgba(139,92,246,0.2)';
+  } else {
+    prayerRunning=true;
+    document.getElementById('prayer-timer-label').textContent='DETENER';
+    document.getElementById('prayer-banner').style.boxShadow='0 4px 24px rgba(139,92,246,0.5)';
+    prayerInterval=setInterval(()=>{
+      prayerSeconds--;
+      if(prayerSeconds<=0){
+        clearInterval(prayerInterval);
+        prayerRunning=false;
+        document.getElementById('prayer-timer-display').textContent='✅';
+        document.getElementById('prayer-timer-label').textContent='¡AMÉN!';
+        document.getElementById('prayer-banner').style.boxShadow='0 4px 24px rgba(22,163,74,0.5)';
+        toast('🙏 ¡20 minutos de oración completados! Amén.','ok');
+        setTimeout(()=>{
+          prayerSeconds=20*60;
+          document.getElementById('prayer-timer-display').textContent='20:00';
+          document.getElementById('prayer-timer-label').textContent='INICIAR';
+          document.getElementById('prayer-banner').style.boxShadow='0 4px 20px rgba(139,92,246,0.2)';
+        },4000);
+        return;
+      }
+      const m=Math.floor(prayerSeconds/60);
+      const s=prayerSeconds%60;
+      document.getElementById('prayer-timer-display').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    },1000);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1991,106 +2122,130 @@ document.getElementById(‘prayer-timer-display’).textContent=`${String(m).pad
 let petAnon=false;
 
 function toggleAnon(){
-petAnon=!petAnon;
-const box=document.getElementById(‘pet-anon-box’);
-const lbl=document.getElementById(‘pet-anon-lbl’);
-const toggle=document.getElementById(‘pet-anon-toggle’);
-box.textContent=petAnon?‘✓’:’’;
-box.style.background=petAnon?’#8b5cf6’:‘white’;
-box.style.borderColor=petAnon?’#8b5cf6’:’#d1d5db’;
-box.style.color=‘white’;
-toggle.style.borderColor=petAnon?’#8b5cf6’:’#e9edf2’;
-toggle.style.background=petAnon?‘rgba(139,92,246,0.08)’:’#f9fafb’;
-lbl.style.color=petAnon?’#6d28d9’:’#4b5563’;
+  petAnon=!petAnon;
+  const box=document.getElementById('pet-anon-box');
+  const lbl=document.getElementById('pet-anon-lbl');
+  const toggle=document.getElementById('pet-anon-toggle');
+  box.textContent=petAnon?'✓':'';
+  box.style.background=petAnon?'#8b5cf6':'white';
+  box.style.borderColor=petAnon?'#8b5cf6':'#d1d5db';
+  box.style.color='white';
+  toggle.style.borderColor=petAnon?'#8b5cf6':'#e9edf2';
+  toggle.style.background=petAnon?'rgba(139,92,246,0.08)':'#f9fafb';
+  lbl.style.color=petAnon?'#6d28d9':'#4b5563';
 }
 
 async function enviarPeticion(){
-const texto=document.getElementById(‘pet-texto’).value.trim();
-if(!texto){toast(‘Escribe tu petición primero’,‘err’);return;}
-const c=DB.caballeros.find(x=>x.id===currentCabId);
-const nombre=petAnon?‘Anónimo’:(c?c.nombre:‘Anónimo’);
-const id=‘pet_’+Date.now();
-const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString(‘es-CO’,{day:‘2-digit’,month:‘short’})};
-if(!DB.peticiones)DB.peticiones=[];
-DB.peticiones.push(peticion);
-try{
-toast(‘💾 Enviando…’,‘info’);
-await saveDB();
-document.getElementById(‘pet-texto’).value=’’;
-if(petAnon){petAnon=false;toggleAnon();}
-toast(‘🙏 Petición enviada. Los hermanos orarán por ti’,‘ok’);
-cargarPeticiones();
-}catch(e){
-DB.peticiones=DB.peticiones.filter(p=>p.id!==id);
-toast(‘⚠️ Error al enviar. Intenta de nuevo.’,‘err’);
-console.error(e);
-}
+  const texto=document.getElementById('pet-texto').value.trim();
+  if(!texto){toast('Escribe tu petición primero','err');return;}
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const nombre=petAnon?'Anónimo':(c?c.nombre:'Anónimo');
+  const id='pet_'+Date.now();
+  const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
+  if(!DB.peticiones)DB.peticiones=[];
+  DB.peticiones.push(peticion);
+  try{
+    toast('💾 Enviando...','info');
+    await saveDB();
+    document.getElementById('pet-texto').value='';
+    if(petAnon){petAnon=false;toggleAnon();}
+    toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
+    cargarPeticiones();
+  }catch(e){
+    DB.peticiones=DB.peticiones.filter(p=>p.id!==id);
+    toast('⚠️ Error al enviar. Intenta de nuevo.','err');
+    console.error(e);
+  }
 }
 
 function borrarPeticion(id){
-const card=document.getElementById(‘pet-card-’+id);
-if(!card)return;
-// Si ya hay confirmación abierta, la cerramos
-const ya=document.getElementById(‘pet-confirm-’+id);
-if(ya){ya.remove();return;}
-const conf=document.createElement(‘div’);
-conf.id=‘pet-confirm-’+id;
-conf.style.cssText=‘margin-top:8px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;’;
-conf.innerHTML=`<span style="font-size:12px;color:#b91c1c;font-weight:600;">¿Borrar esta petición?</span> <div style="display:flex;gap:6px;"> <button onclick="document.getElementById('pet-confirm-${id}').remove()" style="background:white;border:1px solid #e5e7eb;color:#6b7280;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Cancelar</button> <button onclick="confirmarBorrarPeticion('${id}')" style="background:#ef4444;border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Borrar</button> </div>`;
-card.appendChild(conf);
+  const card=document.getElementById('pet-card-'+id);
+  if(!card)return;
+  // Si ya hay confirmación abierta, la cerramos
+  const ya=document.getElementById('pet-confirm-'+id);
+  if(ya){ya.remove();return;}
+  const conf=document.createElement('div');
+  conf.id='pet-confirm-'+id;
+  conf.style.cssText='margin-top:8px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+  conf.innerHTML=`<span style="font-size:12px;color:#b91c1c;font-weight:600;">¿Borrar esta petición?</span>
+    <div style="display:flex;gap:6px;">
+      <button onclick="document.getElementById('pet-confirm-${id}').remove()" style="background:white;border:1px solid #e5e7eb;color:#6b7280;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Cancelar</button>
+      <button onclick="confirmarBorrarPeticion('${id}')" style="background:#ef4444;border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Borrar</button>
+    </div>`;
+  card.appendChild(conf);
 }
 
 async function confirmarBorrarPeticion(id){
-DB.peticiones=(DB.peticiones||[]).filter(p=>p.id!==id);
-try{
-toast(‘💾 Guardando…’,‘info’);
-await saveDB();
-toast(‘✅ Petición eliminada’,‘ok’);
-}catch(e){toast(‘⚠️ Error al guardar’,‘err’);console.error(e);}
-cargarPeticiones();
-cargarPeticionesAdmin();
+  DB.peticiones=(DB.peticiones||[]).filter(p=>p.id!==id);
+  try{
+    toast('💾 Guardando...','info');
+    await saveDB();
+    toast('✅ Petición eliminada','ok');
+  }catch(e){toast('⚠️ Error al guardar','err');console.error(e);}
+  cargarPeticiones();
+  cargarPeticionesAdmin();
 }
 
 function cargarPeticiones(esAdmin=false){
-const listaId=esAdmin?‘admin-peticiones-lista’:‘peticiones-lista’;
-const lista=document.getElementById(listaId);
-if(!lista)return;
-const badge=document.getElementById(‘peticiones-count-badge’);
-const adminBadge=document.getElementById(‘admin-pet-badge’);
-const items=[…(DB.peticiones||[])].sort((a,b)=>b.ts-a.ts);
-const count=items.length;
-if(badge)badge.textContent=`${count} petición${count!==1?'es':''}`;
-if(adminBadge)adminBadge.textContent=`${count} petición${count!==1?'es':''}`;
-if(count===0){
-lista.innerHTML=`<div style="text-align:center;padding:24px 16px;background:white;border-radius:14px;border:1.5px dashed #e9edf2;"> <div style="font-size:28px;margin-bottom:8px;">🕊️</div> <div style="font-size:13px;color:#9ca3af;font-weight:600;">No hay peticiones esta semana</div> <div style="font-size:11px;color:#d1d5db;margin-top:4px;">Sé el primero en compartir una</div> </div>`;
-return;
-}
-lista.innerHTML=items.map(p=>{
-const isAnon=p.nombre===‘Anónimo’;
-const avColor=isAnon?’#9ca3af’:’#8b5cf6’;
-const avIcon=isAnon?‘🤍’:‘🙏’;
-const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
-return`<div id="pet-card-${p.id}" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;"> <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-radius:3px 0 0 3px;"></div> <div style="display:flex;align-items:flex-start;gap:10px;margin-left:4px;"> <div style="width:34px;height:34px;border-radius:50%;background:${isAnon?'rgba(156,163,175,0.15)':'rgba(139,92,246,0.12)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1.5px solid ${isAnon?'rgba(156,163,175,0.3)':'rgba(139,92,246,0.25)'};">${avIcon}</div> <div style="flex:1;min-width:0;"> <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"> <span style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${avColor};">${p.nombre}</span> <div style="display:flex;align-items:center;gap:8px;"> <span style="font-size:10px;color:#d1d5db;">${p.fecha||''}</span> ${puedeborrar?`<button onclick="borrarPeticion('${p.id}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;" title="Eliminar">🗑</button>`:''} </div> </div> <div style="font-size:13px;color:#374151;line-height:1.5;">${p.texto}</div> <div style="margin-top:6px;font-size:11px;color:#a78bfa;font-family:'Caveat',cursive;">🙏 Orando por esto</div> </div> </div> </div>`;
-}).join(’’);
+  const listaId=esAdmin?'admin-peticiones-lista':'peticiones-lista';
+  const lista=document.getElementById(listaId);
+  if(!lista)return;
+  const badge=document.getElementById('peticiones-count-badge');
+  const adminBadge=document.getElementById('admin-pet-badge');
+  const items=[...(DB.peticiones||[])].sort((a,b)=>b.ts-a.ts);
+  const count=items.length;
+  if(badge)badge.textContent=`${count} petición${count!==1?'es':''}`;
+  if(adminBadge)adminBadge.textContent=`${count} petición${count!==1?'es':''}`;
+  if(count===0){
+    lista.innerHTML=`<div style="text-align:center;padding:24px 16px;background:white;border-radius:14px;border:1.5px dashed #e9edf2;">
+      <div style="font-size:28px;margin-bottom:8px;">🕊️</div>
+      <div style="font-size:13px;color:#9ca3af;font-weight:600;">No hay peticiones esta semana</div>
+      <div style="font-size:11px;color:#d1d5db;margin-top:4px;">Sé el primero en compartir una</div>
+    </div>`;
+    return;
+  }
+  lista.innerHTML=items.map(p=>{
+    const isAnon=p.nombre==='Anónimo';
+    const avColor=isAnon?'#9ca3af':'#8b5cf6';
+    const avIcon=isAnon?'🤍':'🙏';
+    const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
+    return`<div id="pet-card-${p.id}" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-radius:3px 0 0 3px;"></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-left:4px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:${isAnon?'rgba(156,163,175,0.15)':'rgba(139,92,246,0.12)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1.5px solid ${isAnon?'rgba(156,163,175,0.3)':'rgba(139,92,246,0.25)'};">${avIcon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${avColor};">${p.nombre}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:10px;color:#d1d5db;">${p.fecha||''}</span>
+              ${puedeborrar?`<button onclick="borrarPeticion('${p.id}')" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;" title="Eliminar">🗑</button>`:''}
+            </div>
+          </div>
+          <div style="font-size:13px;color:#374151;line-height:1.5;">${p.texto}</div>
+          <div style="margin-top:6px;font-size:11px;color:#a78bfa;font-family:'Caveat',cursive;">🙏 Orando por esto</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function cargarPeticionesAdmin(){cargarPeticiones(true);}
+
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 // ── Init
 async function initApp(){
-await loadDB();
-buildSel();
-const acts=document.querySelector(’.hacts’);
-if(acts&&!document.getElementById(‘btn-cloud’)){
-const b=document.createElement(‘button’);b.id=‘btn-cloud’;b.className=‘btn-hdr’;b.textContent=‘☁️’;b.title=‘Guía de compartir’;b.onclick=showGDriveGuide;acts.prepend(b);
-}
+  await loadDB();
+  buildSel();
+  const acts=document.querySelector('.hacts');
+  if(acts&&!document.getElementById('btn-cloud')){
+    const b=document.createElement('button');b.id='btn-cloud';b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);
+  }
 }
 
-document.addEventListener(‘DOMContentLoaded’, initApp);
+document.addEventListener('DOMContentLoaded', initApp);
 </script>
-
 </body>
 </html>
