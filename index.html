@@ -900,13 +900,16 @@ async function loadDB(){
 
 async function saveDB(){
   invalidateCache();
-  // Guardar local siempre
-  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  // Guardar en nube
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){
+    console.error('localStorage save failed',e);
+    toast('⚠️ No se pudo guardar (espacio o privacidad). Prueba borrar datos del sitio.','err');
+    return false;
+  }
   if(USE_CLOUD){
     try{await cloudSave(DB);}
     catch(e){toast('⚠️ Error al guardar en la nube','err');console.error(e);}
   }
+  return true;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1270,12 +1273,15 @@ async function doDelCab(id){
   await saveDB();toast('Caballero eliminado','ok');
 }
 
+// Escapar para atributos HTML (evita rotura con ", &, < en nombres)
+function escAttr(s){if(s==null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 // ═══════════════════════════════════════════════════════════════
 // FORM CABALLERO — Fixed checkboxes + auto stars
 // ═══════════════════════════════════════════════════════════════
 function openFormCab(id){
   const isNew=!id;
   const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:''};
+  if(id&&!c){toast('Caballero no encontrado','err');return;}
   const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join('');
   const chkH=`<div class="chk-grid">${CHECKS.map(k=>`
     <div class="chk-item ${c[k]?'on':''}" id="chk-wrap-${k}" onclick="toggleChk('${k}')">
@@ -1285,11 +1291,13 @@ function openFormCab(id){
     </div>`).join('')}</div>`;
   const curVal=autoVal(c);
   const starsH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<curVal?'lit':''}" id="fstar-${i}">★</span>`).join('');
+  const nombreEsc=escAttr(c.nombre);
+  const fnacEsc=escAttr(c.fnac||'');
   openSheet(isNew?'✚':(c.photo?`<img src="${c.photo}">`:(ini(c.nombre))),isNew?'Nuevo Caballero':`Editar: ${c.nombre}`,'',`
-    <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${c.nombre}" placeholder="Nombre y apellido"></div>
+    <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
     <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
-    <div class="fr"><label>Fecha de nacimiento</label><input type="date" id="fc-fnac" value="${c.fnac||''}" placeholder="Para cumpleaños"></div>
+    <div class="fr"><label>Fecha de nacimiento</label><input type="date" id="fc-fnac" value="${fnacEsc}" placeholder="Para cumpleaños"></div>
     <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
       <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
         <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</span>
@@ -1300,7 +1308,7 @@ function openFormCab(id){
       <div class="star-row" id="fc-stars">${starsH}</div>
       <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px" id="fc-val-lbl">${curVal}/7 estrellas</div>
     </div>
-    ${!isNew&&c.photo?`<div class="fr"><label>Foto actual</label><img src="${c.photo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2)"><button class="btn boutline" style="margin-left:12px;font-size:11px" onclick="document.getElementById('photo-input-modal').click()">Cambiar foto</button></div>`:''}
+    ${!isNew?(c.photo?`<div class="fr"><label>Foto actual</label><img src="${c.photo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--border2)"><button class="btn boutline" style="margin-left:12px;font-size:11px" onclick="document.getElementById('photo-input-modal').click()">Cambiar foto</button></div>`:`<div class="fr"><label>Foto</label><button class="btn boutline" type="button" onclick="document.getElementById('photo-input-modal').click()">📷 Añadir foto</button></div>`):''}
     <button class="btn bteal bfull" onclick="${isNew?'doAddCab()':'doSaveCab(\''+id+'\')'}" style="margin-top:4px">${isNew?'✚ Agregar Caballero':'💾 Guardar Cambios'}</button>
     ${!isNew?`<button class="btn bred bfull" onclick="confirmDelCab('${id}')" style="margin-top:10px">🗑 Eliminar Caballero</button>`:''}
   `);
@@ -1365,13 +1373,14 @@ function handlePhoto(e,ctx){
       c.photo=data;
       const av=document.getElementById('pv-av');
       av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
-      await saveDB();toast('📷 Foto actualizada','ok');
+      const ok=await saveDB();if(ok)toast('📷 Foto actualizada','ok');else toast('Foto no se pudo guardar','err');
     }else{
       const cabId=document.getElementById('photo-input-modal').dataset.cabId;
       if(cabId){
         const c=DB.caballeros.find(x=>x.id===cabId);
-        if(c){c.photo=data;await saveDB();toast('📷 Foto guardada','ok');}
-      }
+        if(c){c.photo=data;const ok=await saveDB();if(ok)toast('📷 Foto guardada','ok');else toast('Foto no se pudo guardar','err');}
+        else toast('Caballero no encontrado','err');
+      }else toast('Abre de nuevo el formulario del caballero e intenta añadir la foto otra vez.','err');
     }
   });
   e.target.value='';
@@ -1394,9 +1403,14 @@ async function doAddCab(){
 }
 async function doSaveCab(id){
   const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
-  const c=DB.caballeros.find(x=>x.id===id);Object.assign(c,d);
+  const c=DB.caballeros.find(x=>x.id===id);
+  if(!c){toast('Caballero no encontrado (id: '+id+')','err');return;}
+  const keepPhoto=c.photo;const keepPw=c.pw||'';
+  Object.assign(c,d);
+  c.photo=keepPhoto;if(keepPw!==undefined)c.pw=keepPw;
   closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
-  await saveDB();toast('✅ Guardado','ok');
+  const ok=await saveDB();if(!ok){toast('Error al guardar. Revisa espacio o conexión.','err');return;}
+  toast('✅ Guardado','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1606,8 +1620,8 @@ async function doSaveGrade(){
   cl.cal=newCal;closeGrade();
   renderClases();renderDash();renderCalGr();
   toast('💾 Guardando calificaciones...','info');
-  await saveDB();
-  toast(`✅ ${saved} calificaciones guardadas`,'ok');
+  const ok=await saveDB();
+  if(ok)toast(`✅ ${saved} calificaciones guardadas`,'ok');else toast('⚠️ Calificaciones no se pudieron guardar','err');
 }
 
 // ═══════════════════════════════════════════════════════════════
