@@ -511,6 +511,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <div id="t-eventos-admin" class="tab">
     <div class="pg">
       <div class="sec-ttl">🗓 Eventos <button class="btn bteal" onclick="openFormEvento(null)" style="font-size:11px;padding:7px 12px">+ Nuevo</button></div>
+      <div id="eventos-admin-campamento-wrap" style="margin-bottom:16px;"></div>
       <div id="eventos-admin-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
       <div style="margin-top:24px;">
         <div class="sec-ttl" style="color:#9ca3af;font-size:12px;">📅 Eventos pasados</div>
@@ -1946,8 +1947,8 @@ function renderCampamentoBanner(){
   const aun=cabs.filter(c=>c.campamentoRespuesta==='aun_no_se').length;
   const total=si+no+aun;
   const tieneRespuesta=currentCabId&&(DB.caballeros.find(x=>x.id===currentCabId)||{}).campamentoRespuesta;
-  const editBtn=tieneRespuesta?'<button type="button" onclick="openEditCampamento()" style="background:transparent;border:none;padding:4px;cursor:pointer;font-size:16px;" title="Cambiar mi respuesta">✏️</button>':'';
-  wrap.innerHTML='<div style="background:linear-gradient(135deg,rgba(34,197,94,0.12) 0%,rgba(245,158,11,0.08) 100%);border-radius:14px;padding:14px 16px;border:1px solid rgba(34,197,94,0.25);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><span style="font-family:\'Montserrat\',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;">⛺ Campamento de Caballeros</span><span style="font-size:12px;color:#4b5563;">Sí: <strong>'+si+'</strong> · No: <strong>'+no+'</strong> · Aún no lo sé: <strong>'+aun+'</strong>'+(total>0?' · '+total+' respuestas':'')+'</span></div>'+editBtn+'</div>';
+  const editBtn=tieneRespuesta?'<div style="flex-shrink:0;"><button type="button" onclick="openEditCampamento()" style="background:transparent;border:none;padding:4px;cursor:pointer;font-size:16px;" title="Cambiar mi respuesta">✏️</button></div>':'';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,rgba(34,197,94,0.12) 0%,rgba(245,158,11,0.08) 100%);border-radius:14px;padding:14px 16px;border:1px solid rgba(34,197,94,0.25);display:flex;align-items:center;justify-content:space-between;gap:12px;"><div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;"><span style="font-family:\'Montserrat\',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;">⛺ Campamento de Caballeros</span><span style="font-size:12px;color:#4b5563;">Sí: <strong>'+si+'</strong> · No: <strong>'+no+'</strong> · Aún no lo sé: <strong>'+aun+'</strong>'+(total>0?' · '+total+' respuestas':'')+'</span></div>'+editBtn+'</div>';
 }
 function openEditCampamento(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
@@ -2725,10 +2726,28 @@ function renderEventosPV(){
 // ═══════════════════════════════════════════════════════════════
 // EVENTOS — Admin: lista y formulario (cultos, estudios, eventos)
 // ═══════════════════════════════════════════════════════════════
+function renderCampamentoAdmin(){
+  const wrap=document.getElementById('eventos-admin-campamento-wrap');
+  if(!wrap)return;
+  const cabs=DB.caballeros||[];
+  const si=cabs.filter(c=>c.campamentoRespuesta==='si');
+  const no=cabs.filter(c=>c.campamentoRespuesta==='no');
+  const aun=cabs.filter(c=>c.campamentoRespuesta==='aun_no_se');
+  const total=si.length+no.length+aun.length;
+  const label=v=>v==='si'?'Sí':v==='no'?'No':'Aún no lo sé';
+  const listRows=[...si,...no,...aun]
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre))
+    .map(c=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:8px;background:#f8fafc;"><span style="font-size:13px;font-weight:600;color:#1a1f2e;">'+escAttr(c.nombre)+'</span><span style="font-size:12px;font-weight:700;color:#3aabba;">'+label(c.campamentoRespuesta)+'</span></div>')
+    .join('');
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,rgba(34,197,94,0.1) 0%,rgba(245,158,11,0.06) 100%);border-radius:14px;padding:14px 16px;border:1px solid rgba(34,197,94,0.2);">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-family:\'Montserrat\',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;">⛺ ¿Vas al campamento de Caballeros?</span><span style="font-size:12px;color:#4b5563;">Sí: <strong>'+si.length+'</strong> · No: <strong>'+no.length+'</strong> · Aún no lo sé: <strong>'+aun.length+'</strong>'+(total>0?' · '+total+' respuestas':'')+'</span></div>'+
+    '<details style="font-size:12px;"><summary style="cursor:pointer;font-weight:700;color:#3aabba;">Ver caballeros que han votado</summary><div style="display:flex;flex-direction:column;gap:4px;margin-top:10px;max-height:220px;overflow-y:auto;">'+(listRows||'<div style="padding:8px;color:#9ca3af;">Nadie ha respondido aún.</div>')+'</div></details></div>';
+}
 function renderEventosAdmin(){
   const el=document.getElementById('eventos-admin-lista');
   const elPasados=document.getElementById('eventos-admin-pasados');
   if(!el)return;
+  renderCampamentoAdmin();
 
   const {proximos,pasados,today}=getEventosCompletos();
 
