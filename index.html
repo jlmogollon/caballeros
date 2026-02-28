@@ -283,9 +283,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 }
 .pv-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 50%,rgba(58,171,186,0.18) 0%,transparent 50%),radial-gradient(circle at 75% 30%,rgba(245,197,24,0.1) 0%,transparent 40%);}
 .pv-av-wrap{position:relative;display:inline-block;margin-bottom:12px;}
-.pv-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal3));display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:white;border:3px solid rgba(255,255,255,0.25);box-shadow:0 0 24px rgba(58,171,186,0.4);overflow:hidden;cursor:pointer;position:relative;z-index:1;}
+.pv-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal3));display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:white;border:3px solid rgba(255,255,255,0.25);box-shadow:0 0 24px rgba(58,171,186,0.4);overflow:hidden;cursor:pointer;position:relative;z-index:1;text-align:center;}
 .pv-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.pv-cam{position:absolute;bottom:0;right:0;width:24px;height:24px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;z-index:2;}
+.pv-cam{position:absolute;top:-4px;right:0;width:24px;height:24px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;z-index:2;}
 .pv-name{font-family:'Montserrat',sans-serif;font-size:19px;font-weight:900;color:white;position:relative;}
 .pv-meta{font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px;letter-spacing:1px;position:relative;}
 .pv-bdg{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px;position:relative;}
@@ -1163,11 +1163,12 @@ function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
 function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%">`;return ini(c.nombre);}
 
 // Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
-function mkHistoryTable(cabId){
+function mkHistoryTable(cabId,forPdf){
   const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
+  const temaStyle=forPdf?'font-size:11px;white-space:normal;word-wrap:break-word':'font-size:10px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
   return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Interés</th><th>Puntualidad</th><th>Dominio</th><th>Participación</th><th>Asistencia</th><th>Total</th></tr></thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:11px;white-space:normal;word-wrap:break-word">${(r.tema||'—').replace(/</g,'&lt;')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
   }</tbody></table>`;
 }
 
@@ -3044,7 +3045,7 @@ function generarInformeIndividualPorId(id){
   const badgesHtml=(CHECKS||[]).filter(k=>cab[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');
   const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:8px">'+barRow('Asistencia a clases',calCab?calCab.asist:0,calCab?calCab.totalClases:1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+barRow('Puntuación acumulada',parseFloat(pts)||0,10,'#3aabba')+'</div></div>';
   const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Distintivo</div><div class="stat-val">'+(cab.dist||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 12px"><div class="stat-lbl" style="margin-bottom:6px">Estado espiritual</div><div style="font-size:11px">'+(badgesHtml||'—')+'</div></div>'+barrasInd+'</div>';
-  const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
+  const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
   const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
   const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
