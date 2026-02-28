@@ -282,11 +282,11 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   padding:28px 20px 22px;text-align:center;position:relative;overflow:hidden;
 }
 .pv-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 25% 50%,rgba(58,171,186,0.18) 0%,transparent 50%),radial-gradient(circle at 75% 30%,rgba(245,197,24,0.1) 0%,transparent 40%);}
-.pv-av-wrap{position:relative;display:inline-block;margin-bottom:12px;text-align:center;}
+.pv-av-wrap{position:relative;display:inline-block;width:76px;height:76px;margin-bottom:12px;flex-shrink:0;}
 .pv-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal3));display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:white;border:3px solid rgba(255,255,255,0.25);box-shadow:0 0 24px rgba(58,171,186,0.4);overflow:hidden;cursor:pointer;position:relative;z-index:1;}
 .pv-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.pv-cam{position:absolute;top:4px;right:4px;left:auto;bottom:auto;transform:none;width:22px;height:22px;background:rgba(255,255,255,0.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0.8;cursor:pointer;z-index:1;backdrop-filter:blur(2px);}
-.pv-av-wrap:hover .pv-cam{opacity:1;background:rgba(255,255,255,0.5);}
+.pv-cam{position:absolute;top:0;right:0;width:20px;height:20px;background:rgba(255,255,255,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;opacity:0.9;cursor:pointer;z-index:2;pointer-events:auto;}
+.pv-av-wrap:hover .pv-cam{opacity:1;background:rgba(255,255,255,0.6);}
 .pv-ntab-cumple{margin-right:10px;}
 .pv-name{font-family:'Montserrat',sans-serif;font-size:19px;font-weight:900;color:white;position:relative;}
 .pv-meta{font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px;letter-spacing:1px;position:relative;}
@@ -1168,21 +1168,20 @@ function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}
 function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
 function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%">`;return ini(c.nombre);}
 
-// Abreviar tema para que quepa en 2 líneas (ej. Intro. a las Dispensaciones.)
+// Abreviar tema: solo palabras largas (ej. Introducción a las dispensaciones → Introducción dispensaciones)
 function abrevTema(t){
   if(!t||!t.trim())return '—';
-  const s=t.trim();
-  const map={'Estudio de las Dispensaciones':'Intro. a las Dispensaciones.','Introducción a las Dispensaciones':'Intro. a las Dispensaciones.'};
-  if(map[s])return map[s];
-  if(s.length<=42)return s;
-  return s.replace(/^Introducción\b/i,'Intro.').replace(/^Estudio\b/i,'Est.').replace(/\s+de\s+las\s+Dispensaciones\.?$/i,' a las Dispensaciones.');
+  const cortas=/^(a|de|la|el|los|las|del|al|y|e|o|u|en|un|una|por|su|se|al|con)$/i;
+  const palabras=t.trim().split(/\s+/).filter(p=>p.length>2&&!cortas.test(p));
+  return palabras.length?palabras.join(' '):t.trim().substring(0,30);
 }
 // Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
 function mkHistoryTable(cabId,forPdf){
   const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
-  const temaStyle=forPdf?'font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.35;max-height:3.2em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical':'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.3;max-width:90px;max-height:2.8em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical';
-  return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr></thead><tbody>${
+  const temaStyle=forPdf?'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.3;max-height:2.8em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical':'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.3;max-width:90px;max-height:2.8em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical';
+  const headers=forPdf?'<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Total</th></tr>':'<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr>';
+  return`<table class="dtable ${forPdf?'dtable-pdf':''}"><thead>${headers}</thead><tbody>${
     hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
   }</tbody></table>`;
 }
@@ -3073,9 +3072,14 @@ function generarPDF(titulo,htmlContent){
     tr:last-child td{border-bottom:none;}
     tr:nth-child(even) td{background:#fafbfc;}
     table.dtable{width:100%;}
-    table.dtable th:nth-child(1),table.dtable td:nth-child(1){width:72px;max-width:72px;}
-    table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;}
+    table.dtable th:nth-child(1),table.dtable td:nth-child(1){width:68px;max-width:68px;}
+    table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;max-width:100px;}
     table.dtable th:nth-child(n+3),table.dtable td:nth-child(n+3){width:48px;max-width:52px;text-align:center;}
+    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:85px;}
+    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:52px;}
+    table.dtable-pdf th:nth-child(n+4),table.dtable-pdf td:nth-child(n+4){width:56px;}
+    .star-pdf{display:inline-block;font-size:14px;color:#e5e7eb;}
+    .star-pdf.lit{color:#eab308;}
     .stat{background:rgba(58,171,186,0.08);border-radius:8px;padding:8px 10px;}
     .stat-val{font-size:20px;font-weight:900;color:#3aabba;}
     .stat-lbl{font-size:10px;color:#4b5563;}
@@ -3153,9 +3157,11 @@ function generarInformeIndividualPorId(id){
   const calCab=typeof calcCab==='function'?calcCab(cab.id):null;
   const pts=calCab?calCab.total.toFixed(1):(cab.puntos||0);
   const pctAsist=calCab&&calCab.totalClases>0?Math.round((calCab.asist/calCab.totalClases)*100):0;
+  const totalClases=calCab?calCab.totalClases:0;
+  const ptsPosibles=totalClases*10;
   const rank=typeof getRank==='function'?getRank(id):'—';
-  const badgesHtml=(CHECKS||[]).filter(k=>cab[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');
-  const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:8px">'+barRow('Asistencia a clases',calCab?calCab.asist:0,calCab?calCab.totalClases:1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+barRow('Puntuación acumulada',parseFloat(pts)||0,10,'#3aabba')+'</div></div>';
+  const valEstrellas=typeof autoVal==='function'?autoVal(cab):0;
+  const starsHtml=Array(7).fill(0).map((_,i)=>'<span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span>').join('');
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
   const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
   const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
@@ -3163,8 +3169,28 @@ function generarInformeIndividualPorId(id){
   const numAct=act.length, numDon=don.length, numVot=vot.length;
   const totalDon=don.reduce((s,d)=>s+(Number(d.efectivo)||0)+(Number(d.tpv)||0),0);
   const totalVot=vot.reduce((s,v)=>s+(Number(v.efectivo)||0)+(Number(v.tpv)||0),0);
-  const statsGrupo='<div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' (€'+totalDon.toFixed(2)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' (€'+totalVot.toFixed(2)+')</div></div>';
-  const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 12px"><div class="stat-lbl" style="margin-bottom:6px">Distinciones</div><div style="font-size:11px">'+(badgesHtml||'—')+'</div></div><div style="padding:0 20px 16px"><div class="stat-lbl" style="margin-bottom:8px">Estadísticas del grupo (colaboraciones, donativos, votos)</div><div style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px">'+statsGrupo+'</div></div>'+barrasInd+'</div>';
+  const asistStr=(calCab?calCab.asist:0)+'/'+(totalClases||1);
+  const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:10px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Asistencia a clases</div><div style="font-size:18px;font-weight:900;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:8px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Puntuación posible vs acumulada</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:12px;font-weight:700;color:#3aabba;margin-top:4px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
+  const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 16px"><div class="stat-lbl" style="margin-bottom:8px">Distinciones</div><div class="star-row" style="justify-content:flex-start;padding:4px 0">'+starsHtml+'</div></div>'+barrasInd+'</div>';
+  const GRUPOS_ACT=GRUPOS||[];
+  const grupoStats={};
+  GRUPOS_ACT.forEach(g=>{
+    const miembros=DB.caballeros.filter(x=>x.grupo===g);
+    const totalPts=miembros.reduce((s,x)=>s+calcCab(x.id).total,0);
+    const avgPts=miembros.length?+(totalPts/miembros.length).toFixed(1):0;
+    const asistTot=miembros.reduce((s,x)=>s+calcCab(x.id).asist,0);
+    const posTot=miembros.length*DB.clases.length;
+    const pctAsistG=posTot?Math.round((asistTot/posTot)*100):0;
+    grupoStats[g]={miembros,totalPts:+totalPts.toFixed(1),avgPts,asistTot,pctAsist:pctAsistG};
+  });
+  const ranking=[...GRUPOS_ACT].sort((a,b)=>grupoStats[b].avgPts-grupoStats[a].avgPts);
+  const maxAvg=grupoStats[ranking[0]]?.avgPts||1;
+  const miGrupo=cab.grupo;
+  const col=GCOL[miGrupo]||'#3aabba';
+  const miRank=ranking.indexOf(miGrupo)+1;
+  const medal=miRank===1?'🥇':miRank===2?'🥈':miRank===3?'🥉':'';
+  const secEstadisticasGrupo='<div class="section"><div class="section-title">📊 Estadísticas gráficas del grupo</div><div style="padding:14px 20px"><div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%);border-radius:10px;padding:12px 16px;margin-bottom:12px;color:white;"><div style="font-size:11px;opacity:0.8;margin-bottom:4px">Mi grupo</div><div style="font-size:16px;font-weight:900">'+medal+' '+(miGrupo||'—')+'</div><div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap"><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.avgPts??'—')+'</div><div style="font-size:9px;opacity:0.8">Prom. pts</div></div><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.pctAsist??0)+'%</div><div style="font-size:9px;opacity:0.8">Asistencia</div></div><div><div style="font-size:18px;font-weight:900">#'+miRank+'</div><div style="font-size:9px;opacity:0.8">Ranking</div></div></div></div><div style="font-size:11px;font-weight:700;color:#4b5563;margin-bottom:8px">Comparación con el resto de grupos</div>'+ranking.map((g,i)=>{const st=grupoStats[g];const esMio=g===miGrupo;const pct=maxAvg>0?Math.round((st.avgPts/maxAvg)*100):0;return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:700;color:'+(esMio?col:'#374151')+'">'+(i+1)+'. '+g+'</span><span style="font-weight:800">'+st.avgPts+' pts · '+st.pctAsist+'% asist</span></div><div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+(esMio?col:'#9ca3af')+';border-radius:999px"></div></div></div>';}).join('')+'</div></div></div>';
+  const secFinanzas='<div class="section"><div class="section-title">💰 Información financiera aportada al comité</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' (€'+totalDon.toFixed(2)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' (€'+totalVot.toFixed(2)+')</div></div></div></div>';
   const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
   const peticionesCab=(DB.peticiones||[]).filter(p=>p.cabId===id).sort((a,b)=>(b.ts||0)-(a.ts||0));
   const filasPet=peticionesCab.map(p=>'<tr><td>'+(p.fecha||'—')+'</td><td>'+(p.texto||'').replace(/</g,'&lt;').substring(0,120)+(p.texto&&p.texto.length>120?'…':'')+'</td></tr>').join('');
@@ -3173,7 +3199,7 @@ function generarInformeIndividualPorId(id){
   const filasA=act.map(a=>'<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(a.efectivo)||0)+(Number(a.tpv)||0)).toFixed(2)+'</td><td class="neg">€'+(Number(a.gastos)||0).toFixed(2)+'</td></tr>').join('');
   const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>').join('');
   const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>').join('');
-  const secciones='<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
+  const secciones=secEstadisticasGrupo+secFinanzas+'<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
   generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
 }
 function generarInformeIndividual(){
