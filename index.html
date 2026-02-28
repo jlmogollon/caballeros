@@ -98,7 +98,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 
 /* ── STATS ── */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
-.stat-card{background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:14px 12px;text-align:center;box-shadow:var(--shadow);}
+.stat-card{background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:14px 12px;text-align:center;box-shadow:var(--shadow);transition:border-color .2s,box-shadow .2s;}
+.stat-click{cursor:pointer;}
+.stat-click:hover{border-color:var(--teal);box-shadow:0 4px 14px rgba(58,171,186,0.2);}
 .stat-num{font-family:'Montserrat',sans-serif;font-size:30px;font-weight:900;color:var(--teal);}
 .stat-lbl{font-size:10px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-top:3px;font-weight:700;}
 .stat-card.gold .stat-num{color:var(--gold2);}
@@ -148,6 +150,14 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .cl-inf{flex:1;min-width:0;}
 .cl-nm{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cl-mt{font-size:11px;color:var(--text3);margin-top:3px;}
+.cl-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.cl-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:0.3px;}
+.cl-realizada{background:#dcfce7;color:#15803d;}
+.cl-proxima{background:#e0e7ff;color:#4338ca;}
+.cl-calificada{background:#d1fae5;color:#047857;}
+.cl-pendiente{background:#fef3c7;color:#b45309;}
+.cl-year-ttl{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #e5e7eb;}
+.cl-year-ttl:first-child{margin-top:0;}
 .cl-avg{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;}
 
 /* ── GRUPO CARD ── */
@@ -377,8 +387,11 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-grupos',this)">Grupos</div>
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
+    <div class="ntab" onclick="showTab('t-cumple',this)">🎂 Cumpleaños</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
+    <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
+    <div class="ntab" onclick="showTab('t-informes',this)">📊 Informes</div>
   </div>
 
   <!-- DASHBOARD -->
@@ -394,7 +407,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="sec-ttl" style="margin-top:4px">🏆 Top 5 Caballeros</div>
       <div id="top5" class="card-list"></div>
       <!-- Recent clases -->
-      <div class="sec-ttl" style="margin-top:16px">📅 Últimas Clases</div>
+      <div class="sec-ttl" style="margin-top:16px">📅 Clases recientes</div>
       <div id="recent-cl"></div>
     </div>
   </div>
@@ -443,6 +456,11 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pg" id="calgr-pg"></div>
   </div>
 
+  <!-- CUMPLEAÑOS -->
+  <div id="t-cumple" class="tab">
+    <div class="pg" id="cumple-pg"></div>
+  </div>
+
   <!-- PETICIONES -->
   <div id="t-peticiones" class="tab">
     <div class="pg">
@@ -461,6 +479,104 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pg">
       <div class="sec-ttl">🗓 Eventos <button class="btn bteal" onclick="openFormEvento(null)" style="font-size:11px;padding:7px 12px">+ Nuevo</button></div>
       <div id="eventos-admin-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="margin-top:24px;">
+        <div class="sec-ttl" style="color:#9ca3af;font-size:12px;">📅 Eventos pasados</div>
+        <div id="eventos-admin-pasados" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANZAS -->
+  <div id="t-finanzas" class="tab">
+    <div class="pg" style="max-width:900px;">
+      <div class="sec-ttl">💰 Finanzas del Comité</div>
+
+      <!-- Gastos del Comité -->
+      <div style="background:var(--teal-bg);border:1.5px solid var(--border2);border-radius:14px;padding:18px;margin-bottom:20px;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">🐷 Gastos del Comité</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra compras generales (materiales, regalos, transporte, etc.) con un responsable.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
+          <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-g"></div>
+          <div class="fr" style="flex:1;min-width:140px;"><label>Concepto</label><input id="fin-concepto-g" placeholder="Ej: Materiales"></div>
+          <div class="fr" style="flex:0 0 90px;"><label>€ Monto</label><input type="number" id="fin-monto-g" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 160px;"><label>Responsable</label><select id="fin-resp-g"><option value="">Seleccionar</option></select></div>
+        </div>
+        <button class="btn bteal" onclick="addGasto()">+ Añadir gasto</button>
+        <div id="fin-lista-gastos" style="margin-top:14px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Actividades del Comité -->
+      <div style="background:var(--teal-bg);border:1.5px solid var(--border2);border-radius:14px;padding:18px;margin-bottom:20px;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">💡 Actividades del Comité</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra actividades (ventas, rifas, comidas, etc.) con sus ingresos (efectivo / TPV) y gastos.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
+          <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-a"></div>
+          <div class="fr" style="flex:1;min-width:140px;"><label>Nombre de la actividad</label><input id="fin-nombre-a" placeholder="Ej: Venta de pasteles"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ Efectivo</label><input type="number" id="fin-efectivo-a" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ TPV</label><input type="number" id="fin-tpv-a" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ Gastos</label><input type="number" id="fin-gastos-a" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 160px;"><label>Responsable</label><select id="fin-resp-a"><option value="">Seleccionar</option></select></div>
+        </div>
+        <button class="btn bteal" onclick="addActividad()">+ Añadir actividad</button>
+        <div id="fin-lista-actividades" style="margin-top:14px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Donativos -->
+      <div style="background:var(--green-bg);border:1.5px solid rgba(22,163,74,0.35);border-radius:14px;padding:18px;margin-bottom:20px;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">🤲 Donativos</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra donativos individuales con el nombre del donante y el desglose entre efectivo y TPV.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
+          <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-d"></div>
+          <div class="fr" style="flex:1;min-width:140px;"><label>Concepto</label><input id="fin-concepto-d" placeholder="Ej: Donativo"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ Efectivo</label><input type="number" id="fin-efectivo-d" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ TPV</label><input type="number" id="fin-tpv-d" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 180px;"><label>Responsable (maestro/aux)</label><select id="fin-resp-d"><option value="">Seleccionar</option></select></div>
+          <div class="fr" style="flex:1;min-width:140px;"><label>Otro donante (si aplica)</label><input id="fin-otro-d" placeholder="Opcional"></div>
+        </div>
+        <button class="btn" onclick="addDonativo()" style="background:linear-gradient(135deg,var(--green),#15803d);color:white;border:none;padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;">+ Añadir donativo</button>
+        <div id="fin-lista-donativos" style="margin-top:14px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Votos -->
+      <div style="background:var(--gold-bg);border:1.5px solid rgba(212,168,0,0.35);border-radius:14px;padding:18px;margin-bottom:20px;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">📜 Votos</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra votos u otras promesas asignadas a un maestro/auxiliar, con su desglose entre efectivo y TPV.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
+          <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-v"></div>
+          <div class="fr" style="flex:1;min-width:140px;"><label>Concepto</label><input id="fin-concepto-v" placeholder="Ej: Voto"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ Efectivo</label><input type="number" id="fin-efectivo-v" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 85px;"><label>€ TPV</label><input type="number" id="fin-tpv-v" placeholder="0" step="0.01"></div>
+          <div class="fr" style="flex:0 0 160px;"><label>Responsable</label><select id="fin-resp-v"><option value="">Seleccionar</option></select></div>
+          <div class="fr" style="flex:1;min-width:140px;"><label>Nombre si no es maestro</label><input id="fin-otro-v" placeholder="Opcional"></div>
+        </div>
+        <button class="btn" onclick="addVoto()" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--dark);border:none;padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;">+ Añadir voto</button>
+        <div id="fin-lista-votos" style="margin-top:14px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFORMES -->
+  <div id="t-informes" class="tab">
+    <div class="pg" style="max-width:700px;">
+      <div class="sec-ttl">📊 Informes</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">💰 Informe económico</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Resumen de gastos, actividades, donativos y votos con gráficos.</div>
+          <button class="btn bteal" onclick="generarInformeEconomico()">📄 Generar PDF</button>
+        </div>
+        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">👥 Informe de caballeros general</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Resumen de todos los caballeros, grupos, puntuaciones y estadísticas.</div>
+          <button class="btn bteal" onclick="generarInformeCaballeros()">📄 Generar PDF</button>
+        </div>
+        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">👤 Informe individual</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Informe detallado de un caballero por caballero.</div>
+          <div class="fr" style="margin-bottom:10px;"><label>Caballero</label><select id="informe-cab-sel"><option value="">Seleccionar caballero</option></select></div>
+          <button class="btn bteal" onclick="generarInformeIndividual()">📄 Generar PDF</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -490,13 +606,16 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <!-- PESTAÑAS NAVEGACIÓN -->
   <nav class="pv-nav">
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
-    <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
+    <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
+    <div class="pv-ntab"        id="pvtab-cumple-btn"    onclick="showPvTab('cumple')">🎂 Cumpleaños</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
   <div class="pv-tab active" id="pvtab-perfil">
     <div class="pv-body">
+      <!-- Banner Evidencias (mismo que en admin) -->
+      <div id="ev-banner-personal-wrap" class="ev-banner" style="padding:12px 16px;justify-content:center;margin-bottom:14px;"></div>
       <div class="score-hero">
         <div class="sh-big" id="pv-total">0.0</div>
         <div class="sh-lbl">Puntuación Acumulada</div>
@@ -506,6 +625,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       </div>
       <!-- AUTOCALIFICACIÓN DEVOTO -->
       <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
+      <!-- FECHA DE NACIMIENTO -->
+      <div id="pv-fnac-card" style="margin-bottom:10px;"></div>
       <!-- MATERIAL DE ESTUDIO -->
       <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
         <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
@@ -527,7 +648,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
           </div>
           <div style="flex:1;">
             <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Comunidad</div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#25d366;letter-spacing:0.5px;">Únete al Grupo de WhatsApp</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#25d366;letter-spacing:0.5px;">Grupo de WhatsApp</div>
           </div>
           <div style="font-size:18px;color:rgba(37,211,102,0.7);flex-shrink:0;">→</div>
         </div>
@@ -538,26 +659,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="pv-grupo-section"></div>
       <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
       <div id="pv-hist"></div>
-    </div>
-  </div>
-
-  <!-- ── TAB: EVENTOS ── -->
-  <div class="pv-tab" id="pvtab-eventos">
-    <div class="pv-body">
-      <!-- MATERIAL DE ESTUDIO -->
-      <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:12px;">
-        <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
-          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-          <div style="font-size:28px;flex-shrink:0;">📖</div>
-          <div style="flex:1;">
-            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Material de Estudio</div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
-          </div>
-          <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
-        </div>
-      </a>
-      <div class="sec-ttl">🗓 Próximos Eventos</div>
-      <div id="pv-eventos" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
   </div>
 
@@ -609,6 +710,35 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ── TAB: EVENTOS ── -->
+  <div class="pv-tab" id="pvtab-eventos">
+    <div class="pv-body">
+      <!-- MATERIAL DE ESTUDIO -->
+      <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:12px;">
+        <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+          <div style="font-size:28px;flex-shrink:0;">📖</div>
+          <div style="flex:1;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Material de Estudio</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
+          </div>
+          <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
+        </div>
+      </a>
+      <div class="sec-ttl">🗓 Próximos Eventos</div>
+      <div id="pv-eventos" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="margin-top:20px;">
+        <div class="sec-ttl" style="color:#9ca3af;font-size:12px;">📅 Eventos pasados</div>
+        <div id="pv-eventos-pasados" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: CUMPLEAÑOS ── -->
+  <div class="pv-tab" id="pvtab-cumple">
+    <div class="pv-body"><div id="pv-cumple-pg"></div></div>
   </div>
 
 </div>
@@ -724,11 +854,18 @@ async function loadDB(){
       if(data&&data.caballeros&&data.caballeros.length>0){
         DB=data;
         // Migración: asegurar que todos los caballeros tengan campo pw
-        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';});
         // Migración: asegurar array de peticiones
         if(!DB.peticiones)DB.peticiones=[];
         // Migración: asegurar array de eventos
         if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
+        if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
+        if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
+        if(!DB.finanzasGastos)DB.finanzasGastos=[];
+        if(!DB.finanzasActividades)DB.finanzasActividades=[];
+        if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
+        if(!DB.finanzasVotos)DB.finanzasVotos=[];
+        addClasesFaltantes();
         hideLoading();return;
       }
       // Bin vacío — cargar datos iniciales
@@ -745,11 +882,18 @@ async function loadDB(){
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
   // Migración: asegurar campo pw en todos
-  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';});
+  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';});
   // Migración: asegurar array de peticiones
   if(!DB.peticiones)DB.peticiones=[];
   // Migración: asegurar array de eventos
   if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
+  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
+  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
+  if(!DB.finanzasGastos)DB.finanzasGastos=[];
+  if(!DB.finanzasActividades)DB.finanzasActividades=[];
+  if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
+  if(!DB.finanzasVotos)DB.finanzasVotos=[];
+  addClasesFaltantes();
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
 }
@@ -768,8 +912,8 @@ async function saveDB(){
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
-const GRUPOS=['CABALLEROS DEL CIELO','CENTINELAS','EMBAJADORES DEL REY','EMANUEL','SIN GRUPO'];
-const GCOL={'CABALLEROS DEL CIELO':'#3aabba','CENTINELAS':'#ef4444','EMBAJADORES DEL REY':'#22c55e','EMANUEL':'#f59e0b','SIN GRUPO':'#8b5cf6'};
+const GRUPOS=['CABALLEROS DEL CIELO','CENTINELAS','EMBAJADORES DEL REY','EMANUEL'];
+const GCOL={'CABALLEROS DEL CIELO':'#3aabba','CENTINELAS':'#ef4444','EMBAJADORES DEL REY':'#22c55e','EMANUEL':'#f59e0b'};
 const CHECKS=['bautizado','sellado','servidor','directivo','predicador','evangelista','devoto'];
 const CLBL={bautizado:'Bautizado',sellado:'Sellado',servidor:'Servidor Activo',directivo:'Directivo',predicador:'Predicador',evangelista:'Evangelista',devoto:'Devoto'};
 // Stars auto-calculation based on checkboxes
@@ -798,15 +942,15 @@ const SEED_CABS=[
   {id:'c17',nombre:'Felipe Salguero',     grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c18',nombre:'Fran Lizardo',        grupo:'CENTINELAS',            dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c19',nombre:'Francisco Mendieta',  grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:1,evangelista:0,devoto:0,photo:''},
-  {id:'c20',nombre:'Fredis Hernández',    grupo:'SIN GRUPO',             dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c20',nombre:'Fredis Hernández',    grupo:'CABALLEROS DEL CIELO',  dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c21',nombre:'Gabriel Ávila',       grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:1,photo:''},
   {id:'c22',nombre:'Genaro Ocampo',       grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c23',nombre:'Gino Castro',         grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:1,devoto:0,photo:''},
   {id:'c24',nombre:'Henry Ramírez',       grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c25',nombre:'Javier Miranda',      grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c26',nombre:'Jesús Contreras',     grupo:'CENTINELAS',            dist:'Hermano',bautizado:1,sellado:0,servidor:1,directivo:1,predicador:0,evangelista:1,devoto:1,photo:''},
-  {id:'c27',nombre:'José Hernán Díaz',    grupo:'SIN GRUPO',             dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
-  {id:'c28',nombre:'José Mogollón',       grupo:'SIN GRUPO',             dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c27',nombre:'José Hernán Díaz',    grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
+  {id:'c28',nombre:'José Mogollón',       grupo:'CABALLEROS DEL CIELO',  dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:1,predicador:1,evangelista:1,devoto:1,photo:''},
   {id:'c29',nombre:'Juan Ramón',          grupo:'CENTINELAS',            dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c30',nombre:'Kartal Demir',        grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c31',nombre:'Leonardo Delgado',    grupo:'EMANUEL',               dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
@@ -818,7 +962,7 @@ const SEED_CABS=[
   {id:'c37',nombre:'Ramiro Pacheco',      grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
   {id:'c38',nombre:'Ricardo Pérez',       grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c39',nombre:'Roque García',        grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:0,predicador:1,evangelista:1,devoto:1,photo:''},
-  {id:'c40',nombre:'Samir Jaramillo',     grupo:'SIN GRUPO',             dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
+  {id:'c40',nombre:'Samir Jaramillo',     grupo:'CABALLEROS DEL CIELO',  dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c41',nombre:'Samuel Giraldo',      grupo:'EMBAJADORES DEL REY',   dist:'Hermano',bautizado:1,sellado:1,servidor:1,directivo:0,predicador:0,evangelista:0,devoto:1,photo:''},
   {id:'c42',nombre:'Sebastián Quintero',  grupo:'CABALLEROS DEL CIELO',  dist:'Amigo',  bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
   {id:'c43',nombre:'Yadir Pérez',         grupo:'EMANUEL',               dist:'Hermano',bautizado:1,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''},
@@ -826,7 +970,7 @@ const SEED_CABS=[
 ];
 
 const SEED_CLASES=[
-  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Clase de Estudios',cal:{
+  {id:'cl1',fecha:'2026-02-13',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{
     'c1':{a:1,i:9,p:10,d:9,pa:9},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},'c11':{a:1,i:10,p:7,d:1,pa:5},
     'c13':{a:1,i:7,p:7,d:1,pa:1},'c14':{a:1,i:10,p:10,d:1,pa:5},'c15':{a:1,i:10,p:7,d:1,pa:3},
@@ -834,12 +978,49 @@ const SEED_CLASES=[
     'c26':{a:1,i:10,p:10,d:3,pa:3},'c30':{a:1,i:10,p:10,d:5,pa:10},'c34':{a:1,i:10,p:5,d:1,pa:1},
     'c36':{a:1,i:10,p:10,d:9,pa:10},'c39':{a:1,i:10,p:9,d:1,pa:7}
   }},
-  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Clase de Estudios',cal:{
+  {id:'cl2',fecha:'2026-02-27',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{
     'c1':{a:1,i:0,p:0,d:0,pa:0},'c4':{a:1,i:9,p:10,d:1,pa:3},'c6':{a:1,i:5,p:5,d:1,pa:1},
     'c7':{a:1,i:10,p:9,d:5,pa:5},'c9':{a:1,i:10,p:9,d:5,pa:5},
     'c30':{a:1,i:10,p:10,d:5,pa:10},'c36':{a:1,i:10,p:10,d:9,pa:10}
-  }}
+  }},
+  {id:'cl3',fecha:'2026-03-13',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl4',fecha:'2026-03-27',grupoResp:'CENTINELAS',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl5',fecha:'2026-04-10',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl6',fecha:'2026-04-24',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl7',fecha:'2026-05-08',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl8',fecha:'2026-05-22',grupoResp:'CENTINELAS',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl9',fecha:'2026-06-05',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl10',fecha:'2026-06-19',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl11',fecha:'2026-07-03',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl12',fecha:'2026-07-17',grupoResp:'CENTINELAS',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl13',fecha:'2026-07-31',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl14',fecha:'2026-08-14',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl15',fecha:'2026-08-28',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl16',fecha:'2026-09-11',grupoResp:'CENTINELAS',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl17',fecha:'2026-09-25',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl18',fecha:'2026-10-09',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl19',fecha:'2026-10-23',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl20',fecha:'2026-11-06',grupoResp:'CENTINELAS',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl21',fecha:'2026-11-20',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl22',fecha:'2026-12-04',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl23',fecha:'2026-12-18',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl24',fecha:'2027-01-01',grupoResp:'CENTINELAS',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl25',fecha:'2027-01-15',grupoResp:'CABALLEROS DEL CIELO',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl26',fecha:'2027-01-29',grupoResp:'EMANUEL',tema:'Estudio de las Dispensaciones',cal:{}},
+  {id:'cl27',fecha:'2027-02-12',grupoResp:'EMBAJADORES DEL REY',tema:'Estudio de las Dispensaciones',cal:{}},
 ];
+
+// Añade a DB.clases solo las fechas que falten; no modifica ni borra la clase del 13 feb.
+function addClasesFaltantes(){
+  if(!DB||!Array.isArray(DB.clases))return;
+  const fechasEnDB=new Set(DB.clases.map(c=>c.fecha));
+  SEED_CLASES.forEach(seed=>{
+    if(fechasEnDB.has(seed.fecha))return;
+    DB.clases.push({id:seed.id,fecha:seed.fecha,grupoResp:seed.grupoResp,tema:seed.tema||'Estudio de las Dispensaciones',cal:JSON.parse(JSON.stringify(seed.cal||{}))});
+    fechasEnDB.add(seed.fecha);
+  });
+  DB.clases.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+}
 
 // ═══════════════════════════════════════════════════════════════
 // SEED EVENTOS
@@ -964,26 +1145,39 @@ function showSc(id){document.querySelectorAll('.screen').forEach(s=>s.classList.
 function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');el.classList.add('active');
+  document.getElementById(id).classList.add('active');if(el)el.classList.add('active');
   if(id==='t-grupos')renderGrupos();
+  if(id==='t-cabs')renderCabs();
   if(id==='t-clases')renderClases();
   if(id==='t-calgr')renderCalGr();
+  if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
+  if(id==='t-finanzas'){renderFinanzas();}
+  if(id==='t-informes'){renderInformes();}
 }
 function initAdmin(){buildSel();renderDash();renderCabs();}
 
+function goToStatCard(tipo){
+  if(tipo==='clases'){showTab('t-clases',document.querySelector('.ntab[onclick*="t-clases"]'));return;}
+  fGrupo='TODOS';
+  if(tipo==='caballeros')fBadge='TODOS';
+  else if(tipo==='hermanos')fBadge='Hermano';
+  else if(tipo==='amigos')fBadge='Amigo';
+  _lastFGrupo=null;_lastFBadge=null;
+  showTab('t-cabs',document.querySelector('.ntab[onclick*="t-cabs"]'));
+}
 function renderDash(){
   document.getElementById('stats-grid').innerHTML=`
-    <div class="stat-card"><div class="stat-num">${DB.caballeros.length}</div><div class="stat-lbl">Caballeros</div></div>
-    <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div>
-    <div class="stat-card"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
-    <div class="stat-card gold"><div class="stat-num">${DB.clases.length}</div><div class="stat-lbl">Clases</div></div>
+    <div class="stat-card stat-click" onclick="goToStatCard('caballeros')"><div class="stat-num">${DB.caballeros.length}</div><div class="stat-lbl">Caballeros</div></div>
+    <div class="stat-card stat-click" onclick="goToStatCard('hermanos')"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div>
+    <div class="stat-card stat-click" onclick="goToStatCard('amigos')"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
+    <div class="stat-card stat-click gold" onclick="goToStatCard('clases')"><div class="stat-num">${DB.clases.filter(cl=>claseAvg(cl)>0).length}</div><div class="stat-lbl">Clases</div></div>
   `;
   const list=ranking();
   document.getElementById('top5').innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
-  const recent=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,4);
-  document.getElementById('recent-cl').innerHTML=recent.length?recent.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases aún.</p>';
+  const calificadas=[...DB.clases].filter(cl=>claseAvg(cl)>0).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,2);
+  document.getElementById('recent-cl').innerHTML=calificadas.length?calificadas.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases calificadas aún.</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1081,7 +1275,7 @@ async function doDelCab(id){
 // ═══════════════════════════════════════════════════════════════
 function openFormCab(id){
   const isNew=!id;
-  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:''};
+  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:''};
   const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join('');
   const chkH=`<div class="chk-grid">${CHECKS.map(k=>`
     <div class="chk-item ${c[k]?'on':''}" id="chk-wrap-${k}" onclick="toggleChk('${k}')">
@@ -1095,6 +1289,7 @@ function openFormCab(id){
     <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${c.nombre}" placeholder="Nombre y apellido"></div>
     <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
+    <div class="fr"><label>Fecha de nacimiento</label><input type="date" id="fc-fnac" value="${c.fnac||''}" placeholder="Para cumpleaños"></div>
     <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
       <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
         <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</span>
@@ -1187,6 +1382,7 @@ function readForm(){
     nombre:document.getElementById('fc-nombre').value.trim(),
     grupo:document.getElementById('fc-grupo').value,
     dist:document.getElementById('fc-dist').value,
+    fnac:(document.getElementById('fc-fnac')?.value||'').trim(),
     ...Object.fromEntries(CHECKS.map(k=>[k,document.getElementById('fc-'+k).checked?1:0]))
   };
 }
@@ -1226,16 +1422,39 @@ function mkClaseCard(cl){
   const{d,m}=fmtBox(cl.fecha);
   const avg=claseAvg(cl);
   const sc=avg>=7?'#15803d':avg>=4?'var(--gold2)':'var(--text3)';
-  const asist=Object.values(cl.cal).filter(q=>q.a).length;
+  const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
+  const today=new Date().toISOString().split('T')[0];
+  const realizada=cl.fecha<=today;
+  const calificada=claseAvg(cl)>0;
+  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':'<span class="cl-badge cl-proxima">Próxima</span>';
+  const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
   return`<div class="cl-card" onclick="openClaseDetail('${cl.id}')">
     <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
-    <div class="cl-inf"><div class="cl-nm">${cl.tema||'Clase de Estudios'}</div><div class="cl-mt">${cl.grupoResp||'Sin grupo'} · ${asist} asistentes</div></div>
-    <div class="cl-avg" style="color:${sc}">${avg.toFixed(1)}</div>
+    <div class="cl-inf">
+      <div class="cl-nm">${cl.tema||'Estudio de las Dispensaciones'}</div>
+      <div class="cl-mt">${cl.grupoResp||'Sin asignar'} · ${asist} asistentes</div>
+      <div class="cl-badges">${estadoRealizada} ${estadoCalif}</div>
+    </div>
+    <div class="cl-avg" style="color:${sc}">${avg>0?avg.toFixed(1):'—'}</div>
   </div>`;
 }
 function renderClases(){
-  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
-  document.getElementById('clases-list').innerHTML=sorted.length?sorted.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases. ¡Crea la primera!</p>';
+  const today=new Date().toISOString().split('T')[0];
+  const sorted=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const porAnio={};
+  sorted.forEach(cl=>{
+    const y=cl.fecha.substring(0,4);
+    if(!porAnio[y])porAnio[y]=[];
+    porAnio[y].push(cl);
+  });
+  const anos=Object.keys(porAnio).sort();
+  let html='';
+  anos.forEach(y=>{
+    html+=`<div class="cl-year-ttl">${y}</div>`;
+    html+=porAnio[y].map(mkClaseCard).join('');
+  });
+  const el=document.getElementById('clases-list');
+  el.innerHTML=sorted.length?html:'<p style="color:var(--text3);font-size:13px">Sin clases. ¡Crea la primera!</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1245,13 +1464,32 @@ function openClaseDetail(id){
   const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
   const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`;
-  openSheet('📅',cl.tema||'Clase',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
+  const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
+  const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
+    <div class="dsec"><div class="dhead">Editar datos de la clase</div>
+      <div class="fr"><label>Nombre / Tema de la clase</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
+      <div class="fr"><label>Fecha</label><input type="date" id="edcl-fecha" value="${cl.fecha}"></div>
+      <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo">${gOpts}</select></div>
+      <button class="btn bteal" onclick="doSaveClaseInfo('${id}')" style="margin-top:6px">💾 Guardar cambios</button>
+    </div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
     <div class="btn-row">
-      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar</button>
-      <button class="btn bred" onclick="confirmDelClase('${id}')">🗑</button>
+      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar notas</button>
+      <button class="btn bred" onclick="confirmDelClase('${id}')">🗑 Eliminar</button>
     </div>
   `);
+}
+async function doSaveClaseInfo(id){
+  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
+  const tema=document.getElementById('edcl-tema').value.trim()||'Estudio de las Dispensaciones';
+  const fecha=document.getElementById('edcl-fecha').value;
+  const grupoResp=document.getElementById('edcl-grupo').value;
+  if(!fecha){toast('La fecha es obligatoria','err');return;}
+  cl.tema=tema;cl.fecha=fecha;cl.grupoResp=grupoResp;
+  closeModal();toast('💾 Guardando...','info');
+  await saveDB();toast('✅ Clase actualizada','ok');
+  renderClases();renderDash();renderCalGr();
 }
 function confirmDelClase(id){
   const cl=DB.clases.find(x=>x.id===id);
@@ -1264,10 +1502,10 @@ async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModa
 // ═══════════════════════════════════════════════════════════════
 function openNuevaClase(){
   const today=new Date().toISOString().split('T')[0];
-  const gOpts=['<option value="">Sin grupo responsable</option>',...GRUPOS.map(g=>`<option value="${g}">${g}</option>`)].join('');
+  const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}">${g}</option>`)].join('');
   openSheet('📅','Nueva Clase','Registrar sesión de estudios',`
     <div class="fr"><label>Fecha de la clase</label><input type="date" id="nc-fecha" value="${today}"></div>
-    <div class="fr"><label>Tema del estudio</label><input id="nc-tema" placeholder="Ej: La oración, Liderazgo cristiano..."></div>
+    <div class="fr"><label>Tema del estudio</label><input id="nc-tema" value="Estudio de las Dispensaciones" placeholder="Ej: Estudio de las Dispensaciones"></div>
     <div class="fr"><label>Grupo Responsable</label><select id="nc-grupo">${gOpts}</select></div>
     <div class="info-box">💡 Después podrás marcar asistencia y calificar a cada caballero del 0 al 10.</div>
     <button class="btn bteal bfull" onclick="doCrearClase()">📋 Ir a Calificar →</button>
@@ -1279,7 +1517,7 @@ async function doCrearClase(){
   const dup=DB.clases.find(c=>c.fecha===fecha);
   if(dup&&!confirm(`Ya hay una clase el ${fmtDate(fecha)}. ¿Continuar?`))return;
   const id='cl'+Date.now();
-  DB.clases.push({id,fecha,tema:document.getElementById('nc-tema').value.trim()||'Clase de Estudios',grupoResp:document.getElementById('nc-grupo').value,cal:{}});
+  DB.clases.push({id,fecha,tema:document.getElementById('nc-tema').value.trim()||'Estudio de las Dispensaciones',grupoResp:document.getElementById('nc-grupo').value,cal:{}});
   await saveDB();closeModal();openGrade(id);
 }
 
@@ -1289,7 +1527,7 @@ async function doCrearClase(){
 function openGrade(claseId){
   const cl=DB.clases.find(x=>x.id===claseId);if(!cl)return;
   gradeClaseId=claseId;
-  document.getElementById('gs-ttl').textContent=cl.tema||'Calificar Clase';
+  document.getElementById('gs-ttl').textContent=cl.tema||'Estudio de las Dispensaciones';
   document.getElementById('gs-sub').textContent=fmtDate(cl.fecha)+' · Toca ○ para marcar asistencia · Notas del 0 al 10';
 
   const sorted=[...DB.caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
@@ -1377,17 +1615,96 @@ async function doSaveGrade(){
 // ═══════════════════════════════════════════════════════════════
 function renderCalGr(){
   const el=document.getElementById('calgr-pg');if(!el)return;
-  const sorted=[...DB.clases].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const sorted=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
+  const porAnio={};
+  sorted.forEach(cl=>{const y=cl.fecha.substring(0,4);if(!porAnio[y])porAnio[y]=[];porAnio[y].push(cl);});
+  const anos=Object.keys(porAnio).sort();
   let h='<div class="sec-ttl">Calificaciones por Grupo</div>';
-  sorted.forEach(cl=>{
-    const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
-    h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Clase'}</div>
-      ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
-      const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
-      const sc=+avg>=7?'#15803d':+avg>=4?'var(--gold2)':'var(--text3)';const col=GCOL[g]||'var(--teal)';
-      return`<div style="padding:6px 0;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:${col}">${g}</span><span style="font-family:Montserrat;font-weight:800;font-size:13px;color:${sc}">${avg}<span style="font-size:10px;color:var(--text3);font-weight:400"> (${d.n})</span></span></div><div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div></div>`;
-      }).join('')}</div>`;
+  anos.forEach(y=>{
+    h+=`<div class="cl-year-ttl" style="margin-top:${h.includes('cl-year-ttl')?16:0}px">${y}</div>`;
+    porAnio[y].forEach(cl=>{
+      const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
+      h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Estudio de las Dispensaciones'}</div>
+        ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
+        const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
+        const sc=+avg>=7?'#15803d':+avg>=4?'var(--gold2)':'var(--text3)';const col=GCOL[g]||'var(--teal)';
+        return`<div style="padding:6px 0;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:700;color:${col}">${g}</span><span style="font-family:Montserrat;font-weight:800;font-size:13px;color:${sc}">${avg}<span style="font-size:10px;color:var(--text3);font-weight:400"> (${d.n})</span></span></div><div class="bt"><div class="bf" style="width:${pct}%;background:${col}"></div></div></div>`;
+        }).join('')}</div>`;
+    });
+  });
+  el.innerHTML=h;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CUMPLEAÑOS
+// ═══════════════════════════════════════════════════════════════
+function getProximoCumple(fnac){
+  if(!fnac||fnac.length<10)return null;
+  const today=new Date();
+  const [y,m,d]=fnac.split('-').map(Number);
+  const esteAnio=new Date(today.getFullYear(),m-1,d);
+  let prox=new Date(today.getFullYear(),m-1,d);
+  const yaPaso=esteAnio<today;
+  if(yaPaso)prox=new Date(today.getFullYear()+1,m-1,d);
+  const diasRest=Math.ceil((prox-today)/(1000*60*60*24));
+  const edad=prox.getFullYear()-y;
+  return{dia:d,mes:m,prox,diasRest,edad,yaPaso};
+}
+function renderCumple(){
+  const el=document.getElementById('cumple-pg');if(!el)return;
+  const today=new Date();
+  const items=DB.caballeros.filter(c=>c.fnac&&c.fnac.length>=10).map(c=>{
+    const r=getProximoCumple(c.fnac);
+    if(!r)return null;
+    return{...c,...r};
+  }).filter(Boolean);
+  if(!items.length){el.innerHTML='<div class="sec-ttl">🎂 Cumpleaños</div><p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Los caballeros pueden añadirlas en su perfil o el admin al editar.</p>';return;}
+  const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  items.sort((a,b)=>{
+    if(a.yaPaso!==b.yaPaso)return a.yaPaso?1:-1;
+    return a.diasRest-b.diasRest;
+  });
+  let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
+  items.forEach(x=>{
+    const fechaStr=`${x.dia} ${M[x.mes-1]}`;
+    const badge=x.yaPaso?'<span class="cl-badge cl-pendiente" style="font-size:9px">✓ Pasó</span>':'';
+    const diasTxt=x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`;
+    h+=`<div class="cl-card" onclick="openCabDetail('${x.id}')" style="display:flex;align-items:center;gap:10px;">
+      <div class="cl-date" style="min-width:50px"><div class="cl-day">${x.dia}</div><div class="cl-mon">${M[x.mes-1]}</div></div>
+      <div class="cl-inf" style="flex:1">
+        <div class="cl-nm">${x.nombre}</div>
+        <div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${x.yaPaso?'Ya pasó':diasTxt}</div>
+        ${badge}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+function renderCumplePV(){
+  const el=document.getElementById('pv-cumple-pg');if(!el)return;
+  const items=DB.caballeros.filter(c=>c.fnac&&c.fnac.length>=10).map(c=>{
+    const r=getProximoCumple(c.fnac);
+    if(!r)return null;
+    return{...c,...r};
+  }).filter(Boolean);
+  if(!items.length){el.innerHTML='<div class="sec-ttl">🎂 Cumpleaños</div><p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Añade la tuya en tu perfil.</p>';return;}
+  const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  items.sort((a,b)=>{if(a.yaPaso!==b.yaPaso)return a.yaPaso?1:-1;return a.diasRest-b.diasRest;});
+  let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
+  items.forEach(x=>{
+    const fechaStr=`${x.dia} ${M[x.mes-1]}`;
+    const badge=x.yaPaso?'<span class="cl-badge cl-pendiente" style="font-size:9px">✓ Pasó</span>':'';
+    const diasTxt=x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`;
+    h+=`<div class="cl-card" onclick="openCabDetail('${x.id}')" style="display:flex;align-items:center;gap:10px;">
+      <div class="cl-date" style="min-width:50px"><div class="cl-day">${x.dia}</div><div class="cl-mon">${M[x.mes-1]}</div></div>
+      <div class="cl-inf" style="flex:1">
+        <div class="cl-nm">${x.nombre}</div>
+        <div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${x.yaPaso?'Ya pasó':diasTxt}</div>
+        ${badge}
+      </div>
+    </div>`;
   });
   el.innerHTML=h;
 }
@@ -1412,16 +1729,20 @@ function renderPersonal(cabId){
   document.getElementById('pv-hist').innerHTML=mkHistoryTable(cabId);
   renderGrupoSection(c);
   renderDevotoCard(c);
+  renderFnacCard(c);
   // Tab perfil activo por defecto al entrar
   showPvTab('perfil');
 }
 
 function showPvTab(tab){
-  ['perfil','eventos','oracion'].forEach(t=>{
-    document.getElementById('pvtab-'+t).classList.toggle('active',t===tab);
-    document.getElementById('pvtab-'+t+'-btn').classList.toggle('active',t===tab);
+  ['perfil','oracion','eventos','cumple'].forEach(t=>{
+    const el=document.getElementById('pvtab-'+t);
+    const btn=document.getElementById('pvtab-'+t+'-btn');
+    if(el)el.classList.toggle('active',t===tab);
+    if(btn)btn.classList.toggle('active',t===tab);
   });
   if(tab==='eventos') renderEventosPV();
+  if(tab==='cumple') renderCumplePV();
   if(tab==='oracion') cargarPeticiones();
 }
 
@@ -1484,6 +1805,42 @@ function renderDevotoCard(c){
   </div>`;
 }
 
+function renderFnacCard(c){
+  const el=document.getElementById('pv-fnac-card');
+  if(!el)return;
+  const tiene=c.fnac&&c.fnac.length>=10;
+  const r=tiene?getProximoCumple(c.fnac):null;
+  const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  el.innerHTML=`
+  <div style="background:${tiene?'linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)':'white'};border:1.5px solid ${tiene?'#f59e0b':'#e9edf2'};border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="display:flex;align-items:flex-start;gap:12px;">
+      <div style="font-size:26px;flex-shrink:0;">🎂</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;">Fecha de nacimiento</div>
+        ${tiene
+          ?`<div style="font-size:12px;color:#92400e;margin-top:4px;">${r.dia} ${M[r.mes-1]} · ${r.yaPaso?'Próximo cumpleaños en '+r.diasRest+' días':'Cumple en '+r.diasRest+' días'} · ${r.edad} años</div>`
+          :'<div style="font-size:11px;color:#9ca3af;margin-top:2px;">Añade tu fecha para aparecer en cumpleaños</div>'
+        }
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+          <input type="date" id="pv-fnac-inp" value="${c.fnac||''}" style="flex:1;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
+          <button onclick="guardarFnac()" style="background:var(--teal);border:none;color:white;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function guardarFnac(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c){toast('Error: no se encontró el caballero','err');return;}
+  const inp=document.getElementById('pv-fnac-inp');
+  if(!inp){toast('Error al guardar','err');return;}
+  const v=(inp.value||'').trim();
+  c.fnac=v||'';
+  try{await saveDB();}catch(e){toast('Error al guardar','err');return;}
+  renderFnacCard(c);
+  toast(v?'🎂 Fecha guardada':'Fecha eliminada','ok');
+}
+
 async function toggleDevoto(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
@@ -1512,7 +1869,7 @@ async function toggleDevoto(){
 function renderGrupoSection(c){
   const el=document.getElementById('pv-grupo-section');
   if(!el)return;
-  const GRUPOS_ACTIVOS=GRUPOS.filter(g=>g!=='SIN GRUPO');
+  const GRUPOS_ACTIVOS=GRUPOS;
   const miGrupo=c.grupo;
 
   // Calcular stats por grupo (solo grupos activos)
@@ -1634,7 +1991,7 @@ function renderGrupoSection(c){
           <div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:1px;">${m}</div>
         </div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cl.tema||'Clase'}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cl.tema||'Estudio de las Dispensaciones'}</div>
           <div style="font-size:10px;color:var(--text3);margin-top:2px;">${presentes.length} de ${misMiembros.length} asistieron</div>
         </div>
         <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:${sc};">${avgCl.toFixed(1)}</div>
@@ -1801,7 +2158,82 @@ function diffDaysEv(d,today){return Math.round((d-today)/(1000*60*60*24));}
 function badgeEv(n){
   if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
   if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
+  if(n<0)return`<span style="background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">✓ Pasó</span>`;
   return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
+}
+
+function esEventoPasado(ev,todayStr){
+  if(!ev.fecha||ev.fecha==='por_definir'||ev.fecha==='recurrente_ultimo_domingo')return false;
+  const fin=ev.fechaFin||ev.fecha;
+  return fin<todayStr;
+}
+
+const TEMAS_CULTO=[
+  {mes:1,titulo:'Evidencia de una Muerte',sub:'Arrepentimiento',ref:'Romanos 6:6'},
+  {mes:2,titulo:'Evidencia de una Resurrección',sub:'Nueva Vida',ref:'Juan 5:24'},
+  {mes:3,titulo:'Evidencia de una Experiencia',sub:'Bautismo del Espíritu Santo',ref:'Hechos 2:33'},
+  {mes:4,titulo:'Evidencia de Gozo',sub:'',ref:'Hechos 8:38-39 NBV'},
+  {mes:5,titulo:'Evidencia de la Paz',sub:'Tranquilidad en medio de las pruebas',ref:'Hechos 16:25 / Filipenses 4:9'},
+  {mes:6,titulo:'Evidencia de Comunión',sub:'',ref:'Hechos 2:42-44 / 1 Juan 1:7'},
+  {mes:7,titulo:'Evidencia de Testimonio',sub:'Ejemplo',ref:'Daniel 3 / Mateo 5:16 PDT'},
+  {mes:8,titulo:'Evidencia de una Marca',sub:'Enseñanza para hermanos apartados',ref:'Mateo 26:73'},
+  {mes:9,titulo:'Evidencia de Dependencia',sub:'Enseñanza para hermanos apartados',ref:'2 Corintios 3:4-5'},
+  {mes:10,titulo:'Evidencia de una Herida',sub:'Pruebas',ref:'2 Corintios 4:8-9'},
+  {mes:11,titulo:'Evidencia de un Servicio',sub:'Especial nativos / Las marcas de Cristo',ref:'Gálatas 6:17'},
+  {mes:12,titulo:'Evidencia de una Perseverancia al fin',sub:'',ref:'Filipenses 3:12-14'},
+];
+const ESTUDIOS_CALENDARIO=[
+  {fecha:'2026-02-13',grupo:'Caballeros del Cielo'},{fecha:'2026-02-27',grupo:'Emanuel'},
+  {fecha:'2026-03-13',grupo:'Embajadores del Rey'},{fecha:'2026-03-27',grupo:'Centinelas'},
+  {fecha:'2026-04-10',grupo:'Caballeros del Cielo'},{fecha:'2026-04-24',grupo:'Emanuel'},
+  {fecha:'2026-05-08',grupo:'Embajadores del Rey'},{fecha:'2026-05-22',grupo:'Centinelas'},
+  {fecha:'2026-06-05',grupo:'Caballeros del Cielo'},{fecha:'2026-06-19',grupo:'Emanuel'},
+  {fecha:'2026-07-03',grupo:'Embajadores del Rey'},{fecha:'2026-07-17',grupo:'Centinelas'},
+  {fecha:'2026-07-31',grupo:'Caballeros del Cielo'},{fecha:'2026-08-14',grupo:'Emanuel'},
+  {fecha:'2026-08-28',grupo:'Embajadores del Rey'},{fecha:'2026-09-11',grupo:'Centinelas'},
+  {fecha:'2026-09-25',grupo:'Caballeros del Cielo'},{fecha:'2026-10-09',grupo:'Emanuel'},
+  {fecha:'2026-10-23',grupo:'Embajadores del Rey'},{fecha:'2026-11-06',grupo:'Centinelas'},
+  {fecha:'2026-11-20',grupo:'Caballeros del Cielo'},{fecha:'2026-12-04',grupo:'Emanuel'},
+  {fecha:'2026-12-18',grupo:'Embajadores del Rey'},{fecha:'2027-01-01',grupo:'Centinelas'},
+  {fecha:'2027-01-15',grupo:'Caballeros del Cielo'},{fecha:'2027-01-29',grupo:'Emanuel'},
+  {fecha:'2027-02-12',grupo:'Embajadores del Rey'},
+];
+function getCultoDate(y,m){
+  if(y===2026&&m===2)return new Date(2026,1,26);
+  const d=new Date(y,m-1,1);
+  d.setDate(1+((4-d.getDay()+7)%7));return d;
+}
+function getEventosCompletos(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=today.toISOString().split('T')[0];
+  const ocultosCulto=DB.eventosCultosOverride||{};
+  const ocultosEstudio=DB.eventosEstudiosOverride||{};
+  const allItems=[];
+  // Cultos: solo hasta diciembre 2026 (la programación termina en diciembre)
+  for(let y=2026;y<=2026;y++){
+    for(let m=1;m<=12;m++){
+      const d=getCultoDate(y,m);
+      const fechaStr=d.toISOString().split('T')[0];
+      if(ocultosCulto[fechaStr]?.oculto)continue;
+      allItems.push({tipo:'culto',fecha:d,fechaStr,tema:TEMAS_CULTO.find(t=>t.mes===m)||null});
+    }
+  }
+  ESTUDIOS_CALENDARIO.forEach(e=>{
+    if(ocultosEstudio[e.fecha]?.oculto)return;
+    allItems.push({tipo:'estudio',fecha:new Date(e.fecha+'T00:00:00'),fechaStr:e.fecha,grupo:e.grupo});
+  });
+  (DB.eventos||[]).forEach(ev=>{
+    const d=proximaFechaEvento(ev,today);
+    if(d) allItems.push({tipo:'evento',fecha:d,ev});
+  });
+  (DB.eventos||[]).forEach(ev=>{
+    if(!esEventoPasado(ev,todayStr))return;
+    const d=new Date((ev.fechaFin||ev.fecha)+'T00:00:00');
+    allItems.push({tipo:'evento',fecha:d,ev});
+  });
+  const proximos=allItems.filter(x=>x.fecha>=today).sort((a,b)=>a.fecha-b.fecha);
+  const pasados=allItems.filter(x=>x.fecha<today).sort((a,b)=>b.fecha-a.fecha);
+  return {proximos,pasados,today,todayStr};
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1811,97 +2243,19 @@ function renderEventosPV(){
   const el=document.getElementById('pv-eventos');
   if(!el)return;
 
-  const TEMAS=[
-    {mes:1,titulo:'Evidencia de una Muerte',sub:'Arrepentimiento',ref:'Romanos 6:6'},
-    {mes:2,titulo:'Evidencia de una Resurrección',sub:'Nueva Vida',ref:'Juan 5:24'},
-    {mes:3,titulo:'Evidencia de una Experiencia',sub:'Bautismo del Espíritu Santo',ref:'Hechos 2:33'},
-    {mes:4,titulo:'Evidencia de Gozo',sub:'',ref:'Hechos 8:38-39 NBV'},
-    {mes:5,titulo:'Evidencia de la Paz',sub:'Tranquilidad en medio de las pruebas',ref:'Hechos 16:25 / Filipenses 4:9'},
-    {mes:6,titulo:'Evidencia de Comunión',sub:'',ref:'Hechos 2:42-44 / 1 Juan 1:7'},
-    {mes:7,titulo:'Evidencia de Testimonio',sub:'Ejemplo',ref:'Daniel 3 / Mateo 5:16 PDT'},
-    {mes:8,titulo:'Evidencia de una Marca',sub:'Enseñanza para hermanos apartados',ref:'Mateo 26:73'},
-    {mes:9,titulo:'Evidencia de Dependencia',sub:'Enseñanza para hermanos apartados',ref:'2 Corintios 3:4-5'},
-    {mes:10,titulo:'Evidencia de una Herida',sub:'Pruebas',ref:'2 Corintios 4:8-9'},
-    {mes:11,titulo:'Evidencia de un Servicio',sub:'Especial nativos / Las marcas de Cristo',ref:'Gálatas 6:17'},
-    {mes:12,titulo:'Evidencia de una Perseverancia al fin',sub:'',ref:'Filipenses 3:12-14'},
-  ];
-
-  const today=new Date();today.setHours(0,0,0,0);
-  const todayStr=today.toISOString().split('T')[0];
+  const {proximos:items,pasados,today}=getEventosCompletos();
   const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const ovCulto=DB.eventosCultosOverride||{};
+  const ovEstudio=DB.eventosEstudiosOverride||{};
 
-  function firstThursdayOfMonth(year,month){
-    const d=new Date(year,month-1,1);
-    d.setDate(1+((4-d.getDay()+7)%7));return d;
-  }
-  function getCultoDate(y,m){
-    if(y===2026&&m===2)return new Date(2026,1,26);
-    return firstThursdayOfMonth(y,m);
-  }
-
-  // ── Recopilar todos los ítems con su fecha ──
-  const items=[];
-
-  // 1. Próximo Culto de Caballeros (solo el siguiente)
-  let ym=new Date(today.getFullYear(),today.getMonth(),1);
-  for(let i=0;i<18;i++){
-    const y=ym.getFullYear(),m=ym.getMonth()+1;
-    const d=getCultoDate(y,m);
-    if(d>=today){items.push({tipo:'culto',fecha:d,tema:TEMAS.find(t=>t.mes===m)||null});break;}
-    ym.setMonth(ym.getMonth()+1);
-  }
-
-  // 2. Próximo Estudio (calendario fijo de sesiones programadas)
-  const ESTUDIOS=[
-    {fecha:'2026-02-13',grupo:'Caballeros del Cielo'},
-    {fecha:'2026-02-27',grupo:'Emanuel'},
-    {fecha:'2026-03-13',grupo:'Embajadores del Rey'},
-    {fecha:'2026-03-27',grupo:'Centinelas'},
-    {fecha:'2026-04-10',grupo:'Caballeros del Cielo'},
-    {fecha:'2026-04-24',grupo:'Emanuel'},
-    {fecha:'2026-05-08',grupo:'Embajadores del Rey'},
-    {fecha:'2026-05-22',grupo:'Centinelas'},
-    {fecha:'2026-06-05',grupo:'Caballeros del Cielo'},
-    {fecha:'2026-06-19',grupo:'Emanuel'},
-    {fecha:'2026-07-03',grupo:'Embajadores del Rey'},
-    {fecha:'2026-07-17',grupo:'Centinelas'},
-    {fecha:'2026-07-31',grupo:'Caballeros del Cielo'},
-    {fecha:'2026-08-14',grupo:'Emanuel'},
-    {fecha:'2026-08-28',grupo:'Embajadores del Rey'},
-    {fecha:'2026-09-11',grupo:'Centinelas'},
-    {fecha:'2026-09-25',grupo:'Caballeros del Cielo'},
-    {fecha:'2026-10-09',grupo:'Emanuel'},
-    {fecha:'2026-10-23',grupo:'Embajadores del Rey'},
-    {fecha:'2026-11-06',grupo:'Centinelas'},
-    {fecha:'2026-11-20',grupo:'Caballeros del Cielo'},
-    {fecha:'2026-12-04',grupo:'Emanuel'},
-    {fecha:'2026-12-18',grupo:'Embajadores del Rey'},
-    {fecha:'2027-01-01',grupo:'Centinelas'},
-    {fecha:'2027-01-15',grupo:'Caballeros del Cielo'},
-    {fecha:'2027-01-29',grupo:'Emanuel'},
-    {fecha:'2027-02-12',grupo:'Embajadores del Rey'},
-  ];
-  const proxEstudio=ESTUDIOS.find(e=>e.fecha>=todayStr);
-  if(proxEstudio){
-    items.push({tipo:'estudio',fecha:new Date(proxEstudio.fecha+'T00:00:00'),grupo:proxEstudio.grupo});
-  }
-
-  // 3. Todos los eventos de DB.eventos con fecha calculada
-  (DB.eventos||[]).forEach(ev=>{
-    const d=proximaFechaEvento(ev,today);
-    if(d) items.push({tipo:'evento',fecha:d,ev});
-  });
-
-  // ── Ordenar cronológicamente ──
-  items.sort((a,b)=>a.fecha-b.fecha);
-
-  // ── Renderizar en orden ──
+  // ── Renderizar próximos en orden ──
   const html=items.map(item=>{
     const n=diffDaysEv(item.fecha,today);
 
     if(item.tipo==='culto'){
+      const nomCulto=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
       const {tema}=item;
-      const temaLine=tema
+      const temaLine=tema&&!ovCulto[item.fechaStr]?.nombre
         ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
           ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
           <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
@@ -1909,7 +2263,7 @@ function renderEventosPV(){
         <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Culto de Caballeros</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nomCulto}</div>
           <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
           ${temaLine}
         </div>
@@ -1918,12 +2272,13 @@ function renderEventosPV(){
     }
 
     if(item.tipo==='estudio'){
+      const nomEstudio=(ovEstudio[item.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
       return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Próximo Estudio</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">Estudio de las Dispensaciones</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${nomEstudio}</div>
           <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
           <div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${item.grupo}</div>
         </div>
@@ -1952,30 +2307,112 @@ function renderEventosPV(){
   }).join('');
 
   el.innerHTML=html||'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>';
+
+  // ── Renderizar eventos pasados (cultos, estudios, eventos) ──
+  const elPasados=document.getElementById('pv-eventos-pasados');
+  if(elPasados){
+    const htmlPasados=pasados.map(item=>{
+      const n=diffDaysEv(item.fecha,today);
+      if(item.tipo==='culto'){
+        const nomCulto=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
+        const {tema}=item;
+        const temaLine=tema&&!ovCulto[item.fechaStr]?.nombre
+          ?`<div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#4b5563;line-height:1.3;margin-top:2px;">${tema.titulo}</div>`:'';
+        return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:14px;padding:14px 16px;opacity:0.9;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#9ca3af;border-radius:4px 0 0 4px;opacity:0.5;"></div>
+          <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;opacity:0.8;">⚔️</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nomCulto}</div>
+            <div style="font-size:11px;color:#9ca3af;">📅 ${fmtEvDate(item.fecha)}</div>
+            ${temaLine}
+          </div>
+          <div style="flex-shrink:0;">${badgeEv(n)}</div>
+        </div>`;
+      }
+      if(item.tipo==='estudio'){
+        const nomEstudio=(ovEstudio[item.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
+        return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:14px;padding:14px 16px;opacity:0.9;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#9ca3af;border-radius:4px 0 0 4px;opacity:0.5;"></div>
+          <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;opacity:0.8;">📚</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#4b5563;line-height:1.3;">${nomEstudio}</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+            <div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;opacity:0.9;">👥 ${item.grupo}</div>
+          </div>
+          <div style="flex-shrink:0;">${badgeEv(n)}</div>
+        </div>`;
+      }
+      const {ev}=item;
+      const fechaRango=ev.fechaFin
+        ?` – ${new Date(ev.fechaFin+'T00:00:00').getDate()} de ${meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]}`
+        :'';
+      return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:14px;padding:14px 16px;opacity:0.9;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#9ca3af'};border-radius:4px 0 0 4px;opacity:0.5;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;opacity:0.8;">${ev.icono||'📅'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#4b5563;line-height:1.3;">${ev.nombre}</div>
+          ${ev.nota?`<div style="font-size:11px;color:#6b7280;margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
+          <div style="font-size:11px;color:#9ca3af;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
+        </div>
+        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+      </div>`;
+    }).join('');
+    elPasados.innerHTML=htmlPasados||'<div style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">No hay eventos pasados.</div>';
+  }
 }
 // ═══════════════════════════════════════════════════════════════
-// EVENTOS — Admin: lista y formulario
+// EVENTOS — Admin: lista y formulario (cultos, estudios, eventos)
 // ═══════════════════════════════════════════════════════════════
 function renderEventosAdmin(){
   const el=document.getElementById('eventos-admin-lista');
+  const elPasados=document.getElementById('eventos-admin-pasados');
   if(!el)return;
-  const evs=DB.eventos||[];
-  const today=new Date();today.setHours(0,0,0,0);
 
-  if(!evs.length){
-    el.innerHTML=`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos. Crea el primero con + Nuevo.</div>`;
-    return;
-  }
+  const {proximos,pasados,today}=getEventosCompletos();
 
-  el.innerHTML=evs.map(ev=>{
-    const fechaLegible=ev.fecha==='recurrente_ultimo_domingo'
-      ?'Último domingo de cada mes'
-      :ev.fecha==='por_definir'
-      ?'Fecha por definir'
-      :fmtEvDate(new Date(ev.fecha+'T00:00:00'))+(ev.fechaFin?` — ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}`:'');
-    const proxFecha=proximaFechaEvento(ev,today);
-    let diasStr='—';
-    if(proxFecha){const n=diffDaysEv(proxFecha,today);diasStr=n===0?'¡HOY!':n===1?'Mañana':'En '+n+' días';}
+  const ovCulto=DB.eventosCultosOverride||{};
+  const ovEstudio=DB.eventosEstudiosOverride||{};
+  function cardProximo(item){
+    const n=diffDaysEv(item.fecha,today);
+    const diasStr=n===0?'¡HOY!':n===1?'Mañana':'En '+n+' días';
+    if(item.tipo==='culto'){
+      const nom=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#3aabba18;border:1.5px solid #3aabba44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;">${nom}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">📅 ${fmtEvDate(item.fecha)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:#3aabba;">${diasStr}</div>
+          <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+            <button onclick="openFormCulto('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
+            <button onclick="confirmarDelCulto('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    if(item.tipo==='estudio'){
+      const nom=(ovEstudio[item.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
+      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#f5c51818;border:1.5px solid #f5c51844;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;">${nom}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">📅 ${fmtEvDate(item.fecha)} · 👥 ${item.grupo}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:#f5c518;">${diasStr}</div>
+          <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+            <button onclick="openFormEstudio('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
+            <button onclick="confirmarDelEstudio('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    const ev=item.ev;
+    const fechaLegible=ev.fecha==='recurrente_ultimo_domingo'?'Último domingo de cada mes':ev.fecha==='por_definir'?'Fecha por definir':fmtEvDate(new Date(ev.fecha+'T00:00:00'))+(ev.fechaFin?` — ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}`:'');
     return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
       <div style="width:40px;height:40px;border-radius:10px;background:${ev.color}18;border:1.5px solid ${ev.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${ev.icono}</div>
       <div style="flex:1;min-width:0;">
@@ -1991,7 +2428,67 @@ function renderEventosAdmin(){
         </div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  function cardPasado(item){
+    if(item.tipo==='culto'){
+      const nom=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
+      return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 14px;opacity:0.9;display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#9ca3af18;border:1.5px solid #9ca3af44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;opacity:0.8;">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#4b5563;">${nom}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">📅 ${fmtEvDate(item.fecha)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <span style="font-size:10px;font-weight:700;color:#9ca3af;background:#f3f4f6;padding:2px 10px;border-radius:20px;">✓ Pasó</span>
+          <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+            <button onclick="openFormCulto('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
+            <button onclick="confirmarDelCulto('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    if(item.tipo==='estudio'){
+      const nom=(ovEstudio[item.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
+      return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 14px;opacity:0.9;display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#9ca3af18;border:1.5px solid #9ca3af44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;opacity:0.8;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#4b5563;">${nom}</div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;">📅 ${fmtEvDate(item.fecha)} · 👥 ${item.grupo}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <span style="font-size:10px;font-weight:700;color:#9ca3af;background:#f3f4f6;padding:2px 10px;border-radius:20px;">✓ Pasó</span>
+          <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+            <button onclick="openFormEstudio('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
+            <button onclick="confirmarDelEstudio('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    const ev=item.ev;
+    const fechaLegible=ev.fecha==='recurrente_ultimo_domingo'?'Último domingo de cada mes':ev.fecha==='por_definir'?'Fecha por definir':fmtEvDate(new Date(ev.fecha+'T00:00:00'))+(ev.fechaFin?` — ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}`:'');
+    return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 14px;opacity:0.9;display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:${ev.color}18;border:1.5px solid ${ev.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;opacity:0.8;">${ev.icono}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.nombre}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${fechaLegible}</div>
+        ${ev.nota?`<div style="font-size:10px;color:#6b7280;margin-top:1px;font-style:italic;">${ev.nota}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <span style="font-size:10px;font-weight:700;color:#9ca3af;background:#f3f4f6;padding:2px 10px;border-radius:20px;">✓ Pasó</span>
+        <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
+          <button onclick="openFormEvento('${ev.id}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">✏️</button>
+          <button onclick="confirmarDelEvento('${ev.id}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML=proximos.length?proximos.map(cardProximo).join(''):`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>`;
+
+  if(elPasados){
+    elPasados.innerHTML=pasados.length?pasados.map(cardPasado).join(''):`<div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">No hay eventos pasados.</div>`;
+  }
 }
 
 const ICONOS_EV=['📅','⚔️','🏟️','⛺','🕯️','✝️','👥','📚','🙏','🎉','👧','🌿','📖','🎵'];
@@ -2087,22 +2584,324 @@ async function doSaveEvento(id){
 }
 function confirmarDelEvento(id){
   const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
-  const lista=document.getElementById('eventos-admin-lista');
-  // Insertar confirmación inline
-  const conf=document.createElement('div');
-  conf.id='ev-conf-'+id;
-  conf.style.cssText='background:var(--red-bg);border:1.5px solid rgba(239,68,68,0.25);border-radius:12px;padding:13px 14px;margin-top:6px;';
-  conf.innerHTML=`<p style="font-size:13px;color:var(--text);margin-bottom:10px;">¿Eliminar <strong>${ev.nombre}</strong>?</p>
-    <div style="display:flex;gap:8px;">
-      <button class="btn boutline" onclick="document.getElementById('ev-conf-${id}').remove()" style="flex:1;">Cancelar</button>
-      <button class="btn bred" onclick="doDelEvento('${id}')" style="flex:1;">Eliminar</button>
-    </div>`;
-  lista.appendChild(conf);
+  openSheet('🗑','Eliminar evento','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Eliminar <strong>${ev.nombre}</strong>? Esta acción no se puede deshacer.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn boutline" onclick="closeModal()" style="flex:1;">Cancelar</button>
+      <button class="btn bred" onclick="closeModal();doDelEvento('${id}')" style="flex:1;">Eliminar</button>
+    </div>
+  `);
 }
 async function doDelEvento(id){
   DB.eventos=(DB.eventos||[]).filter(e=>e.id!==id);
   toast('💾 Guardando...','info');await saveDB();toast('Evento eliminado','ok');
   renderEventosAdmin();
+  renderEventosPV();
+}
+
+function openFormCulto(fechaStr){
+  const ov=(DB.eventosCultosOverride||{})[fechaStr]||{};
+  const nom=ov.nombre||'';
+  openSheet('⚔️','Editar culto',`📅 ${fechaStr}`,''
+    +`<div class="fr"><label>Nombre a mostrar</label><input id="evc-nombre" value="${(nom||'').replace(/"/g,'&quot;')}" placeholder="Ej: Culto de Caballeros · Evidencia de..."></div>`
+    +`<button class="btn bteal bfull" onclick="doSaveCultoOverride('${fechaStr}')">💾 Guardar</button>`
+  );
+}
+async function doSaveCultoOverride(fechaStr){
+  const nombre=document.getElementById('evc-nombre').value.trim();
+  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
+  DB.eventosCultosOverride[fechaStr]={...(DB.eventosCultosOverride[fechaStr]||{}),nombre:nombre||undefined,oculto:false};
+  closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Guardado','ok');
+  renderEventosAdmin();renderEventosPV();
+}
+function confirmarDelCulto(fechaStr){
+  openSheet('🗑','Ocultar culto','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Ocultar este culto de la lista? Podrás volver a mostrarlo editando.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn boutline" onclick="closeModal()" style="flex:1;">Cancelar</button>
+      <button class="btn bred" onclick="closeModal();doDelCultoOverride('${fechaStr}')" style="flex:1;">Ocultar</button>
+    </div>
+  `);
+}
+async function doDelCultoOverride(fechaStr){
+  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
+  DB.eventosCultosOverride[fechaStr]={...(DB.eventosCultosOverride[fechaStr]||{}),oculto:true};
+  toast('💾 Guardando...','info');await saveDB();toast('Culto oculto','ok');
+  renderEventosAdmin();renderEventosPV();
+}
+
+function openFormEstudio(fechaStr){
+  const ov=(DB.eventosEstudiosOverride||{})[fechaStr]||{};
+  const nom=ov.nombre||'';
+  openSheet('📚','Editar estudio',`📅 ${fechaStr}`,''
+    +`<div class="fr"><label>Nombre a mostrar</label><input id="eve-nombre" value="${(nom||'').replace(/"/g,'&quot;')}" placeholder="Ej: Estudio de las Dispensaciones"></div>`
+    +`<button class="btn bteal bfull" onclick="doSaveEstudioOverride('${fechaStr}')">💾 Guardar</button>`
+  );
+}
+async function doSaveEstudioOverride(fechaStr){
+  const nombre=document.getElementById('eve-nombre').value.trim();
+  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
+  DB.eventosEstudiosOverride[fechaStr]={...(DB.eventosEstudiosOverride[fechaStr]||{}),nombre:nombre||undefined,oculto:false};
+  closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Guardado','ok');
+  renderEventosAdmin();renderEventosPV();
+}
+function confirmarDelEstudio(fechaStr){
+  openSheet('🗑','Ocultar estudio','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Ocultar este estudio de la lista? Podrás volver a mostrarlo editando.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn boutline" onclick="closeModal()" style="flex:1;">Cancelar</button>
+      <button class="btn bred" onclick="closeModal();doDelEstudioOverride('${fechaStr}')" style="flex:1;">Ocultar</button>
+    </div>
+  `);
+}
+async function doDelEstudioOverride(fechaStr){
+  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
+  DB.eventosEstudiosOverride[fechaStr]={...(DB.eventosEstudiosOverride[fechaStr]||{}),oculto:true};
+  toast('💾 Guardando...','info');await saveDB();toast('Estudio oculto','ok');
+  renderEventosAdmin();renderEventosPV();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINANZAS DEL COMITÉ
+// ═══════════════════════════════════════════════════════════════
+function renderFinanzas(){
+  const hoy=new Date().toISOString().split('T')[0];
+  ['fin-fecha-g','fin-fecha-a','fin-fecha-d','fin-fecha-v'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value=hoy;
+  });
+  const opts=(DB.caballeros||[]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  ['fin-resp-g','fin-resp-a','fin-resp-d','fin-resp-v'].forEach(id=>{
+    const sel=document.getElementById(id);if(sel){sel.innerHTML='<option value="">Seleccionar</option>'+opts;}
+  });
+  renderListaGastos();renderListaActividades();renderListaDonativos();renderListaVotos();
+}
+function renderListaGastos(){
+  const c=document.getElementById('fin-lista-gastos');if(!c)return;
+  const arr=DB.finanzasGastos||[];
+  if(arr.length===0){c.innerHTML='<div style="font-size:12px;color:#9ca3af;">Sin gastos registrados.</div>';return;}
+  c.innerHTML=arr.map(g=>{
+    const cab=(DB.caballeros||[]).find(x=>x.id===g.responsable);
+    const nom=cab?cab.nombre:'—';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
+      <span style="font-size:13px;">${g.fecha||'—'} · ${(g.concepto||'').slice(0,40)} · €${Number(g.monto||0).toFixed(2)} · ${nom}</span>
+      <button onclick="delGasto('${g.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
+    </div>`;
+  }).join('');
+}
+function renderListaActividades(){
+  const c=document.getElementById('fin-lista-actividades');if(!c)return;
+  const arr=DB.finanzasActividades||[];
+  if(arr.length===0){c.innerHTML='<div style="font-size:12px;color:#9ca3af;">Sin actividades registradas.</div>';return;}
+  c.innerHTML=arr.map(a=>{
+    const cab=(DB.caballeros||[]).find(x=>x.id===a.responsable);
+    const nom=cab?cab.nombre:'—';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
+      <span style="font-size:13px;">${a.fecha||'—'} · ${(a.nombre||'').slice(0,35)} · E:€${Number(a.efectivo||0).toFixed(2)} T:€${Number(a.tpv||0).toFixed(2)} G:€${Number(a.gastos||0).toFixed(2)} · ${nom}</span>
+      <button onclick="delActividad('${a.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
+    </div>`;
+  }).join('');
+}
+function renderListaDonativos(){
+  const c=document.getElementById('fin-lista-donativos');if(!c)return;
+  const arr=DB.finanzasDonativos||[];
+  if(arr.length===0){c.innerHTML='<div style="font-size:12px;color:#9ca3af;">Sin donativos registrados.</div>';return;}
+  c.innerHTML=arr.map(d=>{
+    const cab=(DB.caballeros||[]).find(x=>x.id===d.responsable);
+    const nom=cab?cab.nombre:'—';
+    const otro=d.otroDonante?` · Otro: ${d.otroDonante}`:'';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
+      <span style="font-size:13px;">${d.fecha||'—'} · ${(d.concepto||'').slice(0,30)} · E:€${Number(d.efectivo||0).toFixed(2)} T:€${Number(d.tpv||0).toFixed(2)} · ${nom}${otro}</span>
+      <button onclick="delDonativo('${d.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
+    </div>`;
+  }).join('');
+}
+function renderListaVotos(){
+  const c=document.getElementById('fin-lista-votos');if(!c)return;
+  const arr=DB.finanzasVotos||[];
+  if(arr.length===0){c.innerHTML='<div style="font-size:12px;color:#9ca3af;">Sin votos registrados.</div>';return;}
+  c.innerHTML=arr.map(v=>{
+    const cab=(DB.caballeros||[]).find(x=>x.id===v.responsable);
+    const nom=cab?cab.nombre:'—';
+    const otro=v.nombreNoMaestro?` · No maestro: ${v.nombreNoMaestro}`:'';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
+      <span style="font-size:13px;">${v.fecha||'—'} · ${(v.concepto||'').slice(0,30)} · E:€${Number(v.efectivo||0).toFixed(2)} T:€${Number(v.tpv||0).toFixed(2)} · ${nom}${otro}</span>
+      <button onclick="delVoto('${v.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
+    </div>`;
+  }).join('');
+}
+async function addGasto(){
+  const fecha=document.getElementById('fin-fecha-g')?.value;
+  const concepto=document.getElementById('fin-concepto-g')?.value?.trim();
+  const monto=parseFloat(document.getElementById('fin-monto-g')?.value)||0;
+  const responsable=document.getElementById('fin-resp-g')?.value;
+  if(!concepto){toast('Indica el concepto','err');return;}
+  if(!DB.finanzasGastos)DB.finanzasGastos=[];
+  DB.finanzasGastos.push({id:'fg'+Date.now(),fecha,concepto,monto,responsable});
+  document.getElementById('fin-concepto-g').value='';document.getElementById('fin-monto-g').value='';
+  toast('💾 Guardando...','info');await saveDB();toast('✅ Gasto añadido','ok');
+  renderListaGastos();
+}
+async function addActividad(){
+  const fecha=document.getElementById('fin-fecha-a')?.value;
+  const nombre=document.getElementById('fin-nombre-a')?.value?.trim();
+  const efectivo=parseFloat(document.getElementById('fin-efectivo-a')?.value)||0;
+  const tpv=parseFloat(document.getElementById('fin-tpv-a')?.value)||0;
+  const gastos=parseFloat(document.getElementById('fin-gastos-a')?.value)||0;
+  const responsable=document.getElementById('fin-resp-a')?.value;
+  if(!nombre){toast('Indica el nombre de la actividad','err');return;}
+  if(!DB.finanzasActividades)DB.finanzasActividades=[];
+  DB.finanzasActividades.push({id:'fa'+Date.now(),fecha,nombre,efectivo,tpv,gastos,responsable});
+  document.getElementById('fin-nombre-a').value='';document.getElementById('fin-efectivo-a').value='';document.getElementById('fin-tpv-a').value='';document.getElementById('fin-gastos-a').value='';
+  toast('💾 Guardando...','info');await saveDB();toast('✅ Actividad añadida','ok');
+  renderListaActividades();
+}
+async function addDonativo(){
+  const fecha=document.getElementById('fin-fecha-d')?.value;
+  const concepto=document.getElementById('fin-concepto-d')?.value?.trim();
+  const efectivo=parseFloat(document.getElementById('fin-efectivo-d')?.value)||0;
+  const tpv=parseFloat(document.getElementById('fin-tpv-d')?.value)||0;
+  const responsable=document.getElementById('fin-resp-d')?.value;
+  const otroDonante=document.getElementById('fin-otro-d')?.value?.trim();
+  if(!concepto){toast('Indica el concepto','err');return;}
+  if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
+  DB.finanzasDonativos.push({id:'fd'+Date.now(),fecha,concepto,efectivo,tpv,responsable,otroDonante});
+  document.getElementById('fin-concepto-d').value='';document.getElementById('fin-efectivo-d').value='';document.getElementById('fin-tpv-d').value='';document.getElementById('fin-otro-d').value='';
+  toast('💾 Guardando...','info');await saveDB();toast('✅ Donativo añadido','ok');
+  renderListaDonativos();
+}
+async function addVoto(){
+  const fecha=document.getElementById('fin-fecha-v')?.value;
+  const concepto=document.getElementById('fin-concepto-v')?.value?.trim();
+  const efectivo=parseFloat(document.getElementById('fin-efectivo-v')?.value)||0;
+  const tpv=parseFloat(document.getElementById('fin-tpv-v')?.value)||0;
+  const responsable=document.getElementById('fin-resp-v')?.value;
+  const nombreNoMaestro=document.getElementById('fin-otro-v')?.value?.trim();
+  if(!concepto){toast('Indica el concepto','err');return;}
+  if(!DB.finanzasVotos)DB.finanzasVotos=[];
+  DB.finanzasVotos.push({id:'fv'+Date.now(),fecha,concepto,efectivo,tpv,responsable,nombreNoMaestro});
+  document.getElementById('fin-concepto-v').value='';document.getElementById('fin-efectivo-v').value='';document.getElementById('fin-tpv-v').value='';document.getElementById('fin-otro-v').value='';
+  toast('💾 Guardando...','info');await saveDB();toast('✅ Voto añadido','ok');
+  renderListaVotos();
+}
+async function delGasto(id){DB.finanzasGastos=(DB.finanzasGastos||[]).filter(g=>g.id!==id);await saveDB();renderListaGastos();toast('Gasto eliminado','ok');}
+async function delActividad(id){DB.finanzasActividades=(DB.finanzasActividades||[]).filter(a=>a.id!==id);await saveDB();renderListaActividades();toast('Actividad eliminada','ok');}
+async function delDonativo(id){DB.finanzasDonativos=(DB.finanzasDonativos||[]).filter(d=>d.id!==id);await saveDB();renderListaDonativos();toast('Donativo eliminado','ok');}
+async function delVoto(id){DB.finanzasVotos=(DB.finanzasVotos||[]).filter(v=>v.id!==id);await saveDB();renderListaVotos();toast('Voto eliminado','ok');}
+
+// ═══════════════════════════════════════════════════════════════
+// INFORMES PDF (HTML + window.print — estilo Escuela Dominical)
+// ═══════════════════════════════════════════════════════════════
+function generarPDF(titulo,htmlContent){
+  const estilos=`<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;background:#fff;color:#1a1f2e;font-size:13px;line-height:1.5;}
+    .header{background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+    .header h1{font-size:18px;font-weight:900;}
+    .header .sub{font-size:12px;opacity:0.85;margin-top:2px;color:rgba(255,255,255,0.9);}
+    .section{margin:0 20px 20px;background:#fff;border-radius:12px;border:1.5px solid rgba(58,171,186,0.25);overflow:hidden;}
+    .section-title{background:linear-gradient(135deg,rgba(58,171,186,0.12),rgba(58,171,186,0.2));padding:10px 16px;font-weight:800;font-size:14px;color:#2d8f9c;border-bottom:1.5px solid rgba(58,171,186,0.22);}
+    table{width:100%;border-collapse:collapse;}
+    th{background:rgba(58,171,186,0.08);padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:#2d8f9c;letter-spacing:0.5px;text-transform:uppercase;}
+    td{padding:9px 12px;border-bottom:1px solid rgba(58,171,186,0.12);font-size:12px;}
+    tr:last-child td{border-bottom:none;}
+    tr:nth-child(even) td{background:#fafbfc;}
+    .stat{background:rgba(58,171,186,0.08);border-radius:8px;padding:8px 10px;}
+    .stat-val{font-size:20px;font-weight:900;color:#3aabba;}
+    .stat-lbl{font-size:10px;color:#4b5563;}
+    .neg{color:#ef4444;font-weight:700;}
+    .pos{color:#16a34a;font-weight:700;}
+    .bar-wrap{height:8px;background:rgba(58,171,186,0.12);border-radius:999px;overflow:hidden;margin-top:4px;}
+    .bar-fill{height:100%;border-radius:999px;}
+    .badge-mini{display:inline-block;padding:2px 6px;border-radius:12px;font-size:9px;font-weight:700;margin:1px;}
+    .footer{text-align:center;padding:16px;font-size:10px;color:#9ca3af;border-top:1px solid rgba(58,171,186,0.15);margin:0 20px;}
+    .print-btn{display:block;margin:20px auto;padding:12px 30px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(58,171,186,0.35);}
+    @media print{.print-btn{display:none!important;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+  </style>`;
+  const fecha=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
+  const full=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">${estilos}<title>${titulo}</title></head><body>
+    <div class="header"><div><h1>📋 ${titulo}</h1><div class="sub">Caballeros · Hombres de Verdad · ${fecha}</div></div></div>
+    ${htmlContent}
+    <div class="footer">Generado por Sistema Caballeros · ${fecha}</div>
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  </${''}body></${''}html>`;
+  const blob=new Blob([full],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const w=window.open(url,'_blank','noopener,noreferrer');
+  if(w)setTimeout(()=>URL.revokeObjectURL(url),10000);
+  toast('✅ Informe abierto. Usa el botón para imprimir o guardar PDF.','ok');
+}
+function barRow(label,value,max,color){const v=parseFloat(value)||0;const m=parseFloat(max)||1;const pct=m>0?Math.min(100,(v/m)*100):0;return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px"><div style="width:120px;color:#4b5563;flex-shrink:0">'+label+'</div><div style="flex:1;background:rgba(58,171,186,0.12);border-radius:999px;overflow:hidden;height:8px"><div style="width:'+pct+'%;background:'+color+';height:100%;border-radius:999px;transition:width .4s"></div></div><div style="width:55px;text-align:right;font-weight:700;color:#1a1f2e">'+value+'</div></div>';}
+function renderInformes(){
+  const sel=document.getElementById('informe-cab-sel');
+  if(sel){
+    const opts=(DB.caballeros||[]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+    sel.innerHTML='<option value="">Seleccionar caballero</option>'+opts;
+  }
+}
+async function generarInformeEconomico(){
+  const gastos=DB.finanzasGastos||[];
+  const actividades=DB.finanzasActividades||[];
+  const donativos=DB.finanzasDonativos||[];
+  const votos=DB.finanzasVotos||[];
+  const totalGastos=gastos.reduce((s,g)=>s+(Number(g.monto)||0),0);
+  const totalActIng=actividades.reduce((s,a)=>s+(Number(a.efectivo)||0)+(Number(a.tpv)||0),0);
+  const totalActGas=actividades.reduce((s,a)=>s+(Number(a.gastos)||0),0);
+  const totalDon=donativos.reduce((s,d)=>s+(Number(d.efectivo)||0)+(Number(d.tpv)||0),0);
+  const totalVotos=votos.reduce((s,v)=>s+(Number(v.efectivo)||0)+(Number(v.tpv)||0),0);
+  const balance=totalActIng+totalDon+totalVotos-totalGastos-totalActGas;
+  const totalMov=totalGastos+totalActIng+totalActGas+totalDon+totalVotos;
+  const barrasEco=totalMov>0?'<div style="padding:14px 20px 8px">'+barRow('Gastos comité',totalGastos.toFixed(2),totalMov,'#ef4444')+barRow('Ingresos actividades',totalActIng.toFixed(2),totalMov,'#16a34a')+barRow('Gastos actividades',totalActGas.toFixed(2),totalMov,'#f5c518')+barRow('Donativos',totalDon.toFixed(2),totalMov,'#3aabba')+barRow('Votos',totalVotos.toFixed(2),totalMov,'#2d8f9c')+'</div>':'';
+  const resumen='<div class="section"><div class="section-title">💰 Resumen Económico</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:20px"><div class="stat"><div class="stat-lbl">Total gastos comité</div><div class="stat-val neg">€'+totalGastos.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Ingresos actividades</div><div class="stat-val pos">€'+totalActIng.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Gastos actividades</div><div class="stat-val neg">€'+totalActGas.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val pos">€'+totalDon.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val pos">€'+totalVotos.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Balance</div><div class="stat-val" style="color:'+(balance>=0?'#16a34a':'#ef4444')+'">€'+balance.toFixed(2)+'</div></div></div>'+barrasEco+'</div>';
+  const filasG=gastos.map(g=>{const r=(DB.caballeros||[]).find(c=>c.id===g.responsable);return '<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="neg">€'+(Number(g.monto)||0).toFixed(2)+'</td></tr>';}).join('');
+  const filasA=actividades.map(a=>{const r=(DB.caballeros||[]).find(c=>c.id===a.responsable);const ing=(Number(a.efectivo)||0)+(Number(a.tpv)||0);const gas=Number(a.gastos)||0;return '<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+ing.toFixed(2)+'</td><td class="neg">€'+gas.toFixed(2)+'</td></tr>';}).join('');
+  const filasD=donativos.map(d=>{const r=(DB.caballeros||[]).find(c=>c.id===d.responsable);return '<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>';}).join('');
+  const filasV=votos.map(v=>{const r=(DB.caballeros||[]).find(c=>c.id===v.responsable);return '<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>';}).join('');
+  const secciones='<div class="section"><div class="section-title">🐷 Gastos del Comité</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Monto</th></tr></thead><tbody>'+(filasG||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin gastos registrados</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">💡 Actividades del Comité</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Responsable</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+(filasA||'<tr><td colspan="5" style="text-align:center;color:#9ca3af">Sin actividades registradas</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">🤲 Donativos</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Total</th></tr></thead><tbody>'+(filasD||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin donativos registrados</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">📜 Votos</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Total</th></tr></thead><tbody>'+(filasV||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin votos registrados</td></tr>')+'</tbody></table></div>';
+  generarPDF('Informe Económico',resumen+secciones);
+}
+async function generarInformeCaballeros(){
+  const cabs=DB.caballeros||[];
+  const grupos=GRUPOS||[];
+  const totalBaut=cabs.filter(c=>c.bautizado).length;
+  const totalSell=cabs.filter(c=>c.sellado).length;
+  const totalServ=cabs.filter(c=>c.servidor).length;
+  const totalDir=cabs.filter(c=>c.directivo).length;
+  const totalPred=cabs.filter(c=>c.predicador).length;
+  const totalEvang=cabs.filter(c=>c.evangelista).length;
+  const totalDev=cabs.filter(c=>c.devoto).length;
+  const barras='<div style="padding:14px 20px 8px">'+barRow('Bautizados',totalBaut,cabs.length,'#16a34a')+barRow('Sellados',totalSell,cabs.length,'#3aabba')+barRow('Servidores',totalServ,cabs.length,'#2d8f9c')+barRow('Directivos',totalDir,cabs.length,'#f5c518')+barRow('Predicadores',totalPred,cabs.length,'#d4a800')+barRow('Evangelistas',totalEvang,cabs.length,'#1d6b77')+barRow('Devotos',totalDev,cabs.length,'#22c55e')+'</div>';
+  const filasGrupos=grupos.map(g=>{const n=cabs.filter(c=>c.grupo===g).length;const pct=cabs.length>0?Math.round((n/cabs.length)*100):0;return '<tr><td><strong>'+g+'</strong></td><td>'+n+'</td><td><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:#3aabba"></div></div><small style="color:#6b7280">'+pct+'%</small></td></tr>';}).join('');
+  const badges=(c)=>{return (CHECKS||[]).filter(k=>c[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');};
+  const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const pts=cal?cal.total.toFixed(1):(c.puntos||'—');const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td>'+(c.dist||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+' pts</td></tr>';}).join('');
+  const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Dist.</th><th>Estado espiritual</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
+  generarPDF('Informe de Caballeros General',html);
+}
+function generarInformeIndividual(){
+  const sel=document.getElementById('informe-cab-sel');
+  const id=sel?.value;
+  if(!id){toast('Selecciona un caballero','err');return;}
+  const cab=DB.caballeros.find(c=>c.id===id);
+  if(!cab){toast('Caballero no encontrado','err');return;}
+  const calCab=typeof calcCab==='function'?calcCab(cab.id):null;
+  const pts=calCab?calCab.total.toFixed(1):(cab.puntos||0);
+  const asist=calCab?(calCab.asist+'/'+calCab.totalClases):'0/0';
+  const pctAsist=calCab&&calCab.totalClases>0?Math.round((calCab.asist/calCab.totalClases)*100):0;
+  const rank=typeof getRank==='function'?getRank(id):'—';
+  const badgesHtml=(CHECKS||[]).filter(k=>cab[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');
+  const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:8px">'+barRow('Asistencia a clases',calCab?calCab.asist:0,calCab?calCab.totalClases:1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+barRow('Puntuación acumulada',parseFloat(pts)||0,10,'#3aabba')+'</div></div>';
+  const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Distintivo</div><div class="stat-val">'+(cab.dist||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 12px"><div class="stat-lbl" style="margin-bottom:6px">Estado espiritual</div><div style="font-size:11px">'+(badgesHtml||'—')+'</div></div>'+barrasInd+'</div>';
+  const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
+  const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
+  const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
+  const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
+  const vot=(DB.finanzasVotos||[]).filter(x=>x.responsable===id);
+  const filasG=gastos.map(g=>'<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="neg">€'+(Number(g.monto)||0).toFixed(2)+'</td></tr>').join('');
+  const filasA=act.map(a=>'<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(a.efectivo)||0)+(Number(a.tpv)||0)).toFixed(2)+'</td><td class="neg">€'+(Number(a.gastos)||0).toFixed(2)+'</td></tr>').join('');
+  const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>').join('');
+  const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>').join('');
+  const secciones='<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
+  generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2271,6 +3070,10 @@ function cargarPeticionesAdmin(){cargarPeticiones(true);}
 async function initApp(){
   await loadDB();
   buildSel();
+  // Clonar banner de evidencias para que también lo vean los caballeros
+  const adminBanner=document.querySelector('#screen-admin .ev-banner');
+  const personalWrap=document.getElementById('ev-banner-personal-wrap');
+  if(adminBanner&&personalWrap)personalWrap.innerHTML=adminBanner.innerHTML;
   const acts=document.querySelector('.hacts');
   if(acts&&!document.getElementById('btn-cloud')){
     const b=document.createElement('button');b.id='btn-cloud';b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);
