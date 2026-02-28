@@ -653,6 +653,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="pv-encuesta-campamento" style="display:none;margin-bottom:14px;"></div>
       <!-- Banner Evidencias (mismo que en admin) -->
       <div id="ev-banner-personal-wrap" class="ev-banner" style="padding:12px 16px;justify-content:center;margin-bottom:14px;"></div>
+      <!-- Versículo del día (RVR60) — clic abre la biblia -->
+      <div id="pv-verso-dia-wrap" style="margin-bottom:14px;cursor:pointer;" onclick="openVersoEnBiblia()" title="Abrir en la Biblia"></div>
       <div class="score-hero">
         <div class="sh-big" id="pv-total">0.0</div>
         <div class="sh-lbl">Puntuación Acumulada</div>
@@ -1967,6 +1969,60 @@ async function doEditCampamento(valor){
   const ok=await saveDB();
   closeModal();
   if(ok){toast('✅ Respuesta actualizada','ok');renderCampamentoBanner();}
+}
+
+// Versículo del día (RVR60) — orientado a hombres (fortaleza, integridad, paternidad)
+const VERSOS_DIA_RVR60=[
+  {ref:'Josué 1:9',refCode:'JOS.1.9',text:'Esfuérzate y sé valiente; no temas ni desmayes, porque Jehová tu Dios estará contigo dondequiera que vayas.'},
+  {ref:'Proverbios 27:17',refCode:'PRO.27.17',text:'Hierro con hierro se aguza; y así el hombre aguza el rostro de su amigo.'},
+  {ref:'1 Corintios 16:13',refCode:'1CO.16.13',text:'Velad, estad firmes en la fe; portaos varonilmente, y esforzaos.'},
+  {ref:'Efesios 6:10',refCode:'EPH.6.10',text:'Por lo demás, hermanos míos, fortaleceos en el Señor y en el poder de su fuerza.'},
+  {ref:'Salmo 1:1',refCode:'PSA.1.1',text:'Bienaventurado el varón que no anduvo en consejo de malos, ni estuvo en camino de pecadores, ni en silla de escarnecedores se ha sentado.'},
+  {ref:'Proverbios 20:7',refCode:'PRO.20.7',text:'El justo anda en su integridad; sus hijos son dichosos después de él.'},
+  {ref:'1 Timoteo 6:11',refCode:'1TI.6.11',text:'Mas tú, oh hombre de Dios, huye de estas cosas, y sigue la justicia, la piedad, la fe, el amor, la paciencia, la mansedumbre.'},
+  {ref:'Nehemías 8:10',refCode:'NEH.8.10',text:'El gozo de Jehová es vuestra fuerza.'},
+  {ref:'Proverbios 3:5-6',refCode:'PRO.3.5-6',text:'Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.'},
+  {ref:'Salmo 27:14',refCode:'PSA.27.14',text:'Aguarda a Jehová; esfuérzate, y aliéntese tu corazón; sí, espera a Jehová.'},
+  {ref:'Miqueas 6:8',refCode:'MIC.6.8',text:'Oh hombre, él te ha declarado lo que es bueno, y qué pide Jehová de ti: solamente hacer justicia, y amar misericordia, y humillarte ante tu Dios.'},
+  {ref:'Colosenses 3:23',refCode:'COL.3.23',text:'Y todo lo que hagáis, hacedlo de corazón, como para el Señor y no para los hombres.'},
+  {ref:'Romanos 12:2',refCode:'ROM.12.2',text:'No os conforméis a este siglo, sino transformaos por medio de la renovación de vuestro entendimiento.'},
+  {ref:'Gálatas 6:9',refCode:'GAL.6.9',text:'No nos cansemos, pues, de hacer bien; porque a su tiempo segaremos, si no desmayamos.'},
+  {ref:'Salmo 37:5',refCode:'PSA.37.5',text:'Encomienda a Jehová tu camino, y confía en él; y él hará.'},
+  {ref:'Isaías 40:31',refCode:'ISA.40.31',text:'Los que esperan a Jehová tendrán nuevas fuerzas; levantarán alas como águilas; correrán, y no se cansarán; caminarán, y no se fatigarán.'},
+  {ref:'2 Timoteo 2:15',refCode:'2TI.2.15',text:'Procura con diligencia presentarte a Dios aprobado, como obrero que no tiene de qué avergonzarse, que usa bien la palabra de verdad.'},
+  {ref:'Salmo 119:105',refCode:'PSA.119.105',text:'Lámpara es a mis pies tu palabra, y lumbrera a mi camino.'},
+  {ref:'Mateo 5:16',refCode:'MAT.5.16',text:'Así alumbre vuestra luz delante de los hombres, para que vean vuestras buenas obras y glorifiquen a vuestro Padre que está en los cielos.'},
+  {ref:'Josué 24:15',refCode:'JOS.24.15',text:'Yo y mi casa serviremos a Jehová.'},
+  {ref:'Proverbios 22:1',refCode:'PRO.22.1',text:'De más estima es el buen nombre que las muchas riquezas.'},
+  {ref:'1 Reyes 2:2',refCode:'1KI.2.2',text:'Esfuérzate y sé hombre.'},
+  {ref:'1 Samuel 16:7',refCode:'1SA.16.7',text:'Jehová no mira lo que mira el hombre; pues el hombre mira lo que está delante de sus ojos, pero Jehová mira el corazón.'},
+  {ref:'Salmo 18:32',refCode:'PSA.18.32',text:'Dios es el que me ciñe de poder, y quien hace perfecto mi camino.'},
+  {ref:'Filipenses 4:13',refCode:'PHP.4.13',text:'Todo lo puedo en Cristo que me fortalece.'},
+  {ref:'Deuteronomio 31:6',refCode:'DEU.31.6',text:'Esforzaos y cobrad ánimo; no temáis, ni tengáis miedo de ellos, porque Jehová tu Dios es el que va contigo; no te dejará, ni te desamparará.'},
+  {ref:'Salmo 46:1',refCode:'PSA.46.1',text:'Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones.'},
+  {ref:'Salmo 112:1-2',refCode:'PSA.112.1',text:'Bienaventurado el hombre que teme a Jehová y en sus mandamientos se deleita enormemente. Su descendencia será poderosa en la tierra.'},
+  {ref:'Ezequiel 22:30',refCode:'EZK.22.30',text:'Busqué entre ellos hombre que hiciese vallado y que se pusiese en la brecha delante de mí, a favor de la tierra.'},
+  {ref:'Proverbios 16:3',refCode:'PRO.16.3',text:'Encomienda a Jehová tus obras, y tus pensamientos serán afirmados.'},
+  {ref:'Salmo 128:1',refCode:'PSA.128.1',text:'Bienaventurado todo aquel que teme a Jehová, que anda en sus caminos.'},
+  {ref:'Hebreos 12:1-2',refCode:'HEB.12.1',text:'Corramos con paciencia la carrera que tenemos por delante, puestos los ojos en Jesús.'},
+  {ref:'Santiago 1:12',refCode:'JAS.1.12',text:'Bienaventurado el varón que soporta la tentación; porque cuando sea probado, recibirá la corona de vida.'},
+];
+function getVersoDelDia(){
+  const d=new Date();
+  const dayOfYear=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
+  return VERSOS_DIA_RVR60[dayOfYear % VERSOS_DIA_RVR60.length];
+}
+function renderVersoDelDia(){
+  const wrap=document.getElementById('pv-verso-dia-wrap');
+  if(!wrap)return;
+  const v=getVersoDelDia();
+  window._versoDiaRefCode=v.refCode;
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,#1a1f2e 0%,#2d3748 50%,#1a365d 100%);border-radius:14px;padding:16px 18px;border:1px solid rgba(58,171,186,0.25);box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden;"><div style="position:absolute;right:0;top:0;width:80px;height:80px;background:radial-gradient(circle,rgba(58,171,186,0.12) 0%,transparent 70%);pointer-events:none;"></div><div style="position:relative;z-index:1;"><div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">📖 Versículo del día · RVR60</div><div style="font-family:\'Montserrat\',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.45;margin-bottom:8px;">'+v.text+'</div><div style="font-size:12px;font-weight:600;color:#3aabba;">'+v.ref+'</div><div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:6px;">Toca para abrir en la Biblia →</div></div></div>';
+}
+function openVersoEnBiblia(){
+  const ref=window._versoDiaRefCode||'GEN.1.1';
+  const url='https://www.bible.com/bible/160/'+ref.replace(/-/g,'.');
+  window.open(url,'_blank', 'noopener,noreferrer');
 }
 
 function showPvTab(tab){
@@ -3515,6 +3571,7 @@ async function initApp(){
   const personalWrap=document.getElementById('ev-banner-personal-wrap');
   if(adminBanner&&personalWrap)personalWrap.innerHTML=adminBanner.innerHTML;
   if(adminBanner&&window._reportLogos)window._reportLogos.ev=adminBanner.querySelector('img')?.src||window._reportLogos.ev;
+  renderVersoDelDia();
   const acts=document.querySelector('.hacts');
   if(acts&&!document.getElementById('btn-cloud')){
     const b=document.createElement('button');b.id='btn-cloud';b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);
