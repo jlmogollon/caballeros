@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hombres de Verdad — Caballeros</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Caveat:wght@500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-<!-- No external SDK needed - usamos fetch directo a JSONBin -->
+<!-- Firebase Firestore para sincronizar datos (como Escuela Dominical) -->
 
 <style>
 :root{
@@ -339,6 +339,26 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 </style>
 </head>
 <body>
+<!-- Firebase (como en Escuela Dominical) -->
+<script src="https://unpkg.com/firebase@10.7.1/firebase-app-compat.js"></script>
+<script src="https://unpkg.com/firebase@10.7.1/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyCXVQeyNeE2jkzwCEbLI5ImPtfl0T6dGnI",
+    authDomain: "hombres-de-verdad.firebaseapp.com",
+    projectId: "hombres-de-verdad",
+    storageBucket: "hombres-de-verdad.firebasestorage.app",
+    messagingSenderId: "297660068043",
+    appId: "1:297660068043:web:d3d3d140c94bc1cdd4eb4e"
+  };
+  try {
+    if (typeof firebase !== 'undefined' && !firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    if (typeof firebase !== 'undefined') window.__firebaseDb = firebase.firestore();
+    window.FIREBASE_CONFIGURED = (FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.projectId !== 'tu-proyecto-caballeros');
+  } catch(e) { console.warn('[Caballeros] Firebase init:', e.message); window.FIREBASE_CONFIGURED = false; }
+})();
+</script>
 
 <!-- ════ LOGIN ════ -->
 <div id="screen-login" class="screen active">
@@ -797,15 +817,49 @@ let currentCabId = null;
 let gradeClaseId = null;
 
 // ═══════════════════════════════════════════════════════════════
-// NUBE — JSONBin.io (gratis, sin SDK, funciona con fetch)
+// NUBE — Firebase Firestore (como Escuela Dominical)
 // ═══════════════════════════════════════════════════════════════
-// 1. Ve a https://jsonbin.io → crea cuenta gratis
-// 2. Crea un "Bin" con {} como contenido inicial
-// 3. Copia el BIN_ID y tu API_KEY aquí:
-const JSONBIN_ID  = '6999fead43b1c97be991ae6a';
-const JSONBIN_KEY = '$2a$10$..t6F47juO.G8EJ9TFCUWuyOPLhRg7KeN.iCexLydqbd9hbMW7MEy';
+const FIRESTORE_COLLECTION = 'caballeros_data';
+const FIRESTORE_DOC = 'db';
 
-const USE_CLOUD = JSONBIN_ID !== 'TU_BIN_ID';
+function getFirestoreDb(){
+  try{
+    if(window.__firebaseDb)return window.__firebaseDb;
+    if(typeof firebase!=='undefined'&&firebase.firestore)return firebase.firestore();
+  }catch(e){}
+  return null;
+}
+function waitForFirestore(ms){
+  return new Promise(function(resolve){
+    var db=getFirestoreDb();
+    if(db){resolve(db);return;}
+    var t0=Date.now();
+    var iv=setInterval(function(){
+      var d=getFirestoreDb();
+      if(d){clearInterval(iv);resolve(d);}
+      else if(Date.now()-t0>ms){clearInterval(iv);resolve(null);}
+    },300);
+  });
+}
+
+async function cloudLoad(){
+  var database=await waitForFirestore(12000);
+  if(!database)throw new Error('Firebase no conectado');
+  var snap=await database.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).get({source:'server'});
+  if(!snap.exists)return null;
+  var raw=snap.data().value;
+  if(raw==null||raw==='')return null;
+  return JSON.parse(raw);
+}
+async function cloudSave(data){
+  var database=await waitForFirestore(12000);
+  if(!database)throw new Error('Firebase no conectado');
+  var str=JSON.stringify(data);
+  if(str.length>900000)console.warn('Payload grande:',Math.round(str.length/1024),'KB. Firestore limita 1 MB por documento.');
+  await database.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set({value:str},{merge:true});
+}
+
+var USE_CLOUD=!!(window.FIREBASE_CONFIGURED);
 
 function showLoading(msg){
   let el=document.getElementById('fb-loading');
@@ -826,23 +880,6 @@ function seedDB(){
     peticiones:[],
     eventos:JSON.parse(JSON.stringify(SEED_EVENTOS))
   };
-}
-
-async function cloudLoad(){
-  const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{
-    headers:{'X-Master-Key':JSONBIN_KEY,'X-Bin-Meta':'false'}
-  });
-  if(!r.ok)throw new Error('cloudLoad '+r.status);
-  return await r.json();
-}
-
-async function cloudSave(data){
-  const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,{
-    method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
-    body:JSON.stringify(data)
-  });
-  if(!r.ok)throw new Error('cloudSave '+r.status);
 }
 
 async function loadDB(){
@@ -902,7 +939,17 @@ async function saveDB(){
   invalidateCache();
   if(USE_CLOUD){
     try{await cloudSave(DB);return true;}
-    catch(e){toast('⚠️ Error al guardar en la nube','err');console.error(e);return false;}
+    catch(e){
+      const msg=(e.message||e.code||String(e)).slice(0,80);
+      if(e.code==='permission-denied'){
+        toast('🔑 Sin permiso en Firebase. Revisa reglas de Firestore y que el proyecto esté bien configurado. Guardando en este dispositivo…','err');
+      }else{
+        toast('⚠️ Error al guardar en Firebase: '+msg,'err');
+      }
+      try{localStorage.setItem(SK,JSON.stringify(DB));}catch(_){}
+      console.error('cloudSave failed',e);
+      return false;
+    }
   }
   try{localStorage.setItem(SK,JSON.stringify(DB));return true;}catch(e){
     console.error('localStorage save failed',e);
@@ -2975,7 +3022,7 @@ function togglePrayerTimer(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PETICIONES DE ORACIÓN — guardadas en DB.peticiones (JSONBin)
+// PETICIONES DE ORACIÓN — guardadas en DB.peticiones (Firebase)
 // ═══════════════════════════════════════════════════════════════
 let petAnon=false;
 
