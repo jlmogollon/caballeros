@@ -285,8 +285,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .pv-av-wrap{position:relative;display:inline-block;margin-bottom:12px;text-align:center;}
 .pv-av{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal3));display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:white;border:3px solid rgba(255,255,255,0.25);box-shadow:0 0 24px rgba(58,171,186,0.4);overflow:hidden;cursor:pointer;position:relative;z-index:1;}
 .pv-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.pv-cam{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:24px;height:24px;background:rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.55;cursor:pointer;z-index:1;backdrop-filter:blur(2px);}
-.pv-av-wrap:hover .pv-cam{opacity:0.9;background:rgba(255,255,255,0.4);}
+.pv-cam{position:absolute;top:4px;right:4px;left:auto;bottom:auto;transform:none;width:22px;height:22px;background:rgba(255,255,255,0.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:0.8;cursor:pointer;z-index:1;backdrop-filter:blur(2px);}
+.pv-av-wrap:hover .pv-cam{opacity:1;background:rgba(255,255,255,0.5);}
+.pv-ntab-cumple{margin-right:10px;}
 .pv-name{font-family:'Montserrat',sans-serif;font-size:19px;font-weight:900;color:white;position:relative;}
 .pv-meta{font-size:11px;color:rgba(255,255,255,0.55);margin-top:4px;letter-spacing:1px;position:relative;}
 .pv-bdg{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:10px;position:relative;}
@@ -651,6 +652,10 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="star-row" id="pv-stars"></div>
         <div class="ev-pill">🍇 Evidencias 2026</div>
       </div>
+      <!-- FECHA DE BAUTIZO (solo bautizados sin fecha) -->
+      <div id="pv-fbaut-card" style="margin-bottom:10px;"></div>
+      <!-- FECHA DE SELLADO (solo sellados sin fecha) -->
+      <div id="pv-fsell-card" style="margin-bottom:10px;"></div>
       <!-- AUTOCALIFICACIÓN DEVOTO -->
       <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
       <!-- FECHA DE NACIMIENTO -->
@@ -921,7 +926,7 @@ async function loadDB(){
       if(data&&data.caballeros&&data.caballeros.length>0){
         DB=data;
         // Migración: asegurar que todos los caballeros tengan campo pw
-        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';});
+        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';});
         // Migración: asegurar array de peticiones
         if(!DB.peticiones)DB.peticiones=[];
         // Migración: asegurar array de eventos
@@ -965,7 +970,7 @@ async function loadDB(){
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
   // Migración: asegurar campo pw en todos
-  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';});
+  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';});
   // Migración: asegurar array de peticiones
   if(!DB.peticiones)DB.peticiones=[];
   // Migración: asegurar array de eventos
@@ -1163,13 +1168,22 @@ function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}
 function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
 function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%">`;return ini(c.nombre);}
 
+// Abreviar tema para que quepa en 2 líneas (ej. Intro. a las Dispensaciones.)
+function abrevTema(t){
+  if(!t||!t.trim())return '—';
+  const s=t.trim();
+  const map={'Estudio de las Dispensaciones':'Intro. a las Dispensaciones.','Introducción a las Dispensaciones':'Intro. a las Dispensaciones.'};
+  if(map[s])return map[s];
+  if(s.length<=42)return s;
+  return s.replace(/^Introducción\b/i,'Intro.').replace(/^Estudio\b/i,'Est.').replace(/\s+de\s+las\s+Dispensaciones\.?$/i,' a las Dispensaciones.');
+}
 // Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
 function mkHistoryTable(cabId,forPdf){
   const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
   const temaStyle=forPdf?'font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.35;max-height:3.2em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical':'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.3;max-width:90px;max-height:2.8em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical';
   return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr></thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
   }</tbody></table>`;
 }
 
@@ -1373,7 +1387,7 @@ function escAttr(s){if(s==null||s===undefined)return'';return String(s).replace(
 // ═══════════════════════════════════════════════════════════════
 function openFormCab(id){
   const isNew=!id;
-  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:''};
+  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:'',fechaBautizado:'',fechaSellado:''};
   if(id&&!c){toast('Caballero no encontrado','err');return;}
   const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join('');
   const chkH=`<div class="chk-grid">${CHECKS.map(k=>`
@@ -1386,12 +1400,15 @@ function openFormCab(id){
   const starsH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<curVal?'lit':''}" id="fstar-${i}">★</span>`).join('');
   const nombreEsc=escAttr(c.nombre);
   const fnacEsc=escAttr(c.fnac||'');
+  const fbautEsc=escAttr(c.fechaBautizado||'');const fsellEsc=escAttr(c.fechaSellado||'');
   openSheet(isNew?'✚':(c.photo?`<img src="${c.photo}">`:(ini(c.nombre))),isNew?'Nuevo Caballero':`Editar: ${c.nombre}`,'',`
     <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
     <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
     <div class="fr"><label>Fecha de nacimiento</label><input type="date" id="fc-fnac" value="${fnacEsc}" placeholder="Para cumpleaños"></div>
-    <div class="fr"><label>Estado espiritual (cada uno suma 1 ⭐)</label>${chkH}
+    <div class="fr"><label>Fecha de bautizado</label><input type="date" id="fc-fechaBautizado" value="${fbautEsc}" placeholder="Para aniversario"></div>
+    <div class="fr"><label>Fecha de sellado</label><input type="date" id="fc-fechaSellado" value="${fsellEsc}" placeholder="Para aniversario"></div>
+    <div class="fr"><label>Distinciones (cada una suma 1 ⭐)</label>${chkH}
       <div style="margin-top:8px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;padding:8px 10px;">
         <span style="font-size:10px;color:#065f46;line-height:1.6;"><strong>🌿 Devoto:</strong> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</span>
       </div>
@@ -1486,6 +1503,8 @@ function readForm(){
     grupo:document.getElementById('fc-grupo').value,
     dist:document.getElementById('fc-dist').value,
     fnac:(document.getElementById('fc-fnac')?.value||'').trim(),
+    fechaBautizado:(document.getElementById('fc-fechaBautizado')?.value||'').trim(),
+    fechaSellado:(document.getElementById('fc-fechaSellado')?.value||'').trim(),
     ...Object.fromEntries(CHECKS.map(k=>[k,document.getElementById('fc-'+k).checked?1:0]))
   };
 }
@@ -1814,16 +1833,42 @@ function renderCumple(){
 
 function renderCumplePV(){
   const el=document.getElementById('pv-cumple-pg');if(!el)return;
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
+  // Aniversario bautizado / sellado del usuario actual
+  if(c){
+    if(c.fechaBautizado&&c.fechaBautizado.length>=10){
+      const r=getProximoCumple(c.fechaBautizado);
+      if(r){
+        const fechaStr=`${r.dia} ${M[r.mes-1]}`;
+        const diasTxt=r.diasRest===0?'¡Hoy!':r.diasRest===1?'Mañana':r.yaPaso?`Próximo en ${r.diasRest} días`:`En ${r.diasRest} días`;
+        h+=`<div style="background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1.5px solid #93c5fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:10px;font-weight:700;color:#1e40af;letter-spacing:1px;margin-bottom:4px;">💧 Cumple años de bautizado</div>
+          <div style="font-size:13px;font-weight:800;color:#1a1f2e;">${fechaStr} · ${diasTxt}</div>
+        </div>`;
+      }
+    }
+    if(c.fechaSellado&&c.fechaSellado.length>=10){
+      const r=getProximoCumple(c.fechaSellado);
+      if(r){
+        const fechaStr=`${r.dia} ${M[r.mes-1]}`;
+        const diasTxt=r.diasRest===0?'¡Hoy!':r.diasRest===1?'Mañana':r.yaPaso?`Próximo en ${r.diasRest} días`:`En ${r.diasRest} días`;
+        h+=`<div style="background:linear-gradient(135deg,#ede9fe,#f5f3ff);border:1.5px solid #c4b5fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:10px;font-weight:700;color:#5b21b6;letter-spacing:1px;margin-bottom:4px;">🕊️ Cumple años de sellado</div>
+          <div style="font-size:13px;font-weight:800;color:#1a1f2e;">${fechaStr} · ${diasTxt}</div>
+        </div>`;
+      }
+    }
+  }
   const items=DB.caballeros.filter(c=>c.fnac&&c.fnac.length>=10).map(c=>{
     const r=getProximoCumple(c.fnac);
     if(!r)return null;
     return{...c,...r};
   }).filter(Boolean);
-  if(!items.length){el.innerHTML='<div class="sec-ttl">🎂 Cumpleaños</div><p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Añade la tuya en tu perfil.</p>';return;}
-  const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  if(!items.length){el.innerHTML=h+'<p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Añade la tuya en tu perfil.</p>';return;}
   const proximos=items.filter(x=>!x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
   const yaCumplidos=items.filter(x=>x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
-  let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
   function row(x,isCurrent){
     const fechaStr=`${x.dia} ${M[x.mes-1]}`;
     const diasTxt=x.yaPaso?(`Ya pasó · Próximo en ${x.diasRest} días`):(x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`);
@@ -1833,7 +1878,7 @@ function renderCumplePV(){
       <div class="cl-inf" style="flex:1;min-width:0"><div class="cl-nm">${x.nombre}</div><div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${diasTxt}</div></div>${editBtn}</div>`;
   }
   if(proximos.length){
-    h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 6px;letter-spacing:0.5px;">Próximos</div>';
+    h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 6px;letter-spacing:0.5px;">Próximos cumpleaños</div>';
     proximos.forEach(x=>{h+=row(x,x.id===currentCabId);});
   }
   if(yaCumplidos.length){
@@ -1864,6 +1909,8 @@ function renderPersonal(cabId){
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTable(cabId);
   renderGrupoSection(c);
+  renderFbautCard(c);
+  renderFsellCard(c);
   renderDevotoCard(c);
   renderFnacCard(c);
   // Tab perfil activo por defecto al entrar
@@ -1919,7 +1966,7 @@ function renderDevotoCard(c){
         <span style="font-size:20px;">🌿</span>
         <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#065f46;">Soy Devoto</span>
       </div>
-      <button onclick="toggleDevoto()" style="background:transparent;border:none;padding:6px;cursor:pointer;font-size:18px;" title="Quitar distinción">✕</button>
+      <button onclick="toggleDevoto()" style="background:transparent;border:none;padding:6px;cursor:pointer;font-size:18px;color:#b91c1c;font-weight:bold;" title="Quitar distinción">✕</button>
     </div>`;
     return;
   }
@@ -1943,6 +1990,70 @@ function renderDevotoCard(c){
   </div>`;
 }
 
+function renderFbautCard(c){
+  const el=document.getElementById('pv-fbaut-card');
+  if(!el)return;
+  if(!c.bautizado||(c.fechaBautizado&&c.fechaBautizado.length>=10)){el.innerHTML='';el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div style="background:linear-gradient(135deg,#dbeafe 0%,#eff6ff 100%);border:1.5px solid #93c5fd;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:22px;flex-shrink:0;">💧</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1e40af;">Fecha de bautizado</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px;">Añade tu fecha para ver tu aniversario en Cumpleaños</div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="date" id="pv-fbaut-inp" value="${c.fechaBautizado||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #bfdbfe;border-radius:10px;font-size:13px;">
+          <button onclick="guardarFbaut()" style="background:#2563eb;border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function renderFsellCard(c){
+  const el=document.getElementById('pv-fsell-card');
+  if(!el)return;
+  if(!c.sellado||(c.fechaSellado&&c.fechaSellado.length>=10)){el.innerHTML='';el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div style="background:linear-gradient(135deg,#ede9fe 0%,#f5f3ff 100%);border:1.5px solid #c4b5fd;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:22px;flex-shrink:0;">🕊️</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#5b21b6;">Fecha de sellado</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:2px;">Añade tu fecha para ver tu aniversario en Cumpleaños</div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="date" id="pv-fsell-inp" value="${c.fechaSellado||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #ddd6fe;border-radius:10px;font-size:13px;">
+          <button onclick="guardarFsell()" style="background:#6d28d9;border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function guardarFbaut(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c){toast('Error: no se encontró el caballero','err');return;}
+  const inp=document.getElementById('pv-fbaut-inp');
+  if(!inp)return;
+  c.fechaBautizado=(inp.value||'').trim();
+  toast('💾 Guardando...','info');
+  const ok=await saveDB();
+  if(!ok){toast('Error al guardar. Comprueba conexión.','err');return;}
+  renderFbautCard(c);
+  renderCumplePV();
+  toast('💧 Fecha de bautizado guardada','ok');
+}
+async function guardarFsell(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c){toast('Error: no se encontró el caballero','err');return;}
+  const inp=document.getElementById('pv-fsell-inp');
+  if(!inp)return;
+  c.fechaSellado=(inp.value||'').trim();
+  toast('💾 Guardando...','info');
+  const ok=await saveDB();
+  if(!ok){toast('Error al guardar. Comprueba conexión.','err');return;}
+  renderFsellCard(c);
+  renderCumplePV();
+  toast('🕊️ Fecha de sellado guardada','ok');
+}
 function renderFnacCard(c){
   const el=document.getElementById('pv-fnac-card');
   if(!el)return;
@@ -3032,8 +3143,8 @@ async function generarInformeCaballeros(){
   const barras='<div style="padding:14px 20px 8px">'+barRow('Bautizados',totalBaut,cabs.length,'#16a34a')+barRow('Sellados',totalSell,cabs.length,'#3aabba')+barRow('Servidores',totalServ,cabs.length,'#2d8f9c')+barRow('Directivos',totalDir,cabs.length,'#f5c518')+barRow('Predicadores',totalPred,cabs.length,'#d4a800')+barRow('Evangelistas',totalEvang,cabs.length,'#1d6b77')+barRow('Devotos',totalDev,cabs.length,'#22c55e')+'</div>';
   const filasGrupos=grupos.map(g=>{const n=cabs.filter(c=>c.grupo===g).length;const pct=cabs.length>0?Math.round((n/cabs.length)*100):0;return '<tr><td><strong>'+g+'</strong></td><td>'+n+'</td><td><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:#3aabba"></div></div><small style="color:#6b7280">'+pct+'%</small></td></tr>';}).join('');
   const badges=(c)=>{return (CHECKS||[]).filter(k=>c[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');};
-  const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const pts=cal?cal.total.toFixed(1):(c.puntos||'—');const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td>'+(c.dist||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+' pts</td></tr>';}).join('');
-  const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Distintivo</th><th>Estado espiritual</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
+  const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const pts=cal?cal.total.toFixed(1):(c.puntos||'—');const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+' pts</td></tr>';}).join('');
+  const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Distinciones</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
   generarPDF('Informe de Caballeros General',html);
 }
 function generarInformeIndividualPorId(id){
@@ -3045,17 +3156,24 @@ function generarInformeIndividualPorId(id){
   const rank=typeof getRank==='function'?getRank(id):'—';
   const badgesHtml=(CHECKS||[]).filter(k=>cab[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');
   const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:8px">'+barRow('Asistencia a clases',calCab?calCab.asist:0,calCab?calCab.totalClases:1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+barRow('Puntuación acumulada',parseFloat(pts)||0,10,'#3aabba')+'</div></div>';
-  const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Distintivo</div><div class="stat-val">'+(cab.dist||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 12px"><div class="stat-lbl" style="margin-bottom:6px">Estado espiritual</div><div style="font-size:11px">'+(badgesHtml||'—')+'</div></div>'+barrasInd+'</div>';
-  const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
   const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
   const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
   const vot=(DB.finanzasVotos||[]).filter(x=>x.responsable===id);
+  const numAct=act.length, numDon=don.length, numVot=vot.length;
+  const totalDon=don.reduce((s,d)=>s+(Number(d.efectivo)||0)+(Number(d.tpv)||0),0);
+  const totalVot=vot.reduce((s,v)=>s+(Number(v.efectivo)||0)+(Number(v.tpv)||0),0);
+  const statsGrupo='<div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' (€'+totalDon.toFixed(2)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' (€'+totalVot.toFixed(2)+')</div></div>';
+  const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 12px"><div class="stat-lbl" style="margin-bottom:6px">Distinciones</div><div style="font-size:11px">'+(badgesHtml||'—')+'</div></div><div style="padding:0 20px 16px"><div class="stat-lbl" style="margin-bottom:8px">Estadísticas del grupo (colaboraciones, donativos, votos)</div><div style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px">'+statsGrupo+'</div></div>'+barrasInd+'</div>';
+  const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
+  const peticionesCab=(DB.peticiones||[]).filter(p=>p.cabId===id).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const filasPet=peticionesCab.map(p=>'<tr><td>'+(p.fecha||'—')+'</td><td>'+(p.texto||'').replace(/</g,'&lt;').substring(0,120)+(p.texto&&p.texto.length>120?'…':'')+'</td></tr>').join('');
+  const secPeticiones=peticionesCab.length?'<div class="section"><div class="section-title">🙏 Historial de peticiones a su nombre</div><table><thead><tr><th>Fecha</th><th>Petición</th></tr></thead><tbody>'+filasPet+'</tbody></table></div>':'';
   const filasG=gastos.map(g=>'<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="neg">€'+(Number(g.monto)||0).toFixed(2)+'</td></tr>').join('');
   const filasA=act.map(a=>'<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(a.efectivo)||0)+(Number(a.tpv)||0)).toFixed(2)+'</td><td class="neg">€'+(Number(a.gastos)||0).toFixed(2)+'</td></tr>').join('');
   const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>').join('');
   const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>').join('');
-  const secciones='<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
+  const secciones='<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
   generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
 }
 function generarInformeIndividual(){
