@@ -648,6 +648,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <!-- ── TAB: PERFIL ── -->
   <div class="pv-tab active" id="pvtab-perfil">
     <div class="pv-body">
+      <!-- Encuesta Campamento (se oculta al responder) -->
+      <div id="pv-encuesta-campamento" style="display:none;margin-bottom:14px;"></div>
       <!-- Banner Evidencias (mismo que en admin) -->
       <div id="ev-banner-personal-wrap" class="ev-banner" style="padding:12px 16px;justify-content:center;margin-bottom:14px;"></div>
       <div class="score-hero">
@@ -758,6 +760,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
           <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
         </div>
       </a>
+      <!-- Banner estadísticas Campamento + editar -->
+      <div id="pv-campamento-banner-wrap" style="margin-bottom:14px;"></div>
       <div class="sec-ttl">🗓 Próximos Eventos</div>
       <div id="pv-eventos" style="display:flex;flex-direction:column;gap:8px;"></div>
       <div style="margin-top:20px;">
@@ -931,7 +935,7 @@ async function loadDB(){
       if(data&&data.caballeros&&data.caballeros.length>0){
         DB=data;
         // Migración: asegurar que todos los caballeros tengan campo pw
-        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';});
+        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';});
         // Migración: asegurar array de peticiones
         if(!DB.peticiones)DB.peticiones=[];
         // Migración: asegurar array de eventos
@@ -975,7 +979,7 @@ async function loadDB(){
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
   // Migración: asegurar campo pw en todos
-  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';});
+  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';});
   // Migración: asegurar array de peticiones
   if(!DB.peticiones)DB.peticiones=[];
   // Migración: asegurar array de eventos
@@ -1912,8 +1916,56 @@ function renderPersonal(cabId){
   renderFsellCard(c);
   renderDevotoCard(c);
   renderFnacCard(c);
+  renderEncuestaCampamento(c);
   // Tab perfil activo por defecto al entrar
   showPvTab('perfil');
+}
+function renderEncuestaCampamento(c){
+  const el=document.getElementById('pv-encuesta-campamento');
+  if(!el)return;
+  if(c.campamentoRespuesta){
+    el.style.display='none';
+    el.innerHTML='';
+    return;
+  }
+  el.style.display='block';
+  el.innerHTML='<div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#22c55e 80%);border-radius:14px;padding:16px 18px;border:1px solid rgba(34,197,94,0.35);box-shadow:0 4px 16px rgba(34,197,94,0.15);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#fff;margin-bottom:12px;">⛺ ¿Vas al campamento de Caballeros?</div><div style="display:flex;flex-wrap:wrap;gap:8px;"><button type="button" onclick="guardarCampamentoRespuesta(\''+c.id+'\',\'si\')" style="padding:10px 18px;background:#22c55e;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">Sí</button><button type="button" onclick="guardarCampamentoRespuesta(\''+c.id+'\',\'no\')" style="padding:10px 18px;background:#64748b;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">No</button><button type="button" onclick="guardarCampamentoRespuesta(\''+c.id+'\',\'aun_no_se\')" style="padding:10px 18px;background:#f59e0b;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">Aún no lo sé</button></div></div>';
+}
+async function guardarCampamentoRespuesta(cabId, valor){
+  const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
+  c.campamentoRespuesta=valor;
+  const ok=await saveDB();
+  if(ok){toast('✅ Respuesta guardada','ok');renderEncuestaCampamento(c);if(document.getElementById('pv-campamento-banner-wrap'))renderCampamentoBanner();}
+}
+function renderCampamentoBanner(){
+  const wrap=document.getElementById('pv-campamento-banner-wrap');
+  if(!wrap)return;
+  const cabs=DB.caballeros||[];
+  const si=cabs.filter(c=>c.campamentoRespuesta==='si').length;
+  const no=cabs.filter(c=>c.campamentoRespuesta==='no').length;
+  const aun=cabs.filter(c=>c.campamentoRespuesta==='aun_no_se').length;
+  const total=si+no+aun;
+  const tieneRespuesta=currentCabId&&(DB.caballeros.find(x=>x.id===currentCabId)||{}).campamentoRespuesta;
+  const editBtn=tieneRespuesta?'<button type="button" onclick="openEditCampamento()" style="background:transparent;border:none;padding:4px;cursor:pointer;font-size:16px;" title="Cambiar mi respuesta">✏️</button>':'';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,rgba(34,197,94,0.12) 0%,rgba(245,158,11,0.08) 100%);border-radius:14px;padding:14px 16px;border:1px solid rgba(34,197,94,0.25);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><span style="font-family:\'Montserrat\',sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;">⛺ Campamento de Caballeros</span><span style="font-size:12px;color:#4b5563;">Sí: <strong>'+si+'</strong> · No: <strong>'+no+'</strong> · Aún no lo sé: <strong>'+aun+'</strong>'+(total>0?' · '+total+' respuestas':'')+'</span></div>'+editBtn+'</div>';
+}
+function openEditCampamento(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const v=c.campamentoRespuesta||'';
+  openSheet('⛺','¿Vas al campamento de Caballeros?','Cambia tu respuesta',`
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button type="button" onclick="doEditCampamento('si')" style="padding:12px 18px;background:${v==='si'?'#22c55e':'#f1f5f9'};color:${v==='si'?'#fff':'#1a1f2e'};border:2px solid ${v==='si'?'#22c55e':'#e2e8f0'};border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">Sí</button>
+      <button type="button" onclick="doEditCampamento('no')" style="padding:12px 18px;background:${v==='no'?'#64748b':'#f1f5f9'};color:${v==='no'?'#fff':'#1a1f2e'};border:2px solid ${v==='no'?'#64748b':'#e2e8f0'};border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">No</button>
+      <button type="button" onclick="doEditCampamento('aun_no_se')" style="padding:12px 18px;background:${v==='aun_no_se'?'#f59e0b':'#f1f5f9'};color:${v==='aun_no_se'?'#fff':'#1a1f2e'};border:2px solid ${v==='aun_no_se'?'#f59e0b':'#e2e8f0'};border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;">Aún no lo sé</button>
+    </div>
+  `);
+}
+async function doEditCampamento(valor){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  c.campamentoRespuesta=valor;
+  const ok=await saveDB();
+  closeModal();
+  if(ok){toast('✅ Respuesta actualizada','ok');renderCampamentoBanner();}
 }
 
 function showPvTab(tab){
@@ -2549,6 +2601,7 @@ function getEventosCompletos(){
 function renderEventosPV(){
   const el=document.getElementById('pv-eventos');
   if(!el)return;
+  renderCampamentoBanner();
 
   const {proximos:items,pasados,today}=getEventosCompletos();
   const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
