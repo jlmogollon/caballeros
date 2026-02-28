@@ -900,16 +900,15 @@ async function loadDB(){
 
 async function saveDB(){
   invalidateCache();
-  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){
+  if(USE_CLOUD){
+    try{await cloudSave(DB);return true;}
+    catch(e){toast('⚠️ Error al guardar en la nube','err');console.error(e);return false;}
+  }
+  try{localStorage.setItem(SK,JSON.stringify(DB));return true;}catch(e){
     console.error('localStorage save failed',e);
-    toast('⚠️ No se pudo guardar (espacio o privacidad). Prueba borrar datos del sitio.','err');
+    toast('⚠️ No se pudo guardar (espacio o privacidad).','err');
     return false;
   }
-  if(USE_CLOUD){
-    try{await cloudSave(DB);}
-    catch(e){toast('⚠️ Error al guardar en la nube','err');console.error(e);}
-  }
-  return true;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1442,7 +1441,7 @@ function mkClaseCard(cl){
   const calificada=claseAvg(cl)>0;
   const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':'<span class="cl-badge cl-proxima">Próxima</span>';
   const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
-  return`<div class="cl-card" onclick="openClaseDetail('${cl.id}')">
+  return`<div class="cl-card" onclick="openClaseDetail('${cl.fecha}')">
     <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
     <div class="cl-inf">
       <div class="cl-nm">${cl.tema||'Estudio de las Dispensaciones'}</div>
@@ -1472,44 +1471,56 @@ function renderClases(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CLASE DETAIL
+// CLASE DETAIL — Identificar por fecha para evitar confundir clases (ej. 13 feb vs 27 feb)
 // ═══════════════════════════════════════════════════════════════
-function openClaseDetail(id){
-  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
+function getClaseByKey(key){
+  if(!key)return null;
+  const byFecha=/^\d{4}-\d{2}-\d{2}$/.test(key);
+  return DB.clases.find(x=>byFecha?x.fecha===key:x.id===key)||null;
+}
+function openClaseDetail(key){
+  const cl=getClaseByKey(key);if(!cl)return;
   const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`;
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const clave=cl.fecha;
   openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
     <div class="dsec"><div class="dhead">Editar datos de la clase</div>
       <div class="fr"><label>Nombre / Tema de la clase</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
       <div class="fr"><label>Fecha</label><input type="date" id="edcl-fecha" value="${cl.fecha}"></div>
       <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo">${gOpts}</select></div>
-      <button class="btn bteal" onclick="doSaveClaseInfo('${id}')" style="margin-top:6px">💾 Guardar cambios</button>
+      <button class="btn bteal" onclick="doSaveClaseInfo('${clave}')" style="margin-top:6px">💾 Guardar cambios</button>
     </div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
     <div class="btn-row">
-      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${id}')">✏️ Calificar / Editar notas</button>
-      <button class="btn bred" onclick="confirmDelClase('${id}')">🗑 Eliminar</button>
+      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${clave}')">✏️ Calificar / Editar notas</button>
+      <button class="btn bred" onclick="confirmDelClase('${clave}')">🗑 Eliminar</button>
     </div>
   `);
 }
-async function doSaveClaseInfo(id){
-  const cl=DB.clases.find(x=>x.id===id);if(!cl)return;
+async function doSaveClaseInfo(key){
+  const cl=getClaseByKey(key);if(!cl)return;
   const tema=document.getElementById('edcl-tema').value.trim()||'Estudio de las Dispensaciones';
   const fecha=document.getElementById('edcl-fecha').value;
   const grupoResp=document.getElementById('edcl-grupo').value;
   if(!fecha){toast('La fecha es obligatoria','err');return;}
   cl.tema=tema;cl.fecha=fecha;cl.grupoResp=grupoResp;
   closeModal();toast('💾 Guardando...','info');
-  await saveDB();toast('✅ Clase actualizada','ok');
+  const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
+  toast('✅ Clase actualizada','ok');
   renderClases();renderDash();renderCalGr();
 }
-function confirmDelClase(id){
-  const cl=DB.clases.find(x=>x.id===id);
-  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${id}')">Eliminar</button></div></div>`;
+function confirmDelClase(key){
+  const cl=getClaseByKey(key);if(!cl)return;
+  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${cl.fecha}')">Eliminar</button></div></div>`;
 }
-async function doDelClase(id){DB.clases=DB.clases.filter(c=>c.id!==id);closeModal();renderClases();renderDash();toast('💾 Guardando...','info');await saveDB();toast('Clase eliminada','ok');}
+async function doDelClase(key){
+  const cl=getClaseByKey(key);if(!cl)return;
+  DB.clases=DB.clases.filter(c=>c.id!==cl.id);
+  closeModal();renderClases();renderDash();toast('💾 Guardando...','info');
+  const ok=await saveDB();if(ok)toast('Clase eliminada','ok');else toast('Error al guardar','err');
+}
 
 // ═══════════════════════════════════════════════════════════════
 // NUEVA CLASE
@@ -1538,9 +1549,9 @@ async function doCrearClase(){
 // ═══════════════════════════════════════════════════════════════
 // GRADING — full screen, table layout, FIXED
 // ═══════════════════════════════════════════════════════════════
-function openGrade(claseId){
-  const cl=DB.clases.find(x=>x.id===claseId);if(!cl)return;
-  gradeClaseId=claseId;
+function openGrade(key){
+  const cl=getClaseByKey(key);if(!cl)return;
+  gradeClaseId=cl.id;
   document.getElementById('gs-ttl').textContent=cl.tema||'Estudio de las Dispensaciones';
   document.getElementById('gs-sub').textContent=fmtDate(cl.fecha)+' · Toca ○ para marcar asistencia · Notas del 0 al 10';
 
@@ -1850,7 +1861,9 @@ async function guardarFnac(){
   if(!inp){toast('Error al guardar','err');return;}
   const v=(inp.value||'').trim();
   c.fnac=v||'';
-  try{await saveDB();}catch(e){toast('Error al guardar','err');return;}
+  toast('💾 Guardando...','info');
+  const ok=await saveDB();
+  if(!ok){toast('Error al guardar. Comprueba conexión.','err');return;}
   renderFnacCard(c);
   toast(v?'🎂 Fecha guardada':'Fecha eliminada','ok');
 }
