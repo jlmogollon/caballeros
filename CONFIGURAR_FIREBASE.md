@@ -125,3 +125,5 @@ Si algo falla, abre la **consola del navegador** (F12 → pestaña “Console”
 | 7 | Abres la app, inicias sesión y compruebas que carga y guarda en la nube |
 
 Cuando el `projectId` en `index.html` sea el de tu proyecto real (no `tu-proyecto-caballeros`), la app usará Firebase automáticamente.
+
+

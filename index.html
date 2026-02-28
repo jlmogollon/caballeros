@@ -622,6 +622,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-av-wrap">
       <div class="pv-av" id="pv-av" onclick="document.getElementById('photo-input-pv').click()"></div>
       <div class="pv-cam" onclick="document.getElementById('photo-input-pv').click()">📷</div>
+      <div id="pv-photo-reminder" style="display:none;font-size:11px;color:var(--teal);font-weight:700;margin-top:6px;text-align:center;">Añade tu foto de perfil</div>
     </div>
     <div class="pv-name" id="pv-name"></div>
     <div class="pv-meta" id="pv-meta"></div>
@@ -634,7 +635,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab"        id="pvtab-cumple-btn"    onclick="showPvTab('cumple')">🎂 Cumpleaños</div>
+    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 Cumple</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -653,18 +654,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
       <!-- FECHA DE NACIMIENTO -->
       <div id="pv-fnac-card" style="margin-bottom:10px;"></div>
-      <!-- MATERIAL DE ESTUDIO -->
-      <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
-        <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
-          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-          <div style="font-size:28px;flex-shrink:0;">📖</div>
-          <div style="flex:1;">
-            <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">Material de Estudio</div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
-          </div>
-          <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
-        </div>
-      </a>
       <!-- WHATSAPP GRUPO -->
       <a href="https://chat.whatsapp.com/Ez9mi53lO57G59mmEdrIfV?mode=gi_t" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
         <div style="background:linear-gradient(135deg,#0a1f0f 0%,#0d2b14 50%,#145222 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(37,211,102,0.3);box-shadow:0 4px 20px rgba(37,211,102,0.15);position:relative;overflow:hidden;">
@@ -685,6 +674,11 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="pv-grupo-section"></div>
       <div class="vine-div"><div class="vine-line"></div><div class="vine-ico">📚</div><div class="vine-line r"></div></div>
       <div id="pv-hist"></div>
+      <div style="margin-top:24px;padding:16px;background:linear-gradient(135deg,rgba(58,171,186,0.08),rgba(58,171,186,0.15));border-radius:14px;border:1.5px solid rgba(58,171,186,0.25);">
+        <div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">📋 Informe en PDF</div>
+        <p style="font-size:11px;color:#6b7280;margin-bottom:12px;line-height:1.5;">Genera tu informe individual como el que usa el administrador: datos, asistencia, calificaciones por clase y actividades en finanzas.</p>
+        <button type="button" onclick="generarInformeIndividualPorId(currentCabId)" style="width:100%;padding:12px 16px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:Montserrat,sans-serif;box-shadow:0 3px 12px rgba(58,171,186,0.3);">🖨️ Generar mi informe (PDF)</button>
+      </div>
     </div>
   </div>
 
@@ -1172,8 +1166,8 @@ function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${s
 function mkHistoryTable(cabId){
   const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
-  return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Tot</th></tr></thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:10px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.tema||'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
+  return`<table class="dtable"><thead><tr><th>Fecha</th><th>Tema</th><th>Interés</th><th>Puntualidad</th><th>Dominio</th><th>Participación</th><th>Asistencia</th><th>Total</th></tr></thead><tbody>${
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="font-size:11px;white-space:normal;word-wrap:break-word">${(r.tema||'—').replace(/</g,'&lt;')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
   }</tbody></table>`;
 }
 
@@ -1350,7 +1344,7 @@ function openCabDetail(id){
       <div class="star-row" style="margin-top:10px">${starH}</div>
       <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px">Valoración automática por estado</div>
     </div>
-    <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total.toFixed(1)} pts</span> · Asist: ${cal.asist}/${cal.totalClases}</div>${bars}</div>
+    <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total.toFixed(1)} pts</span> · Asistencia: ${cal.asist}/${cal.totalClases}</div>${bars}</div>
     <div class="dsec"><div class="dhead">Historial de Clases</div>${histH}</div>
     <div class="btn-row">
       <button class="btn boutline" onclick="closeModal();openFormCab('${id}')">✏️ Editar</button>
@@ -1470,6 +1464,7 @@ function handlePhoto(e,ctx){
       c.photo=data;
       const av=document.getElementById('pv-av');
       av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
+      const rem=document.getElementById('pv-photo-reminder');if(rem)rem.style.display='none';
       const ok=await saveDB();if(ok)toast('📷 Foto actualizada','ok');else toast('Foto no se pudo guardar','err');
     }else{
       const cabId=document.getElementById('photo-input-modal').dataset.cabId;
@@ -1667,10 +1662,10 @@ function openGrade(key){
     html+=`<tr id="tr-${c.id}">
       <td><div class="gname">${nombre}</div></td>
       <td><button class="att-btn ${pres?'yes':''}" id="att-${c.id}" onclick="togAtt('${c.id}')">${pres?'✅':'○'}</button></td>
-      <td><input class="sc-inp" id="si-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.i!==''?q.i:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
-      <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
-      <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
-      <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="si-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.i!==''?q.i:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td class="total-cell" id="tot-${c.id}">${pres?rowTotal(q).toFixed(2):'—'}</td>
     </tr>`;
   });
@@ -1700,6 +1695,7 @@ function jumpNextGrade(inp){
   if(v==='')return;
   var n=+v;
   if(n<0||n>10)return;
+  if(v==='1')return;
   if(v.length===2&&v!=='10')return;
   var id=inp.id;
   var idx=id.indexOf('-');
@@ -1801,24 +1797,16 @@ function renderCumple(){
   }).filter(Boolean);
   if(!items.length){el.innerHTML='<div class="sec-ttl">🎂 Cumpleaños</div><p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Los caballeros pueden añadirlas en su perfil o el admin al editar.</p>';return;}
   const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  items.sort((a,b)=>{
-    if(a.yaPaso!==b.yaPaso)return a.yaPaso?1:-1;
-    return a.diasRest-b.diasRest;
-  });
+  const proximos=items.filter(x=>!x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
+  const yaCumplidos=items.filter(x=>x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
   let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
-  items.forEach(x=>{
+  function row(x){
     const fechaStr=`${x.dia} ${M[x.mes-1]}`;
-    const badge=x.yaPaso?'<span class="cl-badge cl-pendiente" style="font-size:9px">✓ Pasó</span>':'';
-    const diasTxt=x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`;
-    h+=`<div class="cl-card" onclick="openCabDetail('${x.id}')" style="display:flex;align-items:center;gap:10px;">
-      <div class="cl-date" style="min-width:50px"><div class="cl-day">${x.dia}</div><div class="cl-mon">${M[x.mes-1]}</div></div>
-      <div class="cl-inf" style="flex:1">
-        <div class="cl-nm">${x.nombre}</div>
-        <div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${x.yaPaso?'Ya pasó':diasTxt}</div>
-        ${badge}
-      </div>
-    </div>`;
-  });
+    const diasTxt=x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':x.yaPaso?`Próximo en ${x.diasRest} días`:`En ${x.diasRest} días`;
+    return `<div class="cl-card" onclick="openCabDetail('${x.id}')" style="display:flex;align-items:center;gap:10px;"><div class="cl-date" style="min-width:50px"><div class="cl-day">${x.dia}</div><div class="cl-mon">${M[x.mes-1]}</div></div><div class="cl-inf" style="flex:1"><div class="cl-nm">${x.nombre}</div><div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${x.yaPaso?'Ya pasó':diasTxt}</div></div></div>`;
+  }
+  if(proximos.length){h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 6px;">Próximos</div>';proximos.forEach(x=>{h+=row(x);});}
+  if(yaCumplidos.length){h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:16px 0 6px;">Ya cumplidos</div>';yaCumplidos.forEach(x=>{h+=row(x);});}
   el.innerHTML=h;
 }
 
@@ -1831,21 +1819,25 @@ function renderCumplePV(){
   }).filter(Boolean);
   if(!items.length){el.innerHTML='<div class="sec-ttl">🎂 Cumpleaños</div><p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Añade la tuya en tu perfil.</p>';return;}
   const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  items.sort((a,b)=>{if(a.yaPaso!==b.yaPaso)return a.yaPaso?1:-1;return a.diasRest-b.diasRest;});
+  const proximos=items.filter(x=>!x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
+  const yaCumplidos=items.filter(x=>x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
   let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
-  items.forEach(x=>{
+  function row(x,isCurrent){
     const fechaStr=`${x.dia} ${M[x.mes-1]}`;
-    const badge=x.yaPaso?'<span class="cl-badge cl-pendiente" style="font-size:9px">✓ Pasó</span>':'';
-    const diasTxt=x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`;
-    h+=`<div class="cl-card" onclick="openCabDetail('${x.id}')" style="display:flex;align-items:center;gap:10px;">
+    const diasTxt=x.yaPaso?(`Ya pasó · Próximo en ${x.diasRest} días`):(x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`);
+    const editBtn=isCurrent?'<button onclick="event.stopPropagation();openFnacEditFromCumple()" style="background:transparent;border:none;padding:6px;cursor:pointer;flex-shrink:0;" title="Editar fecha">✏️</button>':'';
+    return `<div class="cl-card" style="display:flex;align-items:center;gap:10px;cursor:${isCurrent?'default':'pointer'};" ${!isCurrent?'onclick="openCabDetail(\''+x.id+'\')"':''}>
       <div class="cl-date" style="min-width:50px"><div class="cl-day">${x.dia}</div><div class="cl-mon">${M[x.mes-1]}</div></div>
-      <div class="cl-inf" style="flex:1">
-        <div class="cl-nm">${x.nombre}</div>
-        <div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${x.yaPaso?'Ya pasó':diasTxt}</div>
-        ${badge}
-      </div>
-    </div>`;
-  });
+      <div class="cl-inf" style="flex:1;min-width:0"><div class="cl-nm">${x.nombre}</div><div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${diasTxt}</div></div>${editBtn}</div>`;
+  }
+  if(proximos.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 6px;letter-spacing:0.5px;">Próximos</div>';
+    proximos.forEach(x=>{h+=row(x,x.id===currentCabId);});
+  }
+  if(yaCumplidos.length){
+    h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:16px 0 6px;letter-spacing:0.5px;">Ya cumplidos</div>';
+    yaCumplidos.forEach(x=>{h+=row(x,x.id===currentCabId);});
+  }
   el.innerHTML=h;
 }
 
@@ -1858,6 +1850,8 @@ function renderPersonal(cabId){
   // Avatar
   const av=document.getElementById('pv-av');
   av.innerHTML=c.photo?`<img src="${c.photo}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:26px;font-weight:900;color:white">${ini(c.nombre)}</span>`;
+  const rem=document.getElementById('pv-photo-reminder');
+  if(rem)rem.style.display=c.photo?'none':'block';
   document.getElementById('pv-name').textContent=c.nombre;
   document.getElementById('pv-meta').textContent=`${c.dist} · ${c.grupo}`;
   document.getElementById('pv-bdg').innerHTML=mkBadges(c);
@@ -1865,8 +1859,8 @@ function renderPersonal(cabId){
   document.getElementById('pv-rank').textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
   document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
-  document.getElementById('pv-bars').innerHTML=bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
-  document.getElementById('pv-hist').innerHTML=mkHistoryTable(cabId);
+  document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
+  document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTable(cabId);
   renderGrupoSection(c);
   renderDevotoCard(c);
   renderFnacCard(c);
@@ -1916,29 +1910,31 @@ function renderDevotoCard(c){
   const el=document.getElementById('pv-devoto-card');
   if(!el)return;
   const esDevoto=!!c.devoto;
+  if(esDevoto){
+    el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:1.5px solid #6ee7b7;border-radius:12px;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px;">🌿</span>
+        <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#065f46;">Soy Devoto</span>
+      </div>
+      <button onclick="toggleDevoto()" style="background:transparent;border:none;padding:6px;cursor:pointer;font-size:18px;" title="Quitar distinción">✕</button>
+    </div>`;
+    return;
+  }
   el.innerHTML=`
-  <div style="background:${esDevoto?'linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%)':'white'};border:1.5px solid ${esDevoto?'#6ee7b7':'#e9edf2'};border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);transition:all .3s;">
+  <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
     <div style="display:flex;align-items:flex-start;gap:12px;">
-      <div style="font-size:26px;flex-shrink:0;margin-top:2px;">${esDevoto?'🌿':'🕊️'}</div>
+      <div style="font-size:26px;flex-shrink:0;margin-top:2px;">🕊️</div>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
           <div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:${esDevoto?'#065f46':'#1a1f2e'};">
-              ${esDevoto?'✅ Soy Devoto':'¿Eres Devoto?'}
-            </div>
-            ${esDevoto
-              ?`<div style="font-size:11px;color:#059669;font-weight:600;margin-top:2px;">Esta distinción aparece en tu perfil</div>`
-              :`<div style="font-size:11px;color:#9ca3af;margin-top:2px;">Aún no has marcado esta distinción</div>`
-            }
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;">¿Eres Devoto?</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:2px;">Aún no has marcado esta distinción</div>
           </div>
-          <button onclick="toggleDevoto()" style="background:${esDevoto?'#ef4444':'linear-gradient(135deg,#059669,#047857)'};border:none;color:white;border-radius:10px;padding:9px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px ${esDevoto?'rgba(239,68,68,0.3)':'rgba(5,150,105,0.3)'};letter-spacing:0.5px;flex-shrink:0;">
-            ${esDevoto?'Quitar distinción':'Marcarme como Devoto'}
-          </button>
+          <button onclick="toggleDevoto()" style="background:linear-gradient(135deg,#059669,#047857);border:none;color:white;border-radius:10px;padding:9px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(5,150,105,0.3);letter-spacing:0.5px;flex-shrink:0;">Marcarme como Devoto</button>
         </div>
-        <div style="margin-top:10px;background:${esDevoto?'rgba(5,150,105,0.08)':'rgba(156,163,175,0.07)'};border-radius:8px;padding:8px 10px;">
-          <div style="font-size:10px;color:${esDevoto?'#065f46':'#6b7280'};line-height:1.6;">
-            <span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.
-          </div>
+        <div style="margin-top:10px;background:rgba(156,163,175,0.07);border-radius:8px;padding:8px 10px;">
+          <div style="font-size:10px;color:#6b7280;line-height:1.6;"><span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</div>
         </div>
       </div>
     </div>
@@ -1950,30 +1946,37 @@ function renderFnacCard(c){
   if(!el)return;
   const tiene=c.fnac&&c.fnac.length>=10;
   const editando=!!window._pvFnacEditMode;
-  const mostrarForm=!tiene||editando;
-  const r=tiene?getProximoCumple(c.fnac):null;
+  if(tiene&&!editando){
+    el.innerHTML='';
+    el.style.display='none';
+    return;
+  }
+  el.style.display='block';
   const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   el.innerHTML=`
-  <div style="background:${tiene&&!editando?'linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)':'white'};border:1.5px solid ${tiene&&!editando?'#f59e0b':'#e9edf2'};border-radius:14px;padding:${tiene&&!editando?'10px 16px':'14px 16px'};box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+  <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
     <div style="display:flex;align-items:center;gap:12px;">
       <div style="font-size:22px;flex-shrink:0;">🎂</div>
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;">Fecha de nacimiento</div>
-        ${tiene&&!editando
-          ?`<div style="font-size:12px;color:#92400e;margin-top:2px;">${r.dia} ${M[r.mes-1]} · ${r.yaPaso?'Próximo cumpleaños en '+r.diasRest+' días':'Cumple en '+r.diasRest+' días'} · ${r.edad} años</div>`
-          :mostrarForm?'<div style="font-size:11px;color:#9ca3af;margin-top:2px;">'+(tiene?'Edita tu fecha':'Añade tu fecha para aparecer en cumpleaños')+'</div>':''
-        }
-        ${mostrarForm
-          ?`<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <input type="date" id="pv-fnac-inp" value="${c.fnac||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
-              <button onclick="guardarFnac()" style="background:var(--teal);border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
-              ${tiene?'<button onclick="window._pvFnacEditMode=false;renderFnacCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
-            </div>`
-          :`<div style="margin-top:6px;"><button onclick="window._pvFnacEditMode=true;renderFnacCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:none;color:var(--teal);padding:4px 0;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">✏️ Editar</button></div>`
-        }
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${tiene?'Edita tu fecha':'Añade tu fecha para aparecer en cumpleaños'}</div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="date" id="pv-fnac-inp" value="${c.fnac||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
+          <button onclick="guardarFnac()" style="background:var(--teal);border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+          ${tiene?'<button onclick="window._pvFnacEditMode=false;renderFnacCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
+        </div>
       </div>
     </div>
   </div>`;
+}
+function openFnacEditFromCumple(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c)return;
+  const el=document.getElementById('pv-fnac-card');
+  if(el){el.style.display='block';}
+  window._pvFnacEditMode=true;
+  renderFnacCard(c);
+  showPvTab('perfil');
 }
 async function guardarFnac(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);
@@ -1987,6 +1990,7 @@ async function guardarFnac(){
   if(!ok){toast('Error al guardar. Comprueba conexión.','err');return;}
   window._pvFnacEditMode=false;
   renderFnacCard(c);
+  renderCumplePV();
   toast(v?'🎂 Fecha guardada':'Fecha eliminada','ok');
 }
 
@@ -2955,6 +2959,10 @@ function generarPDF(titulo,htmlContent){
     td{padding:9px 12px;border-bottom:1px solid rgba(58,171,186,0.12);font-size:12px;}
     tr:last-child td{border-bottom:none;}
     tr:nth-child(even) td{background:#fafbfc;}
+    table.dtable{width:100%;}
+    table.dtable th:nth-child(1),table.dtable td:nth-child(1){width:72px;max-width:72px;}
+    table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;}
+    table.dtable th:nth-child(n+3),table.dtable td:nth-child(n+3){width:48px;max-width:52px;text-align:center;}
     .stat{background:rgba(58,171,186,0.08);border-radius:8px;padding:8px 10px;}
     .stat-val{font-size:20px;font-weight:900;color:#3aabba;}
     .stat-lbl{font-size:10px;color:#4b5563;}
@@ -3023,18 +3031,14 @@ async function generarInformeCaballeros(){
   const filasGrupos=grupos.map(g=>{const n=cabs.filter(c=>c.grupo===g).length;const pct=cabs.length>0?Math.round((n/cabs.length)*100):0;return '<tr><td><strong>'+g+'</strong></td><td>'+n+'</td><td><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:#3aabba"></div></div><small style="color:#6b7280">'+pct+'%</small></td></tr>';}).join('');
   const badges=(c)=>{return (CHECKS||[]).filter(k=>c[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');};
   const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const pts=cal?cal.total.toFixed(1):(c.puntos||'—');const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td>'+(c.dist||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+' pts</td></tr>';}).join('');
-  const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Dist.</th><th>Estado espiritual</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
+  const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Distintivo</th><th>Estado espiritual</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
   generarPDF('Informe de Caballeros General',html);
 }
-function generarInformeIndividual(){
-  const sel=document.getElementById('informe-cab-sel');
-  const id=sel?.value;
-  if(!id){toast('Selecciona un caballero','err');return;}
+function generarInformeIndividualPorId(id){
   const cab=DB.caballeros.find(c=>c.id===id);
-  if(!cab){toast('Caballero no encontrado','err');return;}
+  if(!cab)return;
   const calCab=typeof calcCab==='function'?calcCab(cab.id):null;
   const pts=calCab?calCab.total.toFixed(1):(cab.puntos||0);
-  const asist=calCab?(calCab.asist+'/'+calCab.totalClases):'0/0';
   const pctAsist=calCab&&calCab.totalClases>0?Math.round((calCab.asist/calCab.totalClases)*100):0;
   const rank=typeof getRank==='function'?getRank(id):'—';
   const badgesHtml=(CHECKS||[]).filter(k=>cab[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');
@@ -3051,6 +3055,13 @@ function generarInformeIndividual(){
   const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>').join('');
   const secciones='<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
   generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
+}
+function generarInformeIndividual(){
+  const sel=document.getElementById('informe-cab-sel');
+  const id=sel?.value;
+  if(!id){toast('Selecciona un caballero','err');return;}
+  if(!DB.caballeros.find(c=>c.id===id)){toast('Caballero no encontrado','err');return;}
+  generarInformeIndividualPorId(id);
 }
 
 // ═══════════════════════════════════════════════════════════════
