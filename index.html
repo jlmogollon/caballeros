@@ -414,7 +414,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-grupos',this)">Grupos</div>
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
-    <div class="ntab" onclick="showTab('t-cumple',this)">🎂 CUMPLE |</div>
+    <div class="ntab" onclick="showTab('t-cumple',this)">🎂 Cumpleaños</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
     <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
@@ -642,7 +642,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE |</div>
+    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE </div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -3098,13 +3098,17 @@ async function delVoto(id){DB.finanzasVotos=(DB.finanzasVotos||[]).filter(v=>v.i
 // ═══════════════════════════════════════════════════════════════
 // INFORMES PDF (HTML + window.print — estilo Escuela Dominical)
 // ═══════════════════════════════════════════════════════════════
-function generarPDF(titulo,htmlContent){
+async function generarPDF(titulo,htmlContent){
+  let faviconDataUrl='';try{faviconDataUrl=await fetch('favicon.png').then(r=>r.blob()).then(blob=>new Promise((res,rej)=>{const rd=new FileReader();rd.onload=()=>res(rd.result);rd.onerror=rej;rd.readAsDataURL(blob);}));}catch(e){}
+  const evLogoUrl=document.querySelector('#screen-admin .ev-banner img')?.src||document.querySelector('.ev-banner img')?.src||'';
+  const logosHtml=(faviconDataUrl?'<img src="'+faviconDataUrl+'" alt="Hombres de Verdad" style="height:48px;width:auto;object-fit:contain;flex-shrink:0"/>':'')+(evLogoUrl?'<img src="'+evLogoUrl+'" alt="Evidencias" style="height:42px;width:auto;object-fit:contain;margin-left:10px;flex-shrink:0"/>':'');
   const estilos=`<style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:'Inter',sans-serif;background:#fff;color:#1a1f2e;font-size:13px;line-height:1.5;}
     .header{background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
     .header h1{font-size:18px;font-weight:900;}
+    .header img:first-of-type{margin-right:4px;}
     .header .sub{font-size:12px;opacity:0.85;margin-top:2px;color:rgba(255,255,255,0.9);}
     .section{margin:0 20px 20px;background:#fff;border-radius:12px;border:1.5px solid rgba(58,171,186,0.25);overflow:hidden;}
     .section-title{background:linear-gradient(135deg,rgba(58,171,186,0.12),rgba(58,171,186,0.2));padding:10px 16px;font-weight:800;font-size:14px;color:#2d8f9c;border-bottom:1.5px solid rgba(58,171,186,0.22);}
@@ -3118,21 +3122,21 @@ function generarPDF(titulo,htmlContent){
     table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;max-width:100px;}
     table.dtable th:nth-child(n+3),table.dtable td:nth-child(n+3){width:48px;max-width:52px;text-align:center;}
     table.dtable-pdf th:nth-child(1),table.dtable-pdf td:nth-child(1){width:82px;max-width:82px;}
-    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:36px;}
-    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:66px;}
-    table.dtable-pdf th:nth-child(4),table.dtable-pdf td:nth-child(4){width:74px;}
-    table.dtable-pdf th:nth-child(5),table.dtable-pdf td:nth-child(5){width:56px;}
-    table.dtable-pdf th:nth-child(6),table.dtable-pdf td:nth-child(6){width:66px;}
-    table.dtable-pdf th:nth-child(7),table.dtable-pdf td:nth-child(7){width:82px;}
-    table.dtable-pdf th:nth-child(8),table.dtable-pdf td:nth-child(8){width:56px;}
-    .star-pdf{display:inline-block;font-size:22px;color:#e5e7eb;}
-    .star-pdf.lit{color:#eab308;filter:drop-shadow(0 0 4px rgba(234,179,8,0.5));}
-    .distinciones-pdf{background:linear-gradient(145deg,#fafbfc 0%,#f1f5f9 100%);border-radius:12px;padding:14px 18px;margin:0 20px 16px;border:1px solid rgba(58,171,186,0.2);box-shadow:0 2px 12px rgba(0,0,0,0.06);}
-    .distinciones-pdf-title{font-size:10px;color:#4b5563;font-weight:700;letter-spacing:0.5px;margin-bottom:12px;text-transform:uppercase;}
+    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:27px;}
+    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:68px;}
+    table.dtable-pdf th:nth-child(4),table.dtable-pdf td:nth-child(4){width:76px;}
+    table.dtable-pdf th:nth-child(5),table.dtable-pdf td:nth-child(5){width:57px;}
+    table.dtable-pdf th:nth-child(6),table.dtable-pdf td:nth-child(6){width:68px;}
+    table.dtable-pdf th:nth-child(7),table.dtable-pdf td:nth-child(7){width:84px;}
+    table.dtable-pdf th:nth-child(8),table.dtable-pdf td:nth-child(8){width:57px;}
+    .star-pdf{display:inline-block;font-size:22px;color:rgba(255,255,255,0.4);}
+    .star-pdf.lit{color:#eab308;filter:drop-shadow(0 0 6px rgba(234,179,8,0.6));}
+    .distinciones-pdf{background:linear-gradient(145deg,#1a1f2e 0%,#242b3d 60%);border-radius:12px;padding:14px 18px;margin:0 20px 16px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+    .distinciones-pdf-title{font-size:10px;color:rgba(255,255,255,0.85);font-weight:700;letter-spacing:0.5px;margin-bottom:12px;text-transform:uppercase;}
     .distinciones-pdf-stars{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start;justify-content:flex-start;}
     .distinciones-pdf-item{display:inline-flex;flex-direction:column;align-items:center;width:72px;flex-shrink:0;}
-    .distinciones-pdf-starwrap{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.7);border-radius:12px;border:1px solid rgba(0,0,0,0.06);}
-    .distinciones-pdf-lbl{font-size:7px;color:#6b7280;margin-top:6px;text-align:center;line-height:1.2;}
+    .distinciones-pdf-starwrap{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:12px;border:1px solid rgba(255,255,255,0.15);}
+    .distinciones-pdf-lbl{font-size:7px;color:rgba(255,255,255,0.75);margin-top:6px;text-align:center;line-height:1.2;}
     .stat{background:rgba(58,171,186,0.08);border-radius:8px;padding:8px 10px;}
     .stat-val{font-size:20px;font-weight:900;color:#3aabba;}
     .stat-lbl{font-size:10px;color:#4b5563;}
@@ -3147,7 +3151,7 @@ function generarPDF(titulo,htmlContent){
   </style>`;
   const fecha=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
   const full=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">${estilos}<title>${titulo}</title></head><body>
-    <div class="header"><div><h1>📋 ${titulo}</h1><div class="sub">Caballeros · Hombres de Verdad · ${fecha}</div></div></div>
+    <div class="header">${logosHtml}<div><h1>📋 ${titulo}</h1><div class="sub">Caballeros · Hombres de Verdad · ${fecha}</div></div></div>
     ${htmlContent}
     <div class="footer">Generado por Sistema Caballeros · ${fecha}</div>
     <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
@@ -3185,7 +3189,7 @@ async function generarInformeEconomico(){
   const filasD=donativos.map(d=>{const r=(DB.caballeros||[]).find(c=>c.id===d.responsable);return '<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>';}).join('');
   const filasV=votos.map(v=>{const r=(DB.caballeros||[]).find(c=>c.id===v.responsable);return '<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>';}).join('');
   const secciones='<div class="section"><div class="section-title">🐷 Gastos del Comité</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Monto</th></tr></thead><tbody>'+(filasG||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin gastos registrados</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">💡 Actividades del Comité</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Responsable</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+(filasA||'<tr><td colspan="5" style="text-align:center;color:#9ca3af">Sin actividades registradas</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">🤲 Donativos</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Total</th></tr></thead><tbody>'+(filasD||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin donativos registrados</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">📜 Votos</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Total</th></tr></thead><tbody>'+(filasV||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin votos registrados</td></tr>')+'</tbody></table></div>';
-  generarPDF('Informe Económico',resumen+secciones);
+  await generarPDF('Informe Económico',resumen+secciones);
 }
 async function generarInformeCaballeros(){
   const cabs=DB.caballeros||[];
@@ -3202,9 +3206,9 @@ async function generarInformeCaballeros(){
   const badges=(c)=>{return (CHECKS||[]).filter(k=>c[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');};
   const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const pts=cal?cal.total.toFixed(1):(c.puntos||'—');const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+' pts</td></tr>';}).join('');
   const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Distinciones</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
-  generarPDF('Informe de Caballeros General',html);
+  await generarPDF('Informe de Caballeros General',html);
 }
-function generarInformeIndividualPorId(id){
+async function generarInformeIndividualPorId(id){
   const cab=DB.caballeros.find(c=>c.id===id);
   if(!cab)return;
   const calCab=typeof calcCab==='function'?calcCab(cab.id):null;
@@ -3254,7 +3258,7 @@ function generarInformeIndividualPorId(id){
   const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>').join('');
   const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>').join('');
   const secciones=secEstadisticasGrupo+secFinanzas+'<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
-  generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
+  await generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
 }
 function generarInformeIndividual(){
   const sel=document.getElementById('informe-cab-sel');
