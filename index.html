@@ -202,6 +202,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .dtable tr:last-child td{border:none;}
 .dtable-perfil td{padding:12px 10px;vertical-align:top;}
 .dtable-perfil td:nth-child(2){max-width:160px;line-height:1.4;white-space:normal;word-wrap:break-word;}
+.dtable-perfil td:first-child{font-size:10px;}
 .sc{font-family:'Montserrat',sans-serif;font-weight:800;}
 .sc-hi{color:#15803d;}.sc-mid{color:var(--gold2);}.sc-lo{color:var(--text3);}
 
@@ -412,7 +413,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-grupos',this)">Grupos</div>
     <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
     <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
-    <div class="ntab" onclick="showTab('t-cumple',this)">🎂 Cumpleaños</div>
+    <div class="ntab" onclick="showTab('t-cumple',this)">🎂 CUMPLE</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
     <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
@@ -640,7 +641,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 Cumple&nbsp;&nbsp;</div>
+    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE&nbsp;&nbsp;</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -3115,13 +3116,13 @@ function generarPDF(titulo,htmlContent){
     table.dtable th:nth-child(1),table.dtable td:nth-child(1){width:68px;max-width:68px;}
     table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;max-width:100px;}
     table.dtable th:nth-child(n+3),table.dtable td:nth-child(n+3){width:48px;max-width:52px;text-align:center;}
-    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:56px;}
-    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:62px;}
-    table.dtable-pdf th:nth-child(4),table.dtable-pdf td:nth-child(4){width:68px;}
-    table.dtable-pdf th:nth-child(5),table.dtable-pdf td:nth-child(5){width:52px;}
-    table.dtable-pdf th:nth-child(6),table.dtable-pdf td:nth-child(6){width:62px;}
-    table.dtable-pdf th:nth-child(7),table.dtable-pdf td:nth-child(7){width:78px;}
-    table.dtable-pdf th:nth-child(8),table.dtable-pdf td:nth-child(8){width:52px;}
+    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:44px;}
+    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:66px;}
+    table.dtable-pdf th:nth-child(4),table.dtable-pdf td:nth-child(4){width:74px;}
+    table.dtable-pdf th:nth-child(5),table.dtable-pdf td:nth-child(5){width:56px;}
+    table.dtable-pdf th:nth-child(6),table.dtable-pdf td:nth-child(6){width:66px;}
+    table.dtable-pdf th:nth-child(7),table.dtable-pdf td:nth-child(7){width:82px;}
+    table.dtable-pdf th:nth-child(8),table.dtable-pdf td:nth-child(8){width:56px;}
     .star-pdf{display:inline-block;font-size:14px;color:#e5e7eb;}
     .star-pdf.lit{color:#eab308;}
     .stat{background:rgba(58,171,186,0.08);border-radius:8px;padding:8px 10px;}
@@ -3205,7 +3206,8 @@ function generarInformeIndividualPorId(id){
   const ptsPosibles=totalClases*10;
   const rank=typeof getRank==='function'?getRank(id):'—';
   const valEstrellas=typeof autoVal==='function'?autoVal(cab):0;
-  const starsHtml=(CHECKS||[]).map((k,i)=>'<span style="display:inline-flex;flex-direction:column;align-items:center;margin:0 2px" title="'+(CLBL[k]||k)+'"><span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span><span style="font-size:8px;color:#6b7280;margin-top:2px;max-width:42px;text-align:center;line-height:1.1">'+(CLBL[k]||k)+'</span></span>').join('');
+  const starNames=(CHECKS||[]).map(k=>(CLBL[k]||k)).join(' · ');
+  const starsHtml='<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:6px">'+(CHECKS||[]).map((k,i)=>'<span class="star-pdf '+(i<valEstrellas?'lit':'')+'" title="'+(CLBL[k]||k)+'">★</span>').join('')+'</div><div style="font-size:8px;color:#6b7280;letter-spacing:0.3px;line-height:1.3">'+starNames+'</div>';
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
   const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
   const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
@@ -3215,7 +3217,7 @@ function generarInformeIndividualPorId(id){
   const totalVot=vot.reduce((s,v)=>s+(Number(v.efectivo)||0)+(Number(v.tpv)||0),0);
   const asistStr=(calCab?calCab.asist:0)+'/'+(totalClases||1);
   const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:10px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Asistencia a clases</div><div style="font-size:18px;font-weight:900;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:8px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Puntuación acumulada vs puntuación posible</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:12px;font-weight:700;color:#3aabba;margin-top:4px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
-  const fotoCab=cab.photo?'<img src="'+cab.photo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;border:2px solid rgba(58,171,186,0.3)">':'';
+  const fotoCab=cab.photo?'<img src="'+cab.photo+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;border:2px solid rgba(58,171,186,0.3)">':'';
   const datos='<div class="section"><div class="section-title">'+fotoCab+'Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación acumulada vs puntuación posible</div><div class="stat-val">'+pts+' / '+(ptsPosibles||0)+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 16px"><div class="stat-lbl" style="margin-bottom:8px">Distinciones</div><div class="star-row" style="justify-content:flex-start;padding:4px 0">'+starsHtml+'</div></div>'+barrasInd+'</div>';
   const GRUPOS_ACT=GRUPOS||[];
   const grupoStats={};
@@ -3237,7 +3239,7 @@ function generarInformeIndividualPorId(id){
   const secEstadisticasGrupo='<div class="section"><div class="section-title">📊 Estadísticas gráficas del grupo</div><div style="padding:14px 20px"><div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%);border-radius:10px;padding:12px 16px;margin-bottom:12px;color:white;"><div style="font-size:11px;opacity:0.8;margin-bottom:4px">Mi grupo</div><div style="font-size:16px;font-weight:900">'+medal+' '+(miGrupo||'—')+'</div><div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap"><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.avgPts??'—')+'</div><div style="font-size:9px;opacity:0.8">Prom. pts</div></div><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.pctAsist??0)+'%</div><div style="font-size:9px;opacity:0.8">Asistencia</div></div><div><div style="font-size:18px;font-weight:900">#'+miRank+'</div><div style="font-size:9px;opacity:0.8">Ranking</div></div></div></div><div style="font-size:11px;font-weight:700;color:#4b5563;margin-bottom:8px">Comparación con el resto de grupos</div>'+ranking.map((g,i)=>{const st=grupoStats[g];const esMio=g===miGrupo;const pct=maxAvg>0?Math.round((st.avgPts/maxAvg)*100):0;return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:700;color:'+(esMio?col:'#374151')+'">'+(i+1)+'. '+g+'</span><span style="font-weight:800">'+st.avgPts+' pts · '+st.pctAsist+'% asist</span></div><div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+(esMio?col:'#9ca3af')+';border-radius:999px"></div></div></div>';}).join('')+'</div></div></div>';
   const secFinanzas='<div class="section"><div class="section-title">💰 Información financiera aportada al comité</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' (€'+totalDon.toFixed(2)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' (€'+totalVot.toFixed(2)+')</div></div></div></div>';
   const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
-  const peticionesCab=(DB.peticiones||[]).filter(p=>p.cabId===id).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const peticionesCab=(DB.peticiones||[]).filter(p=>p.cabId===id&&p.nombre!=='Anónimo').sort((a,b)=>(b.ts||0)-(a.ts||0));
   const filasPet=peticionesCab.map(p=>'<tr><td>'+(p.fecha||'—')+'</td><td>'+(p.texto||'').replace(/</g,'&lt;').substring(0,120)+(p.texto&&p.texto.length>120?'…':'')+'</td></tr>').join('');
   const secPeticiones=peticionesCab.length?'<div class="section"><div class="section-title">🙏 Historial de peticiones a su nombre</div><table><thead><tr><th>Fecha</th><th>Petición</th></tr></thead><tbody>'+filasPet+'</tbody></table></div>':'';
   const filasG=gastos.map(g=>'<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="neg">€'+(Number(g.monto)||0).toFixed(2)+'</td></tr>').join('');
