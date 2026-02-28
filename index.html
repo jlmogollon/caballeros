@@ -640,7 +640,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 Cumple</div>
+    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 Cumple&nbsp;&nbsp;</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -1169,6 +1169,7 @@ function fmtDate(f){if(!f)return'';const[y,m,d]=f.split('-');const M=['ene','feb
 function fmtBox(f){const[y,m,d]=f.split('-');const M=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];return{d,m:M[+m-1]};}
 function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}">${CLBL[k]}</span>`).join('');}
 function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
+function fmtScore(v){if(v==null||v===undefined||isNaN(v))return '—';const n=Number(v);if(n===10)return '10';return n.toFixed(1);}
 function avH(c,size=42){if(c.photo)return`<img src="${c.photo}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%">`;return ini(c.nombre);}
 
 // Abreviar tema: solo palabras largas (ej. Introducción a las dispensaciones → Introducción dispensaciones)
@@ -1185,7 +1186,7 @@ function mkHistoryTable(cabId,forPdf){
   const temaStyle=forPdf?'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;':'font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.4;';
   const headers=forPdf?'<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Total</th></tr>':'<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr>';
   return`<table class="dtable ${forPdf?'dtable-pdf':'dtable-perfil'}"><thead>${headers}</thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${forPdf?(r.tema||'—').replace(/</g,'&lt;'):abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${forPdf?(r.tema||'—').replace(/</g,'&lt;'):abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
   }</tbody></table>`;
 }
 
@@ -1597,7 +1598,7 @@ function getClaseByKey(key){
 function openClaseDetail(key){
   const cl=getClaseByKey(key);if(!cl)return;
   const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
-  const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?r.t.toFixed(2):'—'}</td></tr>`).join('')}</tbody></table>`;
+  const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')}</tbody></table>`;
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   const clave=cl.fecha;
@@ -1689,7 +1690,7 @@ function openGrade(key){
       <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
-      <td class="total-cell" id="tot-${c.id}">${pres?rowTotal(q).toFixed(2):'—'}</td>
+      <td class="total-cell" id="tot-${c.id}">${pres?fmtScore(rowTotal(q)):'—'}</td>
     </tr>`;
   });
   document.getElementById('grade-tbody').innerHTML=html;
@@ -1737,7 +1738,7 @@ function updTotal(cabId){
   const p=+document.getElementById('sp-'+cabId).value||0;
   const d=+document.getElementById('sd-'+cabId).value||0;
   const pa=+document.getElementById('spa-'+cabId).value||0;
-  tot.textContent=rowTotal({i,p,d,pa}).toFixed(2);
+  tot.textContent=fmtScore(rowTotal({i,p,d,pa}));
 }
 function closeGrade(){document.getElementById('grade-screen').classList.remove('open');gradeClaseId=null;}
 
@@ -1845,7 +1846,7 @@ function renderCumplePV(){
       if(r){
         const fechaStr=`${r.dia} ${M[r.mes-1]}`;
         const diasTxt=r.diasRest===0?'¡Hoy!':r.diasRest===1?'Mañana':r.yaPaso?`Próximo en ${r.diasRest} días`:`En ${r.diasRest} días`;
-        h+=`<div style="background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1.5px solid #93c5fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">\n          <div><div style="font-size:10px;font-weight:700;color:#1e40af;letter-spacing:1px;margin-bottom:4px;">💧 Cumple años de bautizado</div><div style="font-size:13px;font-weight:800;color:#1a1f2e;">${fechaStr} · ${diasTxt}</div></div>\n          <div style="display:flex;gap:6px;flex-shrink:0;"><button onclick="openFbautEditFromCumple()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">✏️ Editar</button><button onclick="restablecerFbaut()" style="background:transparent;border:1px solid #93c5fd;color:#1e40af;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">Restablecer</button></div>\n        </div>`;
+        h+=`<div style="background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1.5px solid #93c5fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">\n          <div><div style="font-size:10px;font-weight:700;color:#1e40af;letter-spacing:1px;margin-bottom:4px;">💧 Cumple años de bautizado</div><div style="font-size:13px;font-weight:800;color:#1a1f2e;">${fechaStr} · ${diasTxt}</div></div>\n          <div style="flex-shrink:0;"><button onclick="restablecerFbaut()" style="background:transparent;border:none;padding:6px;cursor:pointer;font-size:18px;" title="Restablecer fecha">🔄</button></div>\n        </div>`;
       }
     }
     if(c.fechaSellado&&c.fechaSellado.length>=10){
@@ -1853,7 +1854,7 @@ function renderCumplePV(){
       if(r){
         const fechaStr=`${r.dia} ${M[r.mes-1]}`;
         const diasTxt=r.diasRest===0?'¡Hoy!':r.diasRest===1?'Mañana':r.yaPaso?`Próximo en ${r.diasRest} días`:`En ${r.diasRest} días`;
-        h+=`<div style="background:linear-gradient(135deg,#ede9fe,#f5f3ff);border:1.5px solid #c4b5fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">\n          <div><div style="font-size:10px;font-weight:700;color:#5b21b6;letter-spacing:1px;margin-bottom:4px;">🕊️ Cumple años de sellado</div><div style="font-size:13px;font-weight:800;color:#1a1f2e;">${fechaStr} · ${diasTxt}</div></div>\n          <div style="display:flex;gap:6px;flex-shrink:0;"><button onclick="openFsellEditFromCumple()" style="background:#6d28d9;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">✏️ Editar</button><button onclick="restablecerFsell()" style="background:transparent;border:1px solid #c4b5fd;color:#5b21b6;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;">Restablecer</button></div>\n        </div>`;
+        h+=`<div style="background:linear-gradient(135deg,#ede9fe,#f5f3ff);border:1.5px solid #c4b5fd;border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">\n          <div><div style="font-size:10px;font-weight:700;color:#5b21b6;letter-spacing:1px;margin-bottom:4px;">🕊️ Cumple años de sellado</div><div style="font-size:13px;font-weight:800;color:#1a1f2e;">${fechaStr} · ${diasTxt}</div></div>\n          <div style="flex-shrink:0;"><button onclick="restablecerFsell()" style="background:transparent;border:none;padding:6px;cursor:pointer;font-size:18px;" title="Restablecer fecha">🔄</button></div>\n        </div>`;
       }
     }
   }
@@ -3114,12 +3115,12 @@ function generarPDF(titulo,htmlContent){
     table.dtable th:nth-child(1),table.dtable td:nth-child(1){width:68px;max-width:68px;}
     table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;max-width:100px;}
     table.dtable th:nth-child(n+3),table.dtable td:nth-child(n+3){width:48px;max-width:52px;text-align:center;}
-    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:72px;}
-    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:58px;}
-    table.dtable-pdf th:nth-child(4),table.dtable-pdf td:nth-child(4){width:62px;}
-    table.dtable-pdf th:nth-child(5),table.dtable-pdf td:nth-child(5){width:48px;}
-    table.dtable-pdf th:nth-child(6),table.dtable-pdf td:nth-child(6){width:68px;}
-    table.dtable-pdf th:nth-child(7),table.dtable-pdf td:nth-child(7){width:58px;}
+    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){max-width:56px;}
+    table.dtable-pdf th:nth-child(3),table.dtable-pdf td:nth-child(3){width:62px;}
+    table.dtable-pdf th:nth-child(4),table.dtable-pdf td:nth-child(4){width:68px;}
+    table.dtable-pdf th:nth-child(5),table.dtable-pdf td:nth-child(5){width:52px;}
+    table.dtable-pdf th:nth-child(6),table.dtable-pdf td:nth-child(6){width:62px;}
+    table.dtable-pdf th:nth-child(7),table.dtable-pdf td:nth-child(7){width:78px;}
     table.dtable-pdf th:nth-child(8),table.dtable-pdf td:nth-child(8){width:52px;}
     .star-pdf{display:inline-block;font-size:14px;color:#e5e7eb;}
     .star-pdf.lit{color:#eab308;}
@@ -3204,7 +3205,7 @@ function generarInformeIndividualPorId(id){
   const ptsPosibles=totalClases*10;
   const rank=typeof getRank==='function'?getRank(id):'—';
   const valEstrellas=typeof autoVal==='function'?autoVal(cab):0;
-  const starsHtml=Array(7).fill(0).map((_,i)=>'<span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span>').join('');
+  const starsHtml=(CHECKS||[]).map((k,i)=>'<span style="display:inline-flex;flex-direction:column;align-items:center;margin:0 2px" title="'+(CLBL[k]||k)+'"><span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span><span style="font-size:8px;color:#6b7280;margin-top:2px;max-width:42px;text-align:center;line-height:1.1">'+(CLBL[k]||k)+'</span></span>').join('');
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
   const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
   const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
@@ -3213,8 +3214,9 @@ function generarInformeIndividualPorId(id){
   const totalDon=don.reduce((s,d)=>s+(Number(d.efectivo)||0)+(Number(d.tpv)||0),0);
   const totalVot=vot.reduce((s,v)=>s+(Number(v.efectivo)||0)+(Number(v.tpv)||0),0);
   const asistStr=(calCab?calCab.asist:0)+'/'+(totalClases||1);
-  const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:10px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Asistencia a clases</div><div style="font-size:18px;font-weight:900;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:8px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Puntuación posible vs acumulada</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:12px;font-weight:700;color:#3aabba;margin-top:4px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
-  const datos='<div class="section"><div class="section-title">👤 Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación acumulada vs puntuación posible</div><div class="stat-val">'+pts+' / '+(ptsPosibles||0)+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 16px"><div class="stat-lbl" style="margin-bottom:8px">Distinciones</div><div class="star-row" style="justify-content:flex-start;padding:4px 0">'+starsHtml+'</div></div>'+barrasInd+'</div>';
+  const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:10px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Asistencia a clases</div><div style="font-size:18px;font-weight:900;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:8px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Puntuación acumulada vs puntuación posible</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:12px;font-weight:700;color:#3aabba;margin-top:4px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
+  const fotoCab=cab.photo?'<img src="'+cab.photo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;border:2px solid rgba(58,171,186,0.3)">':'';
+  const datos='<div class="section"><div class="section-title">'+fotoCab+'Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación acumulada vs puntuación posible</div><div class="stat-val">'+pts+' / '+(ptsPosibles||0)+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 16px"><div class="stat-lbl" style="margin-bottom:8px">Distinciones</div><div class="star-row" style="justify-content:flex-start;padding:4px 0">'+starsHtml+'</div></div>'+barrasInd+'</div>';
   const GRUPOS_ACT=GRUPOS||[];
   const grupoStats={};
   GRUPOS_ACT.forEach(g=>{
