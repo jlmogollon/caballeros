@@ -491,6 +491,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="admin-peticiones-lista" style="display:flex;flex-direction:column;gap:8px;">
         <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">Cargando...</div>
       </div>
+      <details style="margin-top:20px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">
+        <summary style="cursor:pointer;font-size:12px;font-weight:700;color:#64748b;">📥 Recuperar fotos, claves y peticiones desde backup</summary>
+        <p style="font-size:11px;color:#64748b;margin:10px 0 8px;">Si tienes un JSON de la base anterior (JSONBin o copia guardada), pégalo aquí. Solo se copiarán fotos de perfil, claves de acceso y peticiones de oración; el resto no se toca.</p>
+        <textarea id="legacy-json-inp" placeholder='Pega aquí el JSON completo de la base anterior...' style="width:100%;min-height:80px;font-size:11px;font-family:monospace;padding:8px;border:1px solid #e2e8f0;border-radius:8px;resize:vertical;"></textarea>
+        <button type="button" class="btn bteal" style="margin-top:8px;font-size:12px;" onclick="recuperarDesdeBackup()">Recuperar fotos, claves y peticiones</button>
+      </details>
     </div>
   </div>
 
@@ -882,6 +888,35 @@ function seedDB(){
   };
 }
 
+function mergeLegacyIntoDB(legacy,forcePeticiones){
+  if(!legacy||!legacy.caballeros||!Array.isArray(legacy.caballeros))return;
+  const byId={};
+  legacy.caballeros.forEach(c=>{if(c&&c.id)byId[c.id]=c;});
+  DB.caballeros.forEach(c=>{
+    const old=byId[c.id];
+    if(!old)return;
+    if(old.photo!=null&&old.photo!==''&&(!c.photo||c.photo===''))c.photo=old.photo;
+    if(old.pw!=null&&old.pw!==''&&(!c.pw||c.pw===''))c.pw=old.pw;
+    if(old.fnac!=null&&old.fnac!==''&&(!c.fnac||c.fnac===''))c.fnac=old.fnac;
+  });
+  if(Array.isArray(legacy.peticiones)&&legacy.peticiones.length>0){
+    if(forcePeticiones||!DB.peticiones||DB.peticiones.length<legacy.peticiones.length)DB.peticiones=JSON.parse(JSON.stringify(legacy.peticiones));
+  }
+}
+
+async function recuperarDesdeBackup(){
+  const ta=document.getElementById('legacy-json-inp');
+  if(!ta||!ta.value.trim()){toast('Pega el JSON de la base anterior en el cuadro de texto','err');return;}
+  let legacy;
+  try{legacy=JSON.parse(ta.value.trim());}catch(e){toast('JSON inválido. Revisa que sea una copia completa de la base.','err');return;}
+  if(!legacy.caballeros||!Array.isArray(legacy.caballeros)){toast('El JSON no tiene lista de caballeros.','err');return;}
+  mergeLegacyIntoDB(legacy,true);
+  toast('💾 Guardando...','info');
+  const ok=await saveDB();
+  if(ok){toast('✅ Fotos, claves y peticiones recuperadas y guardadas en Firebase.','ok');ta.value='';renderPeticiones();invalidateCache();renderDash();}
+  else toast('Error al guardar. Comprueba conexión.','err');
+}
+
 async function loadDB(){
   showLoading('Cargando datos...');
   // Intentar nube
@@ -903,6 +938,22 @@ async function loadDB(){
         if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
         if(!DB.finanzasVotos)DB.finanzasVotos=[];
         addClasesFaltantes();
+        // Recuperación automática: si en localStorage hay copia antigua con fotos/claves/peticiones, fusionar y guardar en Firebase
+        try{
+          const raw=localStorage.getItem(SK);
+          if(raw){
+            const legacy=JSON.parse(raw);
+            const hasLegacyPhotos=legacy.caballeros&&legacy.caballeros.some(c=>c.photo&&c.photo.length>50);
+            const hasLegacyPeticiones=legacy.peticiones&&legacy.peticiones.length>0;
+            const currentHasPhotos=DB.caballeros.some(c=>c.photo&&c.photo.length>50);
+            const needRecovery=(hasLegacyPhotos&&!currentHasPhotos)||(hasLegacyPeticiones&&(!DB.peticiones||DB.peticiones.length<legacy.peticiones.length));
+            if(needRecovery){
+              mergeLegacyIntoDB(legacy);
+              await cloudSave(DB);
+              toast('✅ Recuperadas fotos, claves y peticiones de la copia anterior','ok');
+            }
+          }
+        }catch(e){console.warn('Legacy merge:',e);}
         hideLoading();return;
       }
       // Bin vacío — cargar datos iniciales
@@ -1616,10 +1667,10 @@ function openGrade(key){
     html+=`<tr id="tr-${c.id}">
       <td><div class="gname">${nombre}</div></td>
       <td><button class="att-btn ${pres?'yes':''}" id="att-${c.id}" onclick="togAtt('${c.id}')">${pres?'✅':'○'}</button></td>
-      <td><input class="sc-inp" id="si-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.i!==''?q.i:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
-      <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
-      <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
-      <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}')"></td>
+      <td><input class="sc-inp" id="si-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.i!==''?q.i:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td class="total-cell" id="tot-${c.id}">${pres?rowTotal(q).toFixed(2):'—'}</td>
     </tr>`;
   });
@@ -1633,16 +1684,33 @@ function togAtt(cabId){
   const now=!btn.classList.contains('yes');
   btn.classList.toggle('yes',now);
   btn.textContent=now?'✅':'○';
-  ['si','sp','sd','spa'].forEach(p=>{
+  const ids=['si','sp','sd','spa'];
+  ids.forEach(p=>{
     const inp=document.getElementById(p+'-'+cabId);
     if(!inp)return;
     inp.disabled=!now;
-    if(!now)inp.value='';
+    if(now)inp.value='1';else inp.value='';
   });
   const tot=document.getElementById('tot-'+cabId);
-  if(tot)tot.textContent=now?'0.00':'—';
+  if(tot)tot.textContent=now?'1.00':'—';
 }
 function clamp(inp){if(+inp.value>10)inp.value=10;if(+inp.value<0)inp.value=0;}
+function jumpNextGrade(inp){
+  var v=inp.value.trim();
+  if(v==='')return;
+  var n=+v;
+  if(n<0||n>10)return;
+  if(v.length===2&&v!=='10')return;
+  var id=inp.id;
+  var idx=id.indexOf('-');
+  if(idx===-1)return;
+  var prefix=id.slice(0,idx);
+  var cabId=id.slice(idx+1);
+  var nextPref={si:'sp',sp:'sd',sd:'spa',spa:null}[prefix];
+  if(!nextPref)return;
+  var nextEl=document.getElementById(nextPref+'-'+cabId);
+  if(nextEl)setTimeout(function(){nextEl.focus();},0);
+}
 function updTotal(cabId){
   const tot=document.getElementById('tot-'+cabId);
   if(!tot||!document.getElementById('att-'+cabId).classList.contains('yes'))return;
@@ -1881,22 +1949,28 @@ function renderFnacCard(c){
   const el=document.getElementById('pv-fnac-card');
   if(!el)return;
   const tiene=c.fnac&&c.fnac.length>=10;
+  const editando=!!window._pvFnacEditMode;
+  const mostrarForm=!tiene||editando;
   const r=tiene?getProximoCumple(c.fnac):null;
   const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   el.innerHTML=`
-  <div style="background:${tiene?'linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)':'white'};border:1.5px solid ${tiene?'#f59e0b':'#e9edf2'};border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-    <div style="display:flex;align-items:flex-start;gap:12px;">
-      <div style="font-size:26px;flex-shrink:0;">🎂</div>
+  <div style="background:${tiene&&!editando?'linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)':'white'};border:1.5px solid ${tiene&&!editando?'#f59e0b':'#e9edf2'};border-radius:14px;padding:${tiene&&!editando?'10px 16px':'14px 16px'};box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:22px;flex-shrink:0;">🎂</div>
       <div style="flex:1;min-width:0;">
         <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;">Fecha de nacimiento</div>
-        ${tiene
-          ?`<div style="font-size:12px;color:#92400e;margin-top:4px;">${r.dia} ${M[r.mes-1]} · ${r.yaPaso?'Próximo cumpleaños en '+r.diasRest+' días':'Cumple en '+r.diasRest+' días'} · ${r.edad} años</div>`
-          :'<div style="font-size:11px;color:#9ca3af;margin-top:2px;">Añade tu fecha para aparecer en cumpleaños</div>'
+        ${tiene&&!editando
+          ?`<div style="font-size:12px;color:#92400e;margin-top:2px;">${r.dia} ${M[r.mes-1]} · ${r.yaPaso?'Próximo cumpleaños en '+r.diasRest+' días':'Cumple en '+r.diasRest+' días'} · ${r.edad} años</div>`
+          :mostrarForm?'<div style="font-size:11px;color:#9ca3af;margin-top:2px;">'+(tiene?'Edita tu fecha':'Añade tu fecha para aparecer en cumpleaños')+'</div>':''
         }
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-          <input type="date" id="pv-fnac-inp" value="${c.fnac||''}" style="flex:1;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
-          <button onclick="guardarFnac()" style="background:var(--teal);border:none;color:white;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
-        </div>
+        ${mostrarForm
+          ?`<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="date" id="pv-fnac-inp" value="${c.fnac||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
+              <button onclick="guardarFnac()" style="background:var(--teal);border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+              ${tiene?'<button onclick="window._pvFnacEditMode=false;renderFnacCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
+            </div>`
+          :`<div style="margin-top:6px;"><button onclick="window._pvFnacEditMode=true;renderFnacCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:none;color:var(--teal);padding:4px 0;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">✏️ Editar</button></div>`
+        }
       </div>
     </div>
   </div>`;
@@ -1911,6 +1985,7 @@ async function guardarFnac(){
   toast('💾 Guardando...','info');
   const ok=await saveDB();
   if(!ok){toast('Error al guardar. Comprueba conexión.','err');return;}
+  window._pvFnacEditMode=false;
   renderFnacCard(c);
   toast(v?'🎂 Fecha guardada':'Fecha eliminada','ok');
 }
