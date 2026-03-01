@@ -633,7 +633,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="h-sub">Mi Perfil · Evidencias 2026</div>
       </div>
     </div>
-    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openChangeCabPw()">🔑</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
+    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openListaCaballerosPV()" title="Caballeros">⚔️</button><button class="btn-hdr" onclick="openChangeCabPw()">🔑</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
   <div class="pv-hero">
     <div class="pv-av-wrap">
@@ -652,7 +652,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE&#x3164;</div>
+    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -662,6 +662,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="pv-encuesta-campamento" style="display:none;margin-bottom:14px;"></div>
       <!-- Banner Evidencias (mismo que en admin) -->
       <div id="ev-banner-personal-wrap" class="ev-banner" style="padding:12px 16px;justify-content:center;margin-bottom:14px;"></div>
+      <!-- Banners cumpleaños (solo el día del cumple) -->
+      <div id="pv-cumple-banner-wrap" style="margin-bottom:14px;"></div>
       <!-- Versículo del día (RVR60) — clic abre la biblia -->
       <div id="pv-verso-dia-wrap" style="margin-bottom:14px;cursor:pointer;" onclick="openVersoEnBiblia()" title="Abrir en la Biblia RVR1960"></div>
       <div class="score-hero">
@@ -678,6 +680,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div id="pv-devoto-card" style="margin-bottom:10px;"></div>
       <!-- FECHA DE NACIMIENTO -->
       <div id="pv-fnac-card" style="margin-bottom:10px;"></div>
+      <!-- TELÉFONO (solo si no lo ha guardado aún) -->
+      <div id="pv-telefono-card" style="margin-bottom:10px;"></div>
       <!-- WHATSAPP GRUPO -->
       <a href="https://chat.whatsapp.com/Ez9mi53lO57G59mmEdrIfV?mode=gi_t" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:10px;">
         <div style="background:linear-gradient(135deg,#0a1f0f 0%,#0d2b14 50%,#145222 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(37,211,102,0.3);box-shadow:0 4px 20px rgba(37,211,102,0.15);position:relative;overflow:hidden;">
@@ -1008,7 +1012,7 @@ async function loadDB(){
       if(data&&data.caballeros&&data.caballeros.length>0){
         DB=data;
         // Migración: asegurar que todos los caballeros tengan campo pw
-        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';});
+        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';if(c.telefono===undefined)c.telefono='';if(c.nombreMostrar===undefined)c.nombreMostrar='';});
         // Migración: asegurar array de peticiones
         if(!DB.peticiones)DB.peticiones=[];
         // Migración: asegurar array de eventos
@@ -1054,7 +1058,7 @@ async function loadDB(){
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
   // Migración: asegurar campo pw en todos
-  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';});
+  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';if(c.telefono===undefined)c.telefono='';if(c.nombreMostrar===undefined)c.nombreMostrar='';});
   // Migración: asegurar array de peticiones
   if(!DB.peticiones)DB.peticiones=[];
   // Migración: asegurar array de eventos
@@ -1248,8 +1252,21 @@ function getRank(id){return ranking().findIndex(c=>c.id===id)+1;}
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
 function ini(n){return n.split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase();}
+function nombreCorto(c){if(!c)return'';if(c.nombreMostrar&&String(c.nombreMostrar).trim())return c.nombreMostrar.trim();const n=String(c.nombre||'').trim();if(!n)return'';const p=n.split(/\s+/);if(p.length===1)return p[0];if(p.length===2)return p[0]+' '+p[1];return p[0]+' '+p[1]+' '+p[2];}
 function fmtDate(f){if(!f)return'';const[y,m,d]=f.split('-');const M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${+d} ${M[+m-1]} ${y}`;}
+function fmtDateCumple(f){if(!f)return'—';const parts=f.split('-');if(parts.length!==3)return'—';const M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${+parts[2]} ${M[+parts[1]-1]}`;}
 function fmtBox(f){const[y,m,d]=f.split('-');const M=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];return{d,m:M[+m-1]};}
+// Normaliza número para enlaces: si son 9 dígitos españoles (6/7/8/9...) añade +34
+function numeroParaEnlace(t){
+  if(!t||!String(t).trim())return'';
+  const d=String(t).replace(/\D/g,'');
+  if(!d)return'';
+  if(d.length===9&&/^[6789]/.test(d))return '34'+d;
+  if(d.length>=11&&d.startsWith('34'))return d.substring(0,11);
+  if(d.length===10&&d.startsWith('0'))return '34'+d.slice(1);
+  return d;
+}
+function telParaWa(t){const n=numeroParaEnlace(t);return n?('https://wa.me/'+n):'';}
 function mkBadges(c){return CHECKS.filter(k=>c[k]).map(k=>`<span class="bdg ${k}">${CLBL[k]}</span>`).join('');}
 function scCls(v){return v>=7?'sc-hi':v>=4?'sc-mid':'sc-lo';}
 function fmtScore(v){if(v==null||v===undefined||isNaN(v))return '—';const n=Number(v);if(n===10)return '10';return n.toFixed(1);}
@@ -1438,10 +1455,11 @@ function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCab
 function mkCabCard(c,rank){
   const cal=calcCab(c.id);
   const bd=mkBadges(c);
+  const nm=nombreCorto(c);
   return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
-    <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(c.nombre)}</span>`)}</div>
+    <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(nm||c.nombre)}</span>`)}</div>
     <div class="cab-inf">
-      <div class="cab-nm">${c.nombre}</div>
+      <div class="cab-nm">${nm||c.nombre}</div>
       <div class="cab-mt">${c.dist} · ${c.grupo}</div>
       ${bd?`<div class="badges">${bd}</div>`:''}
     </div>
@@ -1455,14 +1473,25 @@ function mkCabCard(c,rank){
 function openCabDetail(id){
   const c=DB.caballeros.find(x=>x.id===id);if(!c)return;
   const cal=calcCab(id);const rank=getRank(id);
-  const avH2=c.photo?`<img src="${c.photo}">`:(ini(c.nombre));
+  const avH2=c.photo?`<img src="${c.photo}">`:(ini(nombreCorto(c)||c.nombre));
   const val=autoVal(c);
   const starH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const barK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const bars=barK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const histH=mkHistoryTable(id);
-  openSheet(avH2,c.nombre,`${c.dist} · Rank #${rank} · ${c.grupo}`,`
+  const esAdmin=document.getElementById('screen-admin')&&document.getElementById('screen-admin').classList.contains('active');
+  const btnRow=esAdmin?`<div class="btn-row">
+      <button class="btn boutline" onclick="closeModal();openFormCab('${id}')">✏️ Editar</button>
+      <button class="btn bred" onclick="confirmDelCab('${id}')">🗑 Eliminar</button>
+    </div>`:'';
+  const cumple=fmtDateCumple(c.fnac);
+  const tel=c.telefono&&String(c.telefono).trim()?c.telefono.trim():'—';
+  const waUrl=tel!=='—'?telParaWa(tel):'';
+  const telEsc=escAttr(tel);const waEsc=escAttr(waUrl);const telNum=numeroParaEnlace(tel);const telHref=telNum?'tel:+'+telNum:'';
+  const telHtml=tel!=='—'?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-weight:700;">${telEsc}</span>${waUrl?`<a href="${waEsc}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#25d366;color:white;text-decoration:none;" title="Enviar WhatsApp">📱</a>`:''}<a href="${escAttr(telHref)}" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--teal);color:white;text-decoration:none;" title="Llamar">📞</a></div>`:'<span style="font-weight:700;">—</span>';
+  openSheet(avH2,nombreCorto(c)||c.nombre,`${c.dist} · Rank #${rank} · ${c.grupo}`,`
+    <div class="dsec"><div class="dhead">Contacto</div><div style="display:flex;flex-wrap:wrap;gap:16px;"><div><span style="font-size:11px;color:var(--text3);">Cumpleaños</span><div style="font-weight:700;">${cumple}</div></div><div><span style="font-size:11px;color:var(--text3);">Teléfono</span>${telHtml}</div></div></div>
     <div class="dsec"><div class="dhead">Estado Espiritual</div>
       <div class="badges">${mkBadges(c)||'<span style="color:var(--text3);font-size:12px">Sin distinciones</span>'}</div>
       <div class="star-row" style="margin-top:10px">${starH}</div>
@@ -1470,13 +1499,15 @@ function openCabDetail(id){
     </div>
     <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total.toFixed(1)} pts</span> · Asistencia: ${cal.asist}/${cal.totalClases}</div>${bars}</div>
     <div class="dsec"><div class="dhead">Historial de Clases</div>${histH}</div>
-    <div class="btn-row">
-      <button class="btn boutline" onclick="closeModal();openFormCab('${id}')">✏️ Editar</button>
-      <button class="btn bred" onclick="confirmDelCab('${id}')">🗑 Eliminar</button>
-    </div>
+    ${btnRow}
   `);
 }
 
+function openListaCaballerosPV(){
+  const list=ranking();
+  const html=list.length?list.map(c=>mkCabCard(c)).join(''):'<p style="color:var(--text3);font-size:13px">No hay caballeros.</p>';
+  openSheet('👥','Caballeros',`${list.length} caballeros · por puntuación`,'<div class="card-list" style="max-height:70vh;overflow-y:auto">'+html+'</div>');
+}
 function confirmDelCab(id){
   const c=DB.caballeros.find(x=>x.id===id);
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
@@ -1495,9 +1526,10 @@ function escAttr(s){if(s==null||s===undefined)return'';return String(s).replace(
 // ═══════════════════════════════════════════════════════════════
 function openFormCab(id){
   const isNew=!id;
-  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:'',fechaBautizado:'',fechaSellado:''};
+  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:'',fechaBautizado:'',fechaSellado:'',telefono:'',nombreMostrar:''};
   if(id&&!c){toast('Caballero no encontrado','err');return;}
   const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join('');
+  const telefonoEsc=escAttr(c.telefono||'');const nombreMostrarEsc=escAttr(c.nombreMostrar||'');
   const chkH=`<div class="chk-grid">${CHECKS.map(k=>`
     <div class="chk-item ${c[k]?'on':''}" id="chk-wrap-${k}" onclick="toggleChk('${k}')">
       <div class="chk-box" id="chk-box-${k}"><span class="chk-box-tick" id="chk-tick-${k}">✓</span></div>
@@ -1511,6 +1543,8 @@ function openFormCab(id){
   const fbautEsc=escAttr(c.fechaBautizado||'');const fsellEsc=escAttr(c.fechaSellado||'');
   openSheet(isNew?'✚':(c.photo?`<img src="${c.photo}">`:(ini(c.nombre))),isNew?'Nuevo Caballero':`Editar: ${c.nombre}`,'',`
     <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
+    <div class="fr"><label>Nombre a mostrar</label><input id="fc-nombreMostrar" value="${nombreMostrarEsc}" placeholder="Ej. Juan Carlos García (primer nombre + primer apellido)"></div>
+    <div class="fr"><label>Teléfono</label><input type="tel" id="fc-telefono" value="${telefonoEsc}" placeholder="Ej. 600 000 000"></div>
     <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
     <div class="fr"><label>Fecha de nacimiento</label><input type="date" id="fc-fnac" value="${fnacEsc}" placeholder="Para cumpleaños"></div>
@@ -1608,6 +1642,8 @@ function handlePhoto(e,ctx){
 function readForm(){
   return{
     nombre:document.getElementById('fc-nombre').value.trim(),
+    nombreMostrar:(document.getElementById('fc-nombreMostrar')?.value||'').trim(),
+    telefono:(document.getElementById('fc-telefono')?.value||'').trim(),
     grupo:document.getElementById('fc-grupo').value,
     dist:document.getElementById('fc-dist').value,
     fnac:(document.getElementById('fc-fnac')?.value||'').trim(),
@@ -1645,7 +1681,7 @@ function renderGrupos(){
     const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
     const col=GCOL[g]||'var(--teal)';
     h+=`<div class="gr-card"><div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} · Prom: ${avg}</div></div>
-      ${ms.map(c=>`<div class="gr-row" onclick="openCabDetail('${c.id}')"><div><span class="gr-rname">${c.nombre}</span><span class="gr-rdist">${c.dist}</span></div><span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div>`;
+      ${ms.map(c=>`<div class="gr-row" onclick="openCabDetail('${c.id}')"><div><span class="gr-rname">${nombreCorto(c)||c.nombre}</span><span class="gr-rdist">${c.dist}</span></div><span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div>`;
   });
   document.getElementById('grupos-pg').innerHTML=h;
 }
@@ -2017,7 +2053,9 @@ function renderPersonal(cabId){
   renderFsellCard(c);
   renderDevotoCard(c);
   renderFnacCard(c);
+  renderTelefonoCard(c);
   renderEncuestaCampamento(c);
+  renderCumpleBanners(cabId);
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
@@ -2068,6 +2106,57 @@ async function doEditCampamento(valor){
   const ok=await saveDB();
   closeModal();
   if(ok){toast('✅ Respuesta actualizada','ok');renderCampamentoBanner();}
+}
+
+function cumpleHoy(){
+  const hoy=new Date();
+  const m=hoy.getMonth()+1, d=hoy.getDate();
+  return (DB.caballeros||[]).filter(c=>{
+    if(!c.fnac||c.fnac.length<10)return false;
+    const p=c.fnac.split('-');
+    return +p[1]===m&&+p[2]===d;
+  });
+}
+// Versículos de bendición por cumplir años (RVR60)
+const VERSOS_CUMPLE=[
+  {ref:'Salmo 91:16',refCode:'PSA.91.16',text:'Con larga vida lo saciaré, y le mostraré mi salvación.'},
+  {ref:'Salmo 65:11',refCode:'PSA.65.11',text:'Tú coronas el año con tus bienes; y tus nubes destilan grosura.'},
+  {ref:'Job 36:11',refCode:'JOB.36.11',text:'Si oyeren y le sirvieren, acabarán sus días en bien, y sus años en deleites.'},
+  {ref:'Proverbios 9:11',refCode:'PRO.9.11',text:'Porque por mí se aumentarán tus días, y años de vida se te añadirán.'},
+  {ref:'Salmo 118:24',refCode:'PSA.118.24',text:'Este es el día que hizo Jehová; nos gozaremos y alegraremos en él.'},
+  {ref:'Números 6:24-26',refCode:'NUM.6.24',text:'Jehová te bendiga y te guarde; Jehová haga resplandecer su rostro sobre ti y tenga de ti misericordia; Jehová alce su rostro sobre ti y ponga en ti paz.'},
+  {ref:'Salmo 20:4',refCode:'PSA.20.4',text:'Te dé conforme al deseo de tu corazón, y cumpla todo tu consejo.'},
+  {ref:'3 Juan 1:2',refCode:'3JN.1.2',text:'Deseo que tú seas prosperado en todas las cosas y que tengas salud, así como prospera tu alma.'},
+];
+function getVersoCumple(){
+  const d=new Date();
+  const dayOfYear=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
+  return VERSOS_CUMPLE[dayOfYear % VERSOS_CUMPLE.length];
+}
+function renderCumpleBanners(cabId){
+  const wrap=document.getElementById('pv-cumple-banner-wrap');
+  if(!wrap)return;
+  const losQueCumplen=cumpleHoy();
+  if(losQueCumplen.length===0){wrap.innerHTML='';wrap.style.display='none';return;}
+  const yoCumple=losQueCumplen.some(c=>c.id===cabId);
+  const verso=getVersoCumple();
+  if(yoCumple){
+    wrap.style.display='block';
+    wrap.innerHTML='<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 50%,#a7f3d0 100%);border-radius:14px;padding:16px 18px;border:2px solid #10b981;box-shadow:0 4px 20px rgba(16,185,129,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:18px;font-weight:900;color:#065f46;margin-bottom:10px;">🎂 ¡Feliz cumpleaños!</div><div style="font-size:13px;color:#047857;line-height:1.5;margin-bottom:8px;">'+verso.text+'</div><span style="font-size:12px;font-weight:700;color:#059669;">'+verso.ref+'</span></div>';
+    return;
+  }
+  const nombres=losQueCumplen.map(c=>{
+    const nom=escAttr(nombreCorto(c)||c.nombre||'');
+    const tel=(c.telefono&&String(c.telefono).trim())||'';
+    const wa=tel?telParaWa(tel):'';
+    const telNum=numeroParaEnlace(tel);const telHref=telNum?'tel:+'+telNum:'';
+    const iconos=tel?(' '+(wa?'<a href="'+escAttr(wa)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#25d366;color:white;text-decoration:none;margin-left:4px;" title="Enviar WhatsApp">📱</a>':'')+' <a href="'+escAttr(telHref)+'" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--teal);color:white;text-decoration:none;margin-left:4px;" title="Llamar">📞</a>'):'';
+    return '<span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;">'+nom+iconos+'</span>';
+  }).join(', ');
+  wrap.style.display='block';
+  const titulo=losQueCumplen.length===1?'Hoy cumple':'Hoy cumplen';
+  const sub=losQueCumplen.length===1?'Felicítalo por WhatsApp o con una llamada':'Felicítalos por WhatsApp o con una llamada';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:8px;">🎂 '+titulo+' '+nombres+'</div><div style="font-size:12px;color:#b45309;">'+sub+'</div></div>';
 }
 
 // Versículo del día (RVR60) — orientado a hombres (fortaleza, integridad, paternidad)
@@ -2317,6 +2406,32 @@ function renderFnacCard(c){
     </div>
   </div>`;
 }
+function renderTelefonoCard(c){
+  const el=document.getElementById('pv-telefono-card');
+  if(!el)return;
+  if(c.telefono&&String(c.telefono).trim()){el.style.display='none';el.innerHTML='';return;}
+  el.style.display='block';
+  el.innerHTML=`<div style="background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%);border:1.5px solid rgba(14,165,233,0.3);border-radius:14px;padding:14px 16px;">
+    <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#0c4a6e;margin-bottom:6px;">📱 Tu número de teléfono</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px;">Lo verán los hermanos en la ficha del caballero. Luego podrás editarlo en el panel de cambiar contraseña (🔑).</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <input type="tel" id="pv-telefono-inp" placeholder="Ej. 600 000 000" value="" style="flex:1;min-width:160px;padding:10px 12px;border:1.5px solid #bae6fd;border-radius:10px;font-size:13px;">
+      <button onclick="guardarTelefonoPV()" style="background:#0ea5e9;border:none;color:white;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
+    </div>
+  </div>`;
+}
+async function guardarTelefonoPV(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  if(!c){toast('Error: no se encontró el caballero','err');return;}
+  const v=(document.getElementById('pv-telefono-inp')?.value||'').trim();
+  if(!v){toast('Escribe tu número de teléfono','err');return;}
+  c.telefono=v;
+  toast('💾 Guardando...','info');
+  const ok=await saveDB();
+  if(!ok){toast('Error al guardar','err');return;}
+  renderTelefonoCard(c);
+  toast('✅ Teléfono guardado','ok');
+}
 function openFnacEditFromCumple(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
@@ -2544,13 +2659,29 @@ function renderGrupoSection(c){
 function openChangeCabPw(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
   const tienePass=!!c.pw;
-  openSheet('🔑','Mi Contraseña',c.nombre,`
+  const nombreEsc=escAttr(c.nombre||'');
+  const nombreMostrarEsc=escAttr(c.nombreMostrar||'');
+  const telefonoEsc=escAttr(c.telefono||'');
+  openSheet('🔑','Mi Contraseña',nombreCorto(c)||c.nombre,`
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
+      <div class="fr" style="margin-bottom:10px;"><label>Nombre completo</label><input type="text" id="cpw-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Nombre a mostrar</label><input type="text" id="cpw-nombreMostrar" value="${nombreMostrarEsc}" placeholder="Ej. Juan García"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Teléfono</label><input type="tel" id="cpw-telefono" value="${telefonoEsc}" placeholder="Ej. 600 000 000"></div>
+      <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="doSaveCabPerfilPV();">💾 Guardar nombre y teléfono</button>
+    </div>
     ${tienePass?`<div class="fr"><label>Contraseña actual</label><input type="password" id="cpw-curr" placeholder="Tu contraseña actual"></div>`:'<div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--teal2)">🔑 Todavía no tienes contraseña personal. Crea una para proteger tu perfil.</div>'}
     <div class="fr"><label>${tienePass?'Nueva contraseña':'Crear contraseña'}</label><input type="password" id="cpw-new" placeholder="Mínimo 4 caracteres"></div>
     <div class="fr"><label>Confirmar contraseña</label><input type="password" id="cpw-conf" placeholder="Repetir contraseña"></div>
     <div class="login-err" id="cpw-err" style="display:none;margin-bottom:10px"></div>
     <button class="btn bteal bfull" onclick="doChangeCabPw(${tienePass})">🔒 ${tienePass?'Cambiar Contraseña':'Crear Contraseña'}</button>
   `);
+}
+async function doSaveCabPerfilPV(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  c.nombre=(document.getElementById('cpw-nombre')?.value||'').trim();
+  c.nombreMostrar=(document.getElementById('cpw-nombreMostrar')?.value||'').trim();
+  c.telefono=(document.getElementById('cpw-telefono')?.value||'').trim();
+  await saveDB();toast('✅ Datos guardados','ok');
 }
 async function doChangeCabPw(tienePass){
   const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
