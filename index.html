@@ -465,8 +465,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       </a>
 
       <div class="sec-ttl">Caballeros <button class="btn bteal" onclick="openFormCab(null)" style="font-size:11px;padding:7px 12px">+ Agregar</button></div>
-      <!-- Top 5 por media acumulada (sin distinciones) -->
-      <div id="cabs-top5-wrap" style="margin-bottom:16px;"></div>
       <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-inp" placeholder="Buscar caballero..." oninput="onSearch()"></div>
       <!-- Row 1: group chips -->
       <div class="chips-row" id="chips-grupo"></div>
@@ -651,7 +649,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 
   <!-- PESTAÑAS NAVEGACIÓN -->
   <nav class="pv-nav">
-    <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">⚔️ Perfil</div>
+    <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
     <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE&#x3164;</div>
@@ -666,7 +664,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <!-- Banner Evidencias (mismo que en admin) -->
       <div id="ev-banner-personal-wrap" class="ev-banner" style="padding:12px 16px;justify-content:center;margin-bottom:14px;"></div>
       <!-- Versículo del día (RVR60) — clic abre la biblia -->
-      <div id="pv-verso-dia-wrap" style="margin-bottom:14px;cursor:pointer;" onclick="openVersoEnBiblia()" title="Abrir en la Biblia"></div>
+      <div id="pv-verso-dia-wrap" style="margin-bottom:14px;"></div>
+      <!-- Top 5 Caballeros (igual que en admin) -->
+      <div id="pv-top5-wrap" class="card-list" style="margin-bottom:16px;"></div>
       <div class="score-hero">
         <div class="sh-big" id="pv-total">0.0</div>
         <div class="sh-lbl">Puntuación Acumulada</div>
@@ -1356,11 +1356,15 @@ function showTab(id,el){
 }
 function initAdmin(){
   buildSel();renderDash();renderCabs();
+  const wrap=document.getElementById('admin-perfil-wrap');
+  const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
+  const tieneFoto=!!DB.adminPhoto;
+  if(wrap)wrap.style.display=(tieneNombre&&tieneFoto)?'none':'block';
   const nombreInp=document.getElementById('admin-nombre-inp');
   const photoInp=document.getElementById('admin-photo-inp');
   const photoPreview=document.getElementById('admin-photo-preview');
   const photoPlaceholder=document.getElementById('admin-photo-placeholder');
-  if(nombreInp){nombreInp.value=DB.adminNombre||'';nombreInp.oninput=nombreInp.onblur=async function(){DB.adminNombre=nombreInp.value.trim();await saveDB();};}
+  if(nombreInp){nombreInp.value=DB.adminNombre||'';nombreInp.oninput=nombreInp.onblur=async function(){DB.adminNombre=nombreInp.value.trim();await saveDB();if(DB.adminNombre&&DB.adminPhoto&&wrap)wrap.style.display='none';};}
   if(photoPreview&&photoPlaceholder){
     if(DB.adminPhoto){photoPreview.src=DB.adminPhoto;photoPreview.style.display='';photoPlaceholder.style.display='none';} else {photoPreview.style.display='none';photoPlaceholder.style.display='flex';}
   }
@@ -1370,6 +1374,7 @@ function initAdmin(){
     DB.adminPhoto=data;await saveDB();
     if(photoPreview&&photoPlaceholder){photoPreview.src=data;photoPreview.style.display='';photoPlaceholder.style.display='none';}
     photoInp.value='';
+    if(DB.adminNombre&&String(DB.adminNombre).trim()&&wrap)wrap.style.display='none';
   };
 }
 
@@ -1416,11 +1421,6 @@ function renderCabs(){
       badgeOpts.map(b=>`<div class="chip bdg-filter ${b.id===fBadge?'active':''}" onclick="setFB('${b.id}')">${b.l}</div>`).join('');
   }
 
-  const top5Wrap=document.getElementById('cabs-top5-wrap');
-  if(top5Wrap){
-    const top5List=ranking().slice(0,5);
-    top5Wrap.innerHTML=top5List.length?`<div style="background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border:1.5px solid rgba(22,163,74,0.25);border-radius:14px;padding:14px 16px;"><div style="font-size:11px;font-weight:800;color:#166534;margin-bottom:10px;">🏆 Top 5 · Media acumulada</div><div style="display:flex;flex-direction:column;gap:6px;">${top5List.map((c,i)=>{const cal=calcCab(c.id);return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:white;border-radius:8px;border:1px solid #e5e7eb;"><span style="font-weight:800;color:#1a1f2e;">#${i+1} ${c.nombre}</span><span style="font-weight:800;color:var(--teal);">${cal.total.toFixed(1)}</span></div>`;}).join('')}</div></div>`:'';
-  }
   const q=(document.getElementById('search-inp').value||'').toLowerCase();
   let list=[...DB.caballeros];
   if(fGrupo!=='TODOS')list=list.filter(c=>c.grupo===fGrupo);
@@ -2010,6 +2010,8 @@ function renderPersonal(cabId){
   document.getElementById('pv-rank').textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
   document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
+  const top5Wrap=document.getElementById('pv-top5-wrap');
+  if(top5Wrap){const list=ranking();top5Wrap.innerHTML=list.slice(0,5).length?('<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 5 Caballeros</div>'+list.slice(0,5).map((cab,i)=>mkCabCard(cab,i+1)).join('')):'';}
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTable(cabId);
   renderGrupoSection(c);
@@ -2019,7 +2021,7 @@ function renderPersonal(cabId){
   renderFnacCard(c);
   renderEncuestaCampamento(c);
   const finBtn=document.getElementById('pvtab-finanzas-btn');
-  if(finBtn)finBtn.style.display=cabId===CARLOS_FINANZAS_ID?'':'none';
+  if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
 }
 function renderEncuestaCampamento(c){
@@ -2116,7 +2118,7 @@ function renderVersoDelDia(){
   if(!wrap)return;
   const v=getVersoDelDia();
   window._versoDiaRefCode=v.refCode;
-  wrap.innerHTML='<div style="background:linear-gradient(135deg,#1a1f2e 0%,#2d3748 50%,#1a365d 100%);border-radius:14px;padding:14px 18px;border:1px solid rgba(58,171,186,0.25);box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden;"><div style="position:absolute;right:0;top:0;width:80px;height:80px;background:radial-gradient(circle,rgba(58,171,186,0.12) 0%,transparent 70%);pointer-events:none;"></div><div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;"><div style="flex:1;min-width:0;"><span style="font-family:\'Montserrat\',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.45;">'+v.text+'</span><span style="font-size:12px;font-weight:600;color:#3aabba;margin-left:8px;">'+v.ref+'</span></div><a href="#" onclick="event.preventDefault();openVersoEnBiblia();return false;" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.9);white-space:nowrap;">Abrir RVR1960 →</a></div></div>';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,#1a1f2e 0%,#2d3748 50%,#1a365d 100%);border-radius:14px;padding:14px 18px;border:1px solid rgba(58,171,186,0.25);box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden;"><div style="position:absolute;right:0;top:0;width:80px;height:80px;background:radial-gradient(circle,rgba(58,171,186,0.12) 0%,transparent 70%);pointer-events:none;"></div><div style="position:relative;z-index:1;"><span style="font-family:\'Montserrat\',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.45;">'+v.text+'</span><span style="font-size:12px;font-weight:600;color:#3aabba;margin-left:8px;">'+v.ref+'</span></div></div>';
 }
 function openVersoEnBiblia(){
   const ref=window._versoDiaRefCode||'GEN.1.1';
@@ -2141,13 +2143,34 @@ function showPvTab(tab){
 // CAMBIAR CONTRASEÑA
 // ═══════════════════════════════════════════════════════════════
 function openChangePw(){
-  openSheet('🔑','Cambiar Contraseña','Solo el administrador',`
+  const nombre=DB.adminNombre||'';
+  const tieneFoto=!!DB.adminPhoto;
+  openSheet('🔑','Contraseña y perfil admin','Editar nombre, foto y contraseña',`
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
+      <div class="fr" style="margin-bottom:10px;"><label>Nombre del administrador</label><input type="text" id="pw-admin-nombre" placeholder="Nombre" value="${nombre.replace(/"/g,'&quot;')}"></div>
+      <div style="margin-bottom:8px;"><label style="font-size:12px;color:#6b7280;">Foto</label></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div id="pw-admin-photo-preview" style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#e5e7eb;flex-shrink:0;">${tieneFoto?`<img src="${DB.adminPhoto}" style="width:100%;height:100%;object-fit:cover;">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>'}</div>
+        <input type="file" id="pw-admin-photo-inp" accept="image/*" style="font-size:11px;">
+      </div>
+      <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="saveAdminPerfilFromSheet()">💾 Guardar nombre y foto</button>
+    </div>
     <div class="fr"><label>Contraseña actual</label><input type="password" id="pw-curr" placeholder="••••••••"></div>
     <div class="fr"><label>Nueva contraseña</label><input type="password" id="pw-new" placeholder="Mínimo 4 caracteres"></div>
     <div class="fr"><label>Confirmar nueva contraseña</label><input type="password" id="pw-conf" placeholder="Repetir nueva contraseña"></div>
     <div class="login-err" id="pw-err" style="display:none;margin-bottom:10px"></div>
     <button class="btn bteal bfull" onclick="doChangePw()">🔒 Cambiar Contraseña</button>
   `);
+  document.getElementById('pw-admin-photo-inp').onchange=async function(e){
+    const f=e.target.files[0];if(!f)return;
+    const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+    const prev=document.getElementById('pw-admin-photo-preview');if(prev)prev.innerHTML='<img src="'+data+'" style="width:100%;height:100%;object-fit:cover;">';window._pwAdminPhotoPending=data;
+  };
+}
+async function saveAdminPerfilFromSheet(){
+  const nombreInp=document.getElementById('pw-admin-nombre');if(nombreInp)DB.adminNombre=nombreInp.value.trim();
+  if(window._pwAdminPhotoPending){DB.adminPhoto=window._pwAdminPhotoPending;window._pwAdminPhotoPending=null;}
+  await saveDB();toast('✅ Nombre y foto guardados','ok');
 }
 async function doChangePw(){
   const curr=document.getElementById('pw-curr').value;
@@ -3394,10 +3417,10 @@ async function addVotoCarlos(){
   toast('💾 Guardando...','info');await saveDB();toast('✅ Voto añadido','ok');
   renderListaVotos();
 }
-async function delGasto(id){DB.finanzasGastos=(DB.finanzasGastos||[]).filter(g=>g.id!==id);await saveDB();renderListaGastos();toast('Gasto eliminado','ok');}
-async function delActividad(id){DB.finanzasActividades=(DB.finanzasActividades||[]).filter(a=>a.id!==id);await saveDB();renderListaActividades();toast('Actividad eliminada','ok');}
-async function delDonativo(id){DB.finanzasDonativos=(DB.finanzasDonativos||[]).filter(d=>d.id!==id);await saveDB();renderListaDonativos();toast('Donativo eliminado','ok');}
-async function delVoto(id){DB.finanzasVotos=(DB.finanzasVotos||[]).filter(v=>v.id!==id);await saveDB();renderListaVotos();toast('Voto eliminado','ok');}
+async function delGasto(id){if(!confirm('¿Eliminar este gasto?'))return;DB.finanzasGastos=(DB.finanzasGastos||[]).filter(g=>g.id!==id);await saveDB();renderListaGastos();toast('Gasto eliminado','ok');}
+async function delActividad(id){if(!confirm('¿Eliminar esta actividad?'))return;DB.finanzasActividades=(DB.finanzasActividades||[]).filter(a=>a.id!==id);await saveDB();renderListaActividades();toast('Actividad eliminada','ok');}
+async function delDonativo(id){if(!confirm('¿Eliminar este donativo?'))return;DB.finanzasDonativos=(DB.finanzasDonativos||[]).filter(d=>d.id!==id);await saveDB();renderListaDonativos();toast('Donativo eliminado','ok');}
+async function delVoto(id){if(!confirm('¿Eliminar este voto?'))return;DB.finanzasVotos=(DB.finanzasVotos||[]).filter(v=>v.id!==id);await saveDB();renderListaVotos();toast('Voto eliminado','ok');}
 
 // ═══════════════════════════════════════════════════════════════
 // INFORMES PDF (HTML + window.print — estilo Escuela Dominical)
@@ -3750,9 +3773,6 @@ async function initApp(){
   if(adminBanner&&window._reportLogos)window._reportLogos.ev=adminBanner.querySelector('img')?.src||window._reportLogos.ev;
   renderVersoDelDia();
   const acts=document.querySelector('.hacts');
-  if(acts&&!document.getElementById('btn-cloud')){
-    const b=document.createElement('button');b.id='btn-cloud';b.className='btn-hdr';b.textContent='☁️';b.title='Guía de compartir';b.onclick=showGDriveGuide;acts.prepend(b);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
