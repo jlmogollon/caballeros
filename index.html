@@ -654,8 +654,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
     <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE</div>
+    <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -1494,7 +1494,22 @@ function renderCalGr(targetId){
   const porAnio={};
   sorted.forEach(cl=>{const y=cl.fecha.substring(0,4);if(!porAnio[y])porAnio[y]=[];porAnio[y].push(cl);});
   const anos=Object.keys(porAnio).sort();
-  let h='<div class="sec-ttl">Calificaciones por Grupo</div>';
+  const esPv=targetId==='pv-calgr-pg';
+  let h=esPv?'<div class="sec-ttl">📊 Mi grupo vs otros</div>':'<div class="sec-ttl">Calificaciones por Grupo</div>';
+  if(esPv&&currentCabId){
+    const cab=DB.caballeros.find(x=>x.id===currentCabId);
+    if(cab){
+      const list=ranking();
+      const delGrupo=list.filter(x=>x.grupo===cab.grupo);
+      const grupoAvg=delGrupo.length?(delGrupo.reduce((s,c)=>s+calcCab(c.id).total,0)/delGrupo.length).toFixed(1):'0.0';
+      const miTotal=calcCab(cab.id).total.toFixed(1);
+      const arriba=parseFloat(miTotal)>=parseFloat(grupoAvg);
+      h+=`<p style="font-size:12px;color:var(--text2);margin-bottom:10px;">
+        Tu grupo <strong>${cab.grupo}</strong> tiene media <strong>${grupoAvg}</strong>.
+        Tú estás ${arriba?'por encima':'por debajo'} de la media (<strong>${miTotal}</strong> pts).
+      </p>`;
+    }
+  }
   anos.forEach(y=>{
     h+=`<div class="cl-year-ttl" style="margin-top:${h.includes('cl-year-ttl')?16:0}px">${y}</div>`;
     porAnio[y].forEach(cl=>{
@@ -1598,10 +1613,16 @@ function renderPersonal(cabId){
   }
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const top5Wrap=document.getElementById('pv-top5-wrap');
-  if(top5Wrap){const list=ranking();top5Wrap.innerHTML=list.slice(0,5).length?('<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 5 Caballeros</div>'+list.slice(0,5).map((cab,i)=>mkCabCard(cab,i+1)).join('')):'';}
+  if(top5Wrap){
+    const all=ranking();
+    const delGrupo=all.filter(x=>x.grupo===c.grupo);
+    const top3=delGrupo.slice(0,3);
+    top5Wrap.innerHTML=top3.length
+      ?('<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 3 de tu grupo</div>'+top3.map((cab,i)=>mkCabCard(cab,i+1)).join(''))
+      :'';
+  }
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTable(cabId);
-  renderGrupoSection(c);
   renderFbautCard(c);
   renderFsellCard(c);
   renderDevotoCard(c);
