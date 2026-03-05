@@ -654,6 +654,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
+    <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
     <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE</div>
   </nav>
 
@@ -674,6 +675,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="sh-sub" id="pv-rank"></div>
         <div class="star-row" id="pv-stars"></div>
       </div>
+      <div id="pv-profile-completion" style="margin:10px 0 16px;"></div>
+      <div id="pv-last-class-msg" style="margin-bottom:12px;"></div>
+      <div id="pv-achievements" style="margin-bottom:16px;"></div>
       <!-- FECHA DE BAUTIZO (solo bautizados sin fecha) -->
       <div id="pv-fbaut-card" style="margin-bottom:10px;"></div>
       <!-- FECHA DE SELLADO (solo sellados sin fecha) -->
@@ -795,6 +799,13 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-body"><div id="pv-cumple-pg"></div></div>
   </div>
 
+  <!-- ── TAB: CALIFICACIÓN POR GRUPOS (PV) ── -->
+  <div class="pv-tab" id="pvtab-calgr">
+    <div class="pv-body">
+      <div id="pv-calgr-pg"></div>
+    </div>
+  </div>
+
   <!-- ── TAB: FINANZAS (solo Carlos Rodríguez) ── -->
   <div class="pv-tab" id="pvtab-finanzas">
     <div class="pv-body" style="max-width:900px;">
@@ -910,7 +921,7 @@ function showTab(id,el){
   if(id==='t-grupos')renderGrupos();
   if(id==='t-cabs')renderCabs();
   if(id==='t-clases')renderClases();
-  if(id==='t-calgr')renderCalGr();
+  if(id==='t-calgr')renderCalGr('calgr-pg');
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
@@ -1433,6 +1444,10 @@ function closeGrade(){document.getElementById('grade-screen').classList.remove('
 async function doSaveGrade(){
   if(!gradeClaseId)return;
   const cl=DB.clases.find(x=>x.id===gradeClaseId);if(!cl)return;
+  const beforeTotals={};
+  DB.caballeros.forEach(c=>{
+    beforeTotals[c.id]=calcCab(c.id).total;
+  });
   const missing=[];const newCal={};let saved=0;
   DB.caballeros.forEach(c=>{
     const btn=document.getElementById('att-'+c.id);if(!btn)return;
@@ -1452,7 +1467,17 @@ async function doSaveGrade(){
   });
   if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''}`,'err');return;}
   cl.cal=newCal;closeGrade();
-  renderClases();renderDash();renderCalGr();
+  invalidateCache();
+  DB.caballeros.forEach(c=>{
+    const before=beforeTotals[c.id]||0;
+    const after=calcCab(c.id).total;
+    const delta=+(after-before).toFixed(2);
+    if(!isNaN(delta)&&delta!==0){
+      c.lastDelta=delta;
+      c.lastDeltaClase=cl.fecha;
+    }
+  });
+  renderClases();renderDash();renderCalGr('calgr-pg');
   toast('💾 Guardando calificaciones...','info');
   const ok=await saveDB();
   if(ok)toast(`✅ ${saved} calificaciones guardadas`,'ok');else toast('⚠️ Calificaciones no se pudieron guardar','err');
@@ -1460,9 +1485,10 @@ async function doSaveGrade(){
 
 // ═══════════════════════════════════════════════════════════════
 // CAL GRUPOS
+// (targetId opcional para reutilizar en vista personal)
 // ═══════════════════════════════════════════════════════════════
-function renderCalGr(){
-  const el=document.getElementById('calgr-pg');if(!el)return;
+function renderCalGr(targetId){
+  const el=document.getElementById(targetId||'calgr-pg');if(!el)return;
   const sorted=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
   const porAnio={};
@@ -1498,6 +1524,78 @@ function renderPersonal(cabId){
   document.getElementById('pv-total').textContent=cal.total.toFixed(1);
   document.getElementById('pv-rank').textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
   document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
+  const completionEl=document.getElementById('pv-profile-completion');
+  if(completionEl){
+    const req=[];
+    req.push({ok:!!c.photo,label:'Foto de perfil'});
+    req.push({ok:!!(c.telefono&&String(c.telefono).trim()),label:'Teléfono'});
+    req.push({ok:!!(c.fnac&&c.fnac.length>=10),label:'Fecha de nacimiento'});
+    if(c.bautizado)req.push({ok:!!(c.fechaBautizado&&c.fechaBautizado.length>=10),label:'Fecha de bautismo'});
+    if(c.sellado)req.push({ok:!!(c.fechaSellado&&c.fechaSellado.length>=10),label:'Fecha de sellado'});
+    const total=req.length||1;
+    const done=req.filter(r=>r.ok).length;
+    const pct=Math.round((done/total)*100);
+    const faltan=req.filter(r=>!r.ok).map(r=>r.label);
+    const barColor=pct>=100?'linear-gradient(90deg,#16a34a,#22c55e)':pct>=70?'linear-gradient(90deg,#3aabba,#2d8f9c)':'linear-gradient(90deg,#f59e0b,#f97316)';
+    const msg=pct>=100?'Perfil completo ✅':'Perfil '+pct+'% completo';
+    const subt=faltan.length?('Te falta: '+faltan.join(', ')): '¡Gracias por completar tu perfil! Ahora puedes generar tu informe en PDF cuando quieras.';
+    completionEl.innerHTML=`
+      <div class="panel panel-soft-teal">
+        <div class="panel-title">${msg}</div>
+        <div class="panel-desc">${subt}</div>
+        <div class="bt" style="background:#e5e7eb;">
+          <div class="bf" style="width:${pct}%;background:${barColor};transition:width .4s ease;"></div>
+        </div>
+      </div>
+    `;
+  }
+  const lastMsgEl=document.getElementById('pv-last-class-msg');
+  if(lastMsgEl){
+    const d=c.lastDelta;
+    if(typeof d==='number'&&!isNaN(d)&&d!==0){
+      const absDelta=Math.abs(d).toFixed(1);
+      const mejoro=d>0;
+      const color=mejoro?'#16a34a':'#b91c1c';
+      const fechaTxt=c.lastDeltaClase?fmtDate(c.lastDeltaClase):'la última clase';
+      const txt=mejoro
+        ?`En ${fechaTxt} tu media subió <strong style="color:${color}">+${absDelta} pts</strong>. ¡Sigue así!`
+        :`En ${fechaTxt} tu media bajó <strong style="color:${color}">-${absDelta} pts</strong>. ¡La próxima clase puedes recuperar terreno!`;
+      lastMsgEl.innerHTML=`<div class="panel" style="margin-top:8px;border-color:${color}33;"><div class="panel-desc" style="color:${color};margin-bottom:0;">${txt}</div></div>`;
+    }else{
+      lastMsgEl.innerHTML='';
+    }
+  }
+  const achEl=document.getElementById('pv-achievements');
+  if(achEl){
+    const sortedAll=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+    let longest=0,current=0,totalAsist=0;
+    sortedAll.forEach(cl=>{
+      const q=(cl.cal||{})[cabId];
+      if(q&&q.a){
+        totalAsist++;
+        current++;
+        if(current>longest)longest=current;
+      }else{
+        current=0;
+      }
+    });
+    const achievements=[];
+    if(longest>=3)achievements.push('Asistencia fiel: 3 o más clases seguidas asistiendo.');
+    if(totalAsist>=10)achievements.push('Discípulo constante: 10 o más clases asistidas.');
+    if(cal.total>=7)achievements.push('Media general alta: puntuación acumulada ≥ 7.0.');
+    if(achievements.length){
+      achEl.innerHTML=`
+        <div class="panel panel-soft-gold">
+          <div class="panel-title">Logros recientes</div>
+          <ul style="margin:0;padding-left:18px;font-size:12px;color:#92400e;">
+            ${achievements.map(a=>`<li>${a}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }else{
+      achEl.innerHTML='';
+    }
+  }
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const top5Wrap=document.getElementById('pv-top5-wrap');
   if(top5Wrap){const list=ranking();top5Wrap.innerHTML=list.slice(0,5).length?('<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 5 Caballeros</div>'+list.slice(0,5).map((cab,i)=>mkCabCard(cab,i+1)).join('')):'';}
@@ -1571,15 +1669,16 @@ function openVersoEnBiblia(){
 }
 
 function showPvTab(tab){
-  ['perfil','oracion','eventos','cumple','finanzas'].forEach(t=>{
+  ['perfil','oracion','eventos','calgr','cumple','finanzas'].forEach(t=>{
     const el=document.getElementById('pvtab-'+t);
     const btn=document.getElementById('pvtab-'+t+'-btn');
     if(el)el.classList.toggle('active',t===tab);
     if(btn)btn.classList.toggle('active',t===tab);
   });
-  if(tab==='eventos') renderEventosPV();
-  if(tab==='cumple') renderCumplePV();
-  if(tab==='oracion') cargarPeticiones();
+  if(tab==='eventos')  renderEventosPV();
+  if(tab==='calgr')    renderCalGr('pv-calgr-pg');
+  if(tab==='cumple')   renderCumplePV();
+  if(tab==='oracion')  cargarPeticiones();
   if(tab==='finanzas') renderFinanzas();
 }
 
