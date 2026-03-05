@@ -1,0 +1,228 @@
+/* ── UTILITIES (extraídas de index.html) ── */
+
+.hint-text{
+  font-size:11px;
+  color:var(--teal2);
+  font-weight:700;
+  margin:6px 0 8px;
+}
+.hint-text-center{
+  text-align:center;
+}
+
+.textarea{
+  width:100%;
+  padding:10px 12px;
+  background:#f9fafb;
+  border:1.5px solid #e9edf2;
+  border-radius:10px;
+  color:var(--text);
+  font-family:'Lato',sans-serif;
+  font-size:14px;
+  outline:none;
+  resize:none;
+  transition:border-color .2s;
+  line-height:1.5;
+}
+.textarea:focus{
+  border-color:#8b5cf6;
+}
+
+.pet-anon-toggle{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 12px;
+  background:#f9fafb;
+  border:1.5px solid #e9edf2;
+  border-radius:10px;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all .15s;
+}
+.pet-anon-box{
+  width:16px;
+  height:16px;
+  border:2px solid #d1d5db;
+  border-radius:4px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  transition:all .15s;
+}
+.pet-anon-label{
+  font-size:12px;
+  color:#4b5563;
+  font-weight:600;
+}
+
+.pet-card{
+  padding:13px 14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  position:relative;
+  overflow:hidden;
+}
+
+.panel{
+  background:white;
+  border:1.5px solid #e9edf2;
+  border-radius:14px;
+  padding:14px 16px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+.panel-lg{
+  padding:18px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+.panel-soft-teal{
+  background:var(--teal-bg);
+  border-color:var(--border2);
+}
+.panel-soft-green{
+  background:var(--green-bg);
+  border-color:rgba(22,163,74,0.35);
+}
+.panel-soft-gold{
+  background:var(--gold-bg);
+  border-color:rgba(212,168,0,0.35);
+}
+.panel-title{
+  font-family:'Montserrat',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  color:var(--dark);
+  margin-bottom:6px;
+}
+.panel-desc{
+  font-size:12px;
+  color:var(--text2);
+  margin-bottom:12px;
+}
+
+/* ── PRAYER BANNER (Mi Perfil · Oración) ── */
+
+.prayer-banner{
+  background:linear-gradient(135deg,#1a1f2e 0%,#2e1d47 60%,#4c1d95 100%);
+  border-radius:14px;
+  padding:16px 18px;
+  margin-bottom:14px;
+  border:1px solid rgba(139,92,246,0.35);
+  box-shadow:0 4px 20px rgba(139,92,246,0.2);
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+}
+.prayer-banner-glow-right{
+  position:absolute;
+  right:-20px;
+  top:-20px;
+  width:110px;
+  height:110px;
+  background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.prayer-banner-glow-left{
+  position:absolute;
+  left:-10px;
+  bottom:-15px;
+  width:80px;
+  height:80px;
+  background:radial-gradient(circle,rgba(245,197,24,0.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.prayer-banner-content{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.prayer-banner-emoji{
+  font-size:30px;
+  flex-shrink:0;
+  filter:drop-shadow(0 0 8px rgba(139,92,246,0.6));
+}
+.prayer-banner-main{
+  flex:1;
+}
+.prayer-banner-kicker{
+  font-family:'Montserrat',sans-serif;
+  font-size:10px;
+  font-weight:700;
+  color:rgba(255,255,255,0.45);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+.prayer-banner-title{
+  font-family:'Montserrat',sans-serif;
+  font-size:14px;
+  font-weight:900;
+  color:white;
+  line-height:1.3;
+}
+.prayer-banner-quote{
+  font-family:'Caveat',cursive;
+  font-size:13px;
+  color:#a78bfa;
+  margin-top:3px;
+}
+.prayer-banner-timer{
+  flex-shrink:0;
+  text-align:center;
+}
+.prayer-timer-badge{
+  background:rgba(139,92,246,0.25);
+  border:1px solid rgba(139,92,246,0.5);
+  border-radius:10px;
+  padding:6px 10px;
+  min-width:52px;
+}
+.prayer-timer-display{
+  font-family:'Montserrat',sans-serif;
+  font-size:18px;
+  font-weight:900;
+  color:#c4b5fd;
+}
+.prayer-timer-label{
+  font-size:9px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:1px;
+  margin-top:1px;
+}
+
+/* ── PV: INFORME EN PDF CTA ── */
+
+.pv-report-cta{
+  margin-top:24px;
+  padding:16px;
+  background:linear-gradient(135deg,rgba(58,171,186,0.08),rgba(58,171,186,0.15));
+  border-radius:14px;
+  border:1.5px solid rgba(58,171,186,0.25);
+}
+.pv-report-cta-title{
+  font-family:Montserrat,sans-serif;
+  font-size:12px;
+  font-weight:800;
+  color:#1a1f2e;
+  margin-bottom:8px;
+}
+.pv-report-cta-text{
+  font-size:11px;
+  color:#6b7280;
+  margin-bottom:12px;
+  line-height:1.5;
+}
+.pv-report-cta-btn{
+  width:100%;
+  padding:12px 16px;
+  background:linear-gradient(135deg,#3aabba,#2d8f9c);
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  font-family:Montserrat,sans-serif;
+  box-shadow:0 3px 12px rgba(58,171,186,0.3);
+}
