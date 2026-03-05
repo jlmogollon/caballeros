@@ -51,7 +51,9 @@ async function cloudSave(data){
   await database.collection(FIRESTORE_COLLECTION).doc(FIRESTORE_DOC).set({value:str},{merge:true});
 }
 
-var USE_CLOUD=!!(window.FIREBASE_CONFIGURED);
+function useCloud(){
+  return !!window.FIREBASE_CONFIGURED;
+}
 
 function showLoading(msg){
   let el=document.getElementById('fb-loading');
@@ -109,7 +111,7 @@ async function recuperarDesdeBackup(){
 async function loadDB(){
   showLoading('Cargando datos...');
   // Intentar nube
-  if(USE_CLOUD){
+  if(useCloud()){
     try{
       const data=await cloudLoad();
       if(data&&data.caballeros&&data.caballeros.length>0){
@@ -181,7 +183,7 @@ async function loadDB(){
 
 async function saveDB(){
   invalidateCache();
-  if(USE_CLOUD){
+  if(useCloud()){
     try{await cloudSave(DB);return true;}
     catch(e){
       const msg=(e.message||e.code||String(e)).slice(0,80);
