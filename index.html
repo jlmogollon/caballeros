@@ -343,6 +343,108 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .dtable{font-size:13px;}
 .sec-ttl{font-size:15px;}
 .lf input,.lf select,.fr input,.fr select,.fr textarea,.search-wrap input{font-size:16px;}
+
+/* ── UTILITIES ── */
+.hint-text{
+  font-size:11px;
+  color:var(--teal2);
+  font-weight:700;
+  margin:6px 0 8px;
+}
+.hint-text-center{
+  text-align:center;
+}
+
+.textarea{
+  width:100%;
+  padding:10px 12px;
+  background:#f9fafb;
+  border:1.5px solid #e9edf2;
+  border-radius:10px;
+  color:var(--text);
+  font-family:'Lato',sans-serif;
+  font-size:14px;
+  outline:none;
+  resize:none;
+  transition:border-color .2s;
+  line-height:1.5;
+}
+.textarea:focus{
+  border-color:#8b5cf6;
+}
+
+.pet-anon-toggle{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:7px 12px;
+  background:#f9fafb;
+  border:1.5px solid #e9edf2;
+  border-radius:10px;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all .15s;
+}
+.pet-anon-box{
+  width:16px;
+  height:16px;
+  border:2px solid #d1d5db;
+  border-radius:4px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  transition:all .15s;
+}
+.pet-anon-label{
+  font-size:12px;
+  color:#4b5563;
+  font-weight:600;
+}
+
+.pet-card{
+  padding:13px 14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+  position:relative;
+  overflow:hidden;
+}
+
+.panel{
+  background:white;
+  border:1.5px solid #e9edf2;
+  border-radius:14px;
+  padding:14px 16px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+.panel-lg{
+  padding:18px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+.panel-soft-teal{
+  background:var(--teal-bg);
+  border-color:var(--border2);
+}
+.panel-soft-green{
+  background:var(--green-bg);
+  border-color:rgba(22,163,74,0.35);
+}
+.panel-soft-gold{
+  background:var(--gold-bg);
+  border-color:rgba(212,168,0,0.35);
+}
+.panel-title{
+  font-family:'Montserrat',sans-serif;
+  font-size:14px;
+  font-weight:800;
+  color:var(--dark);
+  margin-bottom:6px;
+}
+.panel-desc{
+  font-size:12px;
+  color:var(--text2);
+  margin-bottom:12px;
+}
 </style>
 </head>
 <body>
@@ -385,7 +487,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="lf"><label>Selecciona tu nombre</label><select id="miembro-sel" onchange="onMiembroSelChange()"><option value="">— Seleccionar —</option></select></div>
       <div id="miembro-pw-wrap" style="display:none">
         <div class="lf"><label id="miembro-pw-label">Contraseña</label><input type="password" id="miembro-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-        <div id="miembro-pw-hint" style="font-size:11px;color:var(--teal2);margin-bottom:8px;display:none;">🔑 Primera vez: crea tu contraseña personal (mín. 4 caracteres)</div>
+        <div id="miembro-pw-hint" class="hint-text" style="display:none;">🔑 Primera vez: crea tu contraseña personal (mín. 4 caracteres)</div>
       </div>
     </div>
     <div class="login-err" id="login-err"></div>
@@ -535,9 +637,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="sec-ttl">💰 Finanzas del Comité</div>
 
       <!-- Gastos del Comité -->
-      <div style="background:var(--teal-bg);border:1.5px solid var(--border2);border-radius:14px;padding:18px;margin-bottom:20px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">💰 Gastos del Comité</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra compras generales (materiales, regalos, transporte, etc.) con un responsable.</div>
+      <div class="panel panel-lg panel-soft-teal" style="margin-bottom:20px;">
+        <div class="panel-title">💰 Gastos del Comité</div>
+        <div class="panel-desc">Registra compras generales (materiales, regalos, transporte, etc.) con un responsable.</div>
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
           <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-g"></div>
           <div class="fr" style="flex:1;min-width:140px;"><label>Concepto</label><input id="fin-concepto-g" placeholder="Ej: Materiales"></div>
@@ -549,9 +651,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       </div>
 
       <!-- Actividades del Comité -->
-      <div style="background:var(--teal-bg);border:1.5px solid var(--border2);border-radius:14px;padding:18px;margin-bottom:20px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">💡 Actividades del Comité</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra actividades (ventas, rifas, comidas, etc.) con sus ingresos (efectivo / TPV) y gastos.</div>
+      <div class="panel panel-lg panel-soft-teal" style="margin-bottom:20px;">
+        <div class="panel-title">💡 Actividades del Comité</div>
+        <div class="panel-desc">Registra actividades (ventas, rifas, comidas, etc.) con sus ingresos (efectivo / TPV) y gastos.</div>
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
           <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-a"></div>
           <div class="fr" style="flex:1;min-width:140px;"><label>Nombre de la actividad</label><input id="fin-nombre-a" placeholder="Ej: Venta de pasteles"></div>
@@ -565,9 +667,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       </div>
 
       <!-- Donativos -->
-      <div style="background:var(--green-bg);border:1.5px solid rgba(22,163,74,0.35);border-radius:14px;padding:18px;margin-bottom:20px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">🤲 Donativos</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra donativos individuales con el nombre del donante y el desglose entre efectivo y TPV.</div>
+      <div class="panel panel-lg panel-soft-green" style="margin-bottom:20px;">
+        <div class="panel-title">🤲 Donativos</div>
+        <div class="panel-desc">Registra donativos individuales con el nombre del donante y el desglose entre efectivo y TPV.</div>
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
           <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-d"></div>
           <div class="fr" style="flex:1;min-width:140px;"><label>Concepto</label><input id="fin-concepto-d" placeholder="Ej: Donativo"></div>
@@ -581,9 +683,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       </div>
 
       <!-- Votos -->
-      <div style="background:var(--gold-bg);border:1.5px solid rgba(212,168,0,0.35);border-radius:14px;padding:18px;margin-bottom:20px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">📜 Votos</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;">Registra votos u otras promesas asignadas a un caballero, con su desglose entre efectivo y TPV.</div>
+      <div class="panel panel-lg panel-soft-gold" style="margin-bottom:20px;">
+        <div class="panel-title">📜 Votos</div>
+        <div class="panel-desc">Registra votos u otras promesas asignadas a un caballero, con su desglose entre efectivo y TPV.</div>
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;">
           <div class="fr" style="flex:0 0 120px;"><label>Fecha</label><input type="date" id="fin-fecha-v"></div>
           <div class="fr" style="flex:1;min-width:140px;"><label>Concepto</label><input id="fin-concepto-v" placeholder="Ej: Voto"></div>
@@ -603,19 +705,19 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pg" style="max-width:700px;">
       <div class="sec-ttl">📊 Informes</div>
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">💰 Informe económico</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Resumen de gastos, actividades, donativos y votos con gráficos.</div>
+        <div class="panel panel-lg">
+          <div class="panel-title">💰 Informe económico</div>
+          <div class="panel-desc">Resumen de gastos, actividades, donativos y votos con gráficos.</div>
           <button class="btn bteal" onclick="generarInformeEconomico()">📄 Generar PDF</button>
         </div>
-        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">👥 Informe de caballeros general</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Resumen de todos los caballeros, grupos, puntuaciones y estadísticas.</div>
+        <div class="panel panel-lg">
+          <div class="panel-title">👥 Informe de caballeros general</div>
+          <div class="panel-desc">Resumen de todos los caballeros, grupos, puntuaciones y estadísticas.</div>
           <button class="btn bteal" onclick="generarInformeCaballeros()">📄 Generar PDF</button>
         </div>
-        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:6px;">👤 Informe individual</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Informe detallado de un caballero por caballero.</div>
+        <div class="panel panel-lg">
+          <div class="panel-title">👤 Informe individual</div>
+          <div class="panel-desc">Informe detallado de un caballero por caballero.</div>
           <div class="fr" style="margin-bottom:10px;"><label>Caballero</label><select id="informe-cab-sel"><option value="">Seleccionar caballero</option></select></div>
           <button class="btn bteal" onclick="generarInformeIndividual()">📄 Generar PDF</button>
         </div>
@@ -639,7 +741,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-av-wrap">
       <div class="pv-av" id="pv-av" onclick="document.getElementById('photo-input-pv').click()"></div>
       <div class="pv-cam" onclick="document.getElementById('photo-input-pv').click()">📷</div>
-      <div id="pv-photo-reminder" style="display:none;font-size:11px;color:var(--teal);font-weight:700;margin-top:6px;text-align:center;">Añade tu foto de perfil</div>
+      <div id="pv-photo-reminder" class="hint-text hint-text-center" style="display:none;">Añade tu foto de perfil</div>
     </div>
     <div class="pv-name" id="pv-name"></div>
     <div class="pv-meta" id="pv-meta"></div>
@@ -742,13 +844,13 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
           <span style="font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:rgba(139,92,246,0.1);color:#6d28d9;border:1px solid rgba(139,92,246,0.2);" id="peticiones-count-badge">cargando...</span>
         </div>
         <!-- Formulario nueva petición -->
-        <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 2px 12px rgba(0,0,0,0.05);">
-          <div style="font-size:11px;color:#9ca3af;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Nueva Petición</div>
-          <textarea id="pet-texto" placeholder="Escribe tu petición de oración..." rows="3" style="width:100%;padding:10px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;color:#1a1f2e;font-family:'Lato',sans-serif;font-size:14px;outline:none;resize:none;transition:border-color .2s;line-height:1.5;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#e9edf2'"></textarea>
+        <div class="panel" style="margin-bottom:10px;">
+          <div class="hint-text" style="margin-top:0;">Nueva Petición</div>
+          <textarea id="pet-texto" class="textarea" placeholder="Escribe tu petición de oración..." rows="3"></textarea>
           <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
-            <div id="pet-anon-toggle" onclick="toggleAnon()" style="display:flex;align-items:center;gap:7px;padding:7px 12px;background:#f9fafb;border:1.5px solid #e9edf2;border-radius:10px;cursor:pointer;flex-shrink:0;transition:all .15s;">
-              <div id="pet-anon-box" style="width:16px;height:16px;border:2px solid #d1d5db;border-radius:4px;background:white;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;"></div>
-              <span style="font-size:12px;color:#4b5563;font-weight:600;" id="pet-anon-lbl">Anónimo</span>
+            <div id="pet-anon-toggle" class="pet-anon-toggle" onclick="toggleAnon()">
+              <div id="pet-anon-box" class="pet-anon-box"></div>
+              <span id="pet-anon-lbl" class="pet-anon-label">Anónimo</span>
             </div>
 
             <button onclick="enviarPeticion()" style="padding:9px 16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border:none;border-radius:10px;color:white;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 12px rgba(139,92,246,0.35);letter-spacing:0.5px;">🙏 Enviar</button>
@@ -3818,11 +3920,14 @@ function borrarPeticion(id){
   if(ya){ya.remove();return;}
   const conf=document.createElement('div');
   conf.id='pet-confirm-'+id;
-  conf.style.cssText='margin-top:8px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+  conf.className='panel';
+  conf.style.marginTop='8px';
+  conf.style.background='rgba(239,68,68,0.07)';
+  conf.style.borderColor='rgba(239,68,68,0.2)';
   conf.innerHTML=`<span style="font-size:12px;color:#b91c1c;font-weight:600;">¿Borrar esta petición?</span>
     <div style="display:flex;gap:6px;">
-      <button onclick="document.getElementById('pet-confirm-${id}').remove()" style="background:white;border:1px solid #e5e7eb;color:#6b7280;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Cancelar</button>
-      <button onclick="confirmarBorrarPeticion('${id}')" style="background:#ef4444;border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;">Borrar</button>
+      <button onclick="document.getElementById('pet-confirm-${id}').remove()" class="btn" style="background:white;border:1px solid #e5e7eb;color:#6b7280;border-radius:6px;padding:4px 10px;font-size:11px;">Cancelar</button>
+      <button onclick="confirmarBorrarPeticion('${id}')" class="btn" style="background:#ef4444;border:none;color:white;border-radius:6px;padding:4px 10px;font-size:11px;">Borrar</button>
     </div>`;
   card.appendChild(conf);
 }
@@ -3862,7 +3967,7 @@ function cargarPeticiones(esAdmin=false){
     const avColor=isAnon&&!esAdmin?'#9ca3af':'#8b5cf6';
     const avIcon=isAnon&&!esAdmin?'🤍':'🙏';
     const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
-    return`<div id="pet-card-${p.id}" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);position:relative;overflow:hidden;">
+    return`<div id="pet-card-${p.id}" class="panel pet-card">
       <div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,#8b5cf6,#6d28d9);border-radius:3px 0 0 3px;"></div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-left:4px;">
         <div style="width:34px;height:34px;border-radius:50%;background:${isAnon&&!esAdmin?'rgba(156,163,175,0.15)':'rgba(139,92,246,0.12)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;border:1.5px solid ${isAnon&&!esAdmin?'rgba(156,163,175,0.3)':'rgba(139,92,246,0.25)'};">${avIcon}</div>
