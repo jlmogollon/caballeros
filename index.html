@@ -313,12 +313,13 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .vine-ico{font-size:16px;color:var(--teal);}
 
 /* ── PERSONAL VIEW TABS ── */
-.pv-nav{background:var(--dark2);display:flex;flex-direction:column;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;padding-bottom:0;}
-.pv-nav-row{display:flex;flex:1;min-width:0;}
+.pv-nav{background:var(--dark2);display:flex;flex-direction:column;border-bottom:3px solid rgba(0,0,0,0.15);flex-shrink:0;padding:0 8px 0;gap:0;}
+.pv-nav-row{display:flex;flex:1;min-width:0;gap:4px;}
 .pv-nav-row .pv-ntab{flex:1;min-width:0;}
 .pv-nav::-webkit-scrollbar{display:none;}
-.pv-ntab{padding:12px 6px;font-size:9px;letter-spacing:0.8px;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;text-align:center;border-bottom:3px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-tap-highlight-color:transparent;}
-.pv-ntab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.pv-ntab{padding:14px 8px;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);cursor:pointer;text-align:center;border-radius:10px 10px 0 0;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-tap-highlight-color:transparent;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;}
+.pv-ntab:hover{color:rgba(255,255,255,0.7);}
+.pv-ntab.active{color:var(--teal);background:var(--off);border-color:#e5e7eb;border-bottom:2px solid var(--off);font-weight:800;box-shadow:0 -2px 6px rgba(0,0,0,0.08);}
 .pv-tab{display:none;flex:1;overflow-y:auto;}
 .pv-tab.active{display:block;}
 
@@ -339,8 +340,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 @media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr);}.pg{padding:20px;}.pv-body{padding:22px 24px 40px;}}
 /* === Mejoras legibilidad móvil === */
 .ntab{font-size:12px;padding:13px 15px;}
-@media(min-width:400px){.pv-ntab{font-size:10px;padding:12px 8px;}}
-@media(min-width:500px){.pv-ntab{font-size:11px;padding:13px 10px;}}
+@media(min-width:400px){.pv-ntab{font-size:12px;padding:14px 10px;}}
+@media(min-width:500px){.pv-ntab{font-size:13px;padding:15px 12px;}}
 .cab-nm,.cl-nm,.gr-nm,.gr-rname,.gname{font-size:15px;}
 .cab-mt,.cl-mt,.sh-sub,.gr-rdist{font-size:13px;}
 .chip{font-size:12px;padding:7px 14px;}

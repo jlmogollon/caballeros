@@ -831,9 +831,8 @@ function renderPersonal(cabId){
   renderEncuestaCampamento(c);
   renderCumpleBanners(cabId);
   renderEvalPendienteBanner(cabId);
-  // Caballeros del grupo quitado del inicio (se ve en pestaña Grupos)
-  const grupoEl=document.getElementById('pv-grupo-section');
-  if(grupoEl){grupoEl.innerHTML='';grupoEl.style.display='none';const prev=grupoEl.previousElementSibling;if(prev&&prev.classList.contains('vine-div'))prev.style.display='none';}
+  // Top 5 caballeros general en el inicio
+  renderTop5Caballeros();
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
@@ -980,41 +979,62 @@ async function doChangePw(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AUTOCALIFICACIÓN DEVOTO — Rediseño pro
+// AUTOCALIFICACIÓN DEVOTO — Banner original sin marcar; al marcar: confirmación y desaparece
+// Quitar devoto: en perfil (👤)
 // ═══════════════════════════════════════════════════════════════
 function renderDevotoCard(c){
   const el=document.getElementById('pv-devoto-card');
   if(!el)return;
-  const esDevoto=!!c.devoto;
-  if(esDevoto){
-    el.innerHTML=`
-    <div style="background:linear-gradient(165deg,#0f172a 0%,#1e293b 35%,#334155 100%);border-radius:16px;padding:18px 20px;box-shadow:0 8px 32px rgba(15,23,42,0.5),0 0 0 1px rgba(245,197,24,0.15);position:relative;overflow:hidden;">
-      <div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(245,197,24,0.2) 0%,transparent 65%);pointer-events:none;"></div>
-      <div style="position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(245,197,24,0.08) 0%,transparent 70%);pointer-events:none;"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;position:relative;">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,rgba(245,197,24,0.25),rgba(212,168,0,0.15));border:1px solid rgba(245,197,24,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 4px 12px rgba(245,197,24,0.2);">★</div>
-          <div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:2px;">Distinción</div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#f5c518;letter-spacing:0.5px;">Soy Devoto</div>
-          </div>
-        </div>
-        <button onclick="toggleDevoto()" style="width:40px;height:40px;border-radius:12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Quitar distinción" onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">✕</button>
-      </div>
-    </div>`;
+  if(!!c.devoto){
+    el.innerHTML='';el.style.display='none';
     return;
   }
+  el.style.display='block';
   el.innerHTML=`
-  <div style="background:linear-gradient(165deg,#f8fafc 0%,#f1f5f9 100%);border:1.5px solid #e2e8f0;border-radius:16px;padding:18px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.04);">
-    <div style="display:flex;align-items:flex-start;gap:16px;">
-      <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🕊️</div>
+  <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="display:flex;align-items:flex-start;gap:12px;">
+      <div style="font-size:26px;flex-shrink:0;margin-top:2px;color:#f5c518;">★</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:#1e293b;margin-bottom:4px;">¿Eres Devoto?</div>
-        <div style="font-size:12px;color:#64748b;line-height:1.5;margin-bottom:14px;">Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio.</div>
-        <button onclick="toggleDevoto()" style="background:linear-gradient(135deg,#0f172a,#1e293b);border:none;color:#f5c518;border-radius:12px;padding:12px 20px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(15,23,42,0.3);">Marcarme como Devoto</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;">¿Eres Devoto?</div>
+            <div style="font-size:11px;color:#9ca3af;margin-top:2px;">Aún no has marcado esta distinción</div>
+          </div>
+          <button onclick="confirmarMarcarDevoto()" style="background:linear-gradient(135deg,#059669,#047857);border:none;color:white;border-radius:10px;padding:9px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(5,150,105,0.3);letter-spacing:0.5px;flex-shrink:0;">Marcarme como Devoto</button>
+        </div>
+        <div style="margin-top:10px;background:rgba(156,163,175,0.07);border-radius:8px;padding:8px 10px;">
+          <div style="font-size:10px;color:#6b7280;line-height:1.6;"><span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</div>
+        </div>
       </div>
     </div>
   </div>`;
+}
+function confirmarMarcarDevoto(){
+  openSheet('🕊️','Confirmar distinción Devoto','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6;">Un Devoto es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</p>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">¿Deseas marcarte como Devoto? Añadirá una estrella a tus distinciones.</p>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button class="btn bteal" onclick="closeModal();doMarcarDevoto();">Sí, soy Devoto</button>
+    </div>
+  `);
+}
+async function doMarcarDevoto(){
+  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  c.devoto=1;
+  document.getElementById('pv-bdg').innerHTML=mkBadges(c);
+  const val=autoVal(c);
+  document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
+  renderDevotoCard(c);
+  toast('💾 Guardando...','info');
+  try{
+    await saveDB();
+    toast('🌿 ¡Distinción Devoto añadida a tu perfil!','ok');
+  }catch(e){
+    c.devoto=0;
+    renderDevotoCard(c);
+    toast('⚠️ Error al guardar. Intenta de nuevo.','err');
+  }
 }
 
 function renderFbautCard(c){
@@ -1202,30 +1222,61 @@ async function guardarFnac(){
   toast(v?'🎂 Fecha guardada':'Fecha eliminada','ok');
 }
 
-async function toggleDevoto(){
+async function quitarDevotoDesdePerfil(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);
-  if(!c)return;
-  c.devoto=c.devoto?0:1;
-  // Actualizar badges en header y stars
+  if(!c||!c.devoto)return;
+  closeModal();
+  c.devoto=0;
   document.getElementById('pv-bdg').innerHTML=mkBadges(c);
   const val=autoVal(c);
   document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
-  // Re-renderizar la tarjeta
   renderDevotoCard(c);
   toast('💾 Guardando...','info');
   try{
     await saveDB();
-    toast(c.devoto?'🌿 ¡Distinción Devoto añadida a tu perfil!':'Distinción Devoto removida','ok');
+    toast('Distinción Devoto removida','ok');
   }catch(e){
-    // Revertir si falla
-    c.devoto=c.devoto?0:1;
+    c.devoto=1;
     renderDevotoCard(c);
     toast('⚠️ Error al guardar. Intenta de nuevo.','err');
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SECCIÓN GRUPO — Vista Personal
+// TOP 5 CABALLEROS GENERAL — Inicio
+// ═══════════════════════════════════════════════════════════════
+function renderTop5Caballeros(){
+  const el=document.getElementById('pv-grupo-section');
+  if(!el)return;
+  el.style.display='';
+  const prev=el.previousElementSibling;
+  if(prev&&prev.classList.contains('vine-div'))prev.style.display='';
+  const list=typeof ranking==='function'?ranking():[];
+  const top5=list.slice(0,5);
+  if(!top5.length){el.innerHTML='';return;}
+  el.innerHTML=`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal2);font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid var(--border);">Top 5 Caballeros</div>
+    ${top5.map((m,i)=>{
+      const cal=typeof calcCab==='function'?calcCab(m.id):{total:0};
+      const esYo=m.id===currentCabId;
+      const gCol=GCOL[m.grupo]||'var(--teal)';
+      return`<div onclick="openCabDetail('${m.id}')" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid ${i===top5.length-1?'transparent':'#f3f4f6'};cursor:pointer;">
+        <div style="width:24px;text-align:center;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:${i===0?'#d4a800':i===1?'#9ca3af':i===2?'#c2783b':'var(--text3)'};">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:${esYo?gCol+'33':'#f3f4f6'};border:2px solid ${esYo?gCol:'#e9edf2'};display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          ${m.photo?`<img src="${m.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:9px;font-weight:900;color:${esYo?gCol:'var(--text3)'};">${ini(m.nombre)}</span>`}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:${esYo?'800':'600'};color:${esYo?gCol:'var(--dark)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.nombre}${esYo?' <span style="font-size:9px;background:'+gCol+'22;color:'+gCol+';padding:1px 6px;border-radius:10px;font-weight:700;">Tú</span>':''}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px;">${m.grupo||''} · Asist: ${cal.asist||0}/${cal.totalClases||0}</div>
+        </div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:${esYo?gCol:'var(--teal)'};">${(cal.total||0).toFixed(1)}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECCIÓN GRUPO — Vista Personal (usado en pestaña Grupos)
 // ═══════════════════════════════════════════════════════════════
 function renderGrupoSection(c){
   const el=document.getElementById('pv-grupo-section');
@@ -1440,6 +1491,11 @@ function openChangeCabPw(){
       ${esBautizado?`<div class="fr" style="margin-bottom:10px;"><label>Fecha de bautizado</label><input type="date" id="cpw-fbaut" value="${fbautEsc}"></div>`:''}
       ${esSellado?`<div class="fr" style="margin-bottom:10px;"><label>Fecha de sellado</label><input type="date" id="cpw-fsell" value="${fsellEsc}"></div>`:''}
       <div class="fr" style="margin-bottom:10px;"><label>Versículo favorito o lema personal</label><input type="text" id="cpw-lema" value="${lemaEsc}" placeholder="Ej. Filipenses 4:13 o una frase que te inspire"></div>
+      ${c.devoto?`<div class="dsec" style="margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">
+        <div class="dhead" style="margin-bottom:8px;">★ Distinción Devoto</div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:10px;">Tienes la distinción de Devoto. Si deseas quitarla:</p>
+        <button class="btn boutline" style="font-size:11px;padding:8px 14px;border-color:rgba(239,68,68,0.4);color:#b91c1c;" onclick="quitarDevotoDesdePerfil()">Quitar distinción de Devoto</button>
+      </div>`:''}
       <div class="dsec" style="margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">
         <div class="dhead" style="margin-bottom:8px;">👁️ Qué ocultar a los demás</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Marca los datos que no quieres que otros caballeros vean en tu ficha. El admin siempre ve todo.</div>
