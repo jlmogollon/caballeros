@@ -15,7 +15,7 @@ function renderEvaluacionesAdmin(){
     const claseLbl=cl?(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' — '+(cl.tema||'').substring(0,25):'';
     return`<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:800;color:var(--dark);margin-bottom:4px;">${escAttr(ev.titulo)}</div>
+        <div class="evq-titulo" style="margin-bottom:4px;" title="${escAttr(ev.titulo)}">${escAttr(ev.titulo)}</div>
         <div style="font-size:12px;color:var(--text3);">${nPreg} preguntas · ${nResp} respuestas${claseLbl?' · Clase: '+claseLbl:''}</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -198,8 +198,8 @@ function renderEvaluacionesPV(){
     return`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="background:linear-gradient(145deg,${col} 0%,${yaRespondido?'#fef08a':'#fef3c7'} 100%);border:1.5px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 20px rgba(245,197,24,0.15);transition:transform .2s,box-shadow .2s;">
       <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
         <div style="width:48px;height:48px;border-radius:14px;background:rgba(245,197,24,0.2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${icono}</div>
-        <div>
-          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:#1a1f2e;margin-bottom:2px;">${escAttr(ev.titulo)}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="evq-titulo" style="margin-bottom:2px;" title="${escAttr(ev.titulo)}">${escAttr(ev.titulo)}</div>
           <div style="font-size:12px;color:#4b5563;">${nPreg} preguntas${yaRespondido?' · Completado':''}</div>
         </div>
       </div>
@@ -223,7 +223,7 @@ function verResultadoEvaluacionPV(evId){
 
 function mostrarResultadoEvaluacionPV(ev,registro){
   const preguntas=ev.preguntas||[];
-  let html='<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:16px;color:var(--dark);">'+escAttr(ev.titulo)+'</div><div style="font-size:13px;color:var(--text3);margin-top:6px;">Resultado: '+registro.puntuacion+' de '+registro.totalPreguntas+' correctas</div></div>';
+  let html='<div style="margin-bottom:16px;"><div class="evq-titulo" style="font-size:16px;margin-bottom:6px;" title="'+escAttr(ev.titulo)+'">'+escAttr(ev.titulo)+'</div><div style="font-size:13px;color:var(--text3);">Resultado: '+registro.puntuacion+' de '+registro.totalPreguntas+' correctas</div></div>';
   preguntas.forEach((p,i)=>{
     const correctIdx=(p.opciones||[]).findIndex(o=>o.correcta);
     const correctaTxt=correctIdx>=0?(p.opciones||[])[correctIdx].texto:'—';
@@ -248,7 +248,7 @@ function iniciarCuestionarioPV(evId){
   const prev=(DB.evaluacionRespuestas||[]).find(r=>r.evaluacionId===evId&&r.cabId===cabId);
   if(prev&&!prev.puedeRepetir){verResultadoEvaluacionPV(evId);return;}
   const preguntas=ev.preguntas;
-  let html='<div style="margin-bottom:20px;padding:16px 18px;background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%);border-radius:14px;border:2px solid #2dd4bf;"><div style="font-family:\'Montserrat\',sans-serif;font-weight:900;font-size:17px;color:#0f766e;">'+escAttr(ev.titulo)+'</div>';
+  let html='<div style="margin-bottom:20px;padding:16px 18px;background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%);border-radius:14px;border:2px solid #2dd4bf;"><div class="evq-titulo" style="font-size:17px;font-weight:900;color:#0f766e;" title="'+escAttr(ev.titulo)+'">'+escAttr(ev.titulo)+'</div>';
   if(ev.descripcion)html+='<div style="font-size:13px;color:#115e59;margin-top:6px;line-height:1.45;">'+escAttr(ev.descripcion)+'</div>';
   html+='</div>';
   preguntas.forEach((p,i)=>{
