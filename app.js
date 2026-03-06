@@ -393,6 +393,43 @@ function mkHistoryTable(cabId,forPdf){
   }</tbody></table>`;
 }
 
+// Versión compacta para vista personal: agrupa por año y permite plegar
+function mkHistoryTableCompact(cabId){
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
+  const byYear={};
+  hist.forEach(r=>{
+    const y=r.fecha.substring(0,4);
+    if(!byYear[y])byYear[y]=[];
+    byYear[y].push(r);
+  });
+  const years=Object.keys(byYear).sort((a,b)=>b.localeCompare(a));
+  const temaStyle='font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.4;';
+  let out='';
+  years.forEach((y,idx)=>{
+    const rows=byYear[y].map(r=>`<tr>
+      <td>${fmtDate(r.fecha)}</td>
+      <td style="${temaStyle}">${abrevTema(r.tema).replace(/</g,'&lt;')}</td>
+      <td>${r.a?'✅':'❌'}</td>
+      <td>${r.a?r.p:'—'}</td>
+      <td>${r.a?r.i:'—'}</td>
+      <td>${r.a?r.d:'—'}</td>
+      <td>${r.a?r.pa:'—'}</td>
+      <td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td>
+    </tr>`).join('');
+    out+=`<details ${idx===0?'open':''} style="margin-bottom:8px;">
+      <summary style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;cursor:pointer;outline:none;">📅 ${y} (${byYear[y].length} clases)</summary>
+      <div style="margin-top:6px;">
+        <table class="dtable dtable-perfil">
+          <thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </details>`;
+  });
+  return out;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // LOGIN
 // ═══════════════════════════════════════════════════════════════

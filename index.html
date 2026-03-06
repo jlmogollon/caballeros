@@ -1498,10 +1498,35 @@ function renderCalGr(targetId){
       const grupoAvg=delGrupo.length?(delGrupo.reduce((s,c)=>s+calcCab(c.id).total,0)/delGrupo.length).toFixed(1):'0.0';
       const miTotal=calcCab(cab.id).total.toFixed(1);
       const arriba=parseFloat(miTotal)>=parseFloat(grupoAvg);
-      h+=`<p style="font-size:12px;color:var(--text2);margin-bottom:10px;">
-        Tu grupo <strong>${cab.grupo}</strong> tiene media <strong>${grupoAvg}</strong>.
-        Tú estás ${arriba?'por encima':'por debajo'} de la media (<strong>${miTotal}</strong> pts).
-      </p>`;
+      // Media de grupo en el trimestre actual
+      const now=new Date();
+      const year=now.getFullYear();
+      const q=Math.floor(now.getMonth()/3);
+      const start=new Date(year,q*3,1);
+      const end=new Date(year,q*3+3,0);
+      let sumQ=0,nQ=0;
+      sorted.forEach(cl=>{
+        const d=new Date(cl.fecha);
+        if(d<start||d>end)return;
+        DB.caballeros.forEach(c2=>{
+          if(c2.grupo!==cab.grupo)return;
+          const qv=(cl.cal||{})[c2.id];
+          if(qv&&qv.a){sumQ+=rowTotal(qv);nQ++;}
+        });
+      });
+      const grupoQuarterAvg=nQ? (sumQ/nQ).toFixed(1):null;
+      const rankGrupo=delGrupo.findIndex(x=>x.id===cab.id)+1;
+      let info=`Tu grupo <strong>${cab.grupo}</strong> tiene media general <strong>${grupoAvg}</strong>. `;
+      if(grupoQuarterAvg){
+        info+=`En este trimestre la media de tu grupo es <strong>${grupoQuarterAvg}</strong>. `;
+      }
+      if(rankGrupo>0){
+        info+=`Dentro de tu grupo estás en la posición <strong>#${rankGrupo} de ${delGrupo.length}</strong> (${arriba?'por encima':'por debajo'} de la media, <strong>${miTotal}</strong> pts).`;
+        if(rankGrupo<=3){
+          info+=` <span style="color:#eab308;font-weight:800;margin-left:4px;">🏆 Top 3</span>`;
+        }
+      }
+      h+=`<p style="font-size:12px;color:var(--text2);margin-bottom:10px;">${info}</p>`;
     }
   }
   anos.forEach(y=>{
@@ -1547,7 +1572,14 @@ function renderPersonal(cabId){
     const faltan=req.filter(r=>!r.ok).map(r=>r.label);
     const barColor=pct>=100?'linear-gradient(90deg,#16a34a,#22c55e)':pct>=70?'linear-gradient(90deg,#3aabba,#2d8f9c)':'linear-gradient(90deg,#f59e0b,#f97316)';
     const msg=pct>=100?'Perfil completo ✅':'Perfil '+pct+'% completo';
-    const subt=faltan.length?('Te falta: '+faltan.join(', ')): '¡Gracias por completar tu perfil! Ahora puedes generar tu informe en PDF cuando quieras.';
+    let subt;
+    if(faltan.length){
+      const siguiente=faltan[0];
+      subt='Te falta: '+faltan.join(', ')+'. ';
+      subt+='Siguiente paso recomendado: completa "'+siguiente+'".';
+    }else{
+      subt='¡Gracias por completar tu perfil! Ahora puedes generar tu informe en PDF cuando quieras.';
+    }
     completionEl.innerHTML=`
       <div class="panel panel-soft-teal">
         <div class="panel-title">${msg}</div>
@@ -1616,7 +1648,7 @@ function renderPersonal(cabId){
       :'';
   }
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
-  document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTable(cabId);
+  document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTableCompact(cabId);
   renderFbautCard(c);
   renderFsellCard(c);
   renderDevotoCard(c);
@@ -2358,6 +2390,42 @@ function renderEventosPV(){
   const ovCulto=DB.eventosCultosOverride||{};
   const ovEstudio=DB.eventosEstudiosOverride||{};
 
+  // Banner destacado con el siguiente evento
+  let bannerHtml='';
+  if(items.length){
+    const next=items[0];
+    const nNext=diffDaysEv(next.fecha,today);
+    let titulo='Próximo evento';
+    let subtitulo='';
+    let icono='📅';
+    if(next.tipo==='culto'){
+      const nomCulto=(ovCulto[next.fechaStr]?.nombre)||(next.tema?'Culto de Caballeros · '+next.tema.titulo:'Culto de Caballeros');
+      titulo='Próximo culto de Caballeros';
+      subtitulo=nomCulto;
+      icono='⚔️';
+    }else if(next.tipo==='estudio'){
+      const nomEstudio=(ovEstudio[next.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
+      titulo='Próximo estudio de Caballeros';
+      subtitulo=nomEstudio;
+      icono='📚';
+    }else if(next.tipo==='evento'){
+      titulo='Próximo evento especial';
+      subtitulo=next.ev.nombre;
+      icono=next.ev.icono||'📅';
+    }
+    const fechaTxt=fmtEvDate(next.fecha);
+    const diasTxt=nNext===0?'Hoy':nNext===1?'Mañana':`En ${nNext} días`;
+    bannerHtml=`<div class="panel panel-soft-teal" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:26px;">${icono}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="panel-title" style="margin-bottom:4px;">${titulo}</div>
+        <div class="panel-desc" style="margin-bottom:4px;">${subtitulo||''}</div>
+        <div style="font-size:11px;color:#0369a1;">📅 ${fechaTxt} · ${diasTxt}</div>
+      </div>
+      <button type="button" class="btn bteal" style="font-size:11px;padding:7px 10px;white-space:nowrap;" onclick="showPvTab('eventos')">Ver detalles</button>
+    </div>`;
+  }
+
   // ── Renderizar próximos en orden ──
   const html=items.map(item=>{
     const n=diffDaysEv(item.fecha,today);
@@ -2416,7 +2484,7 @@ function renderEventosPV(){
     return'';
   }).join('');
 
-  el.innerHTML=html||'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>';
+  el.innerHTML=bannerHtml+(html||'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>');
 
   // ── Renderizar eventos pasados (cultos, estudios, eventos) ──
   const elPasados=document.getElementById('pv-eventos-pasados');
