@@ -6,10 +6,8 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');if(el)el.classList.add('active');
-  if(id==='t-grupos')renderGrupos();
-  if(id==='t-cabs')renderCabs();
-  if(id==='t-clases')renderClases();
-  if(id==='t-calgr')renderCalGr('calgr-pg');
+  if(id==='t-cabs'){renderCabs();renderGrupos();}
+  if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}

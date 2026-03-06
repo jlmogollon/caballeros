@@ -417,10 +417,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
   <div class="app-nav">
     <div class="ntab active" onclick="showTab('t-dash',this)">Dashboard</div>
-    <div class="ntab" onclick="showTab('t-cabs',this)">Caballeros</div>
-    <div class="ntab" onclick="showTab('t-grupos',this)">Grupos</div>
-    <div class="ntab" onclick="showTab('t-clases',this)">Clases</div>
-    <div class="ntab" onclick="showTab('t-calgr',this)">Cal. Grupos</div>
+    <div class="ntab" onclick="showTab('t-cabs',this)">👥 Caballeros y Grupos</div>
+    <div class="ntab" onclick="showTab('t-clases',this)">📚 Clases</div>
     <div class="ntab" onclick="showTab('t-cumple',this)">🎂 Cumpleaños</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
@@ -479,25 +477,19 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <!-- Row 2: badge chips -->
       <div class="chips-row" id="chips-badge"></div>
       <div id="cabs-list" class="card-list"></div>
+      <div class="sec-ttl" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">Grupos</div>
+      <div id="grupos-pg" class="pg" style="padding-left:0;padding-right:0;"></div>
     </div>
   </div>
 
-  <!-- GRUPOS -->
-  <div id="t-grupos" class="tab">
-    <div class="pg" id="grupos-pg"></div>
-  </div>
-
-  <!-- CLASES -->
+  <!-- CLASES (incluye calificación por grupos) -->
   <div id="t-clases" class="tab">
     <div class="pg">
       <div class="sec-ttl">Clases / Estudios <button class="btn bteal" onclick="openNuevaClase()" style="font-size:11px;padding:7px 12px">+ Nueva</button></div>
       <div id="clases-list"></div>
+      <div class="sec-ttl" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">Calificación por grupos</div>
+      <div id="calgr-pg" class="pg" style="padding-left:0;padding-right:0;"></div>
     </div>
-  </div>
-
-  <!-- CAL GRUPOS -->
-  <div id="t-calgr" class="tab">
-    <div class="pg" id="calgr-pg"></div>
   </div>
 
   <!-- CUMPLEAÑOS -->

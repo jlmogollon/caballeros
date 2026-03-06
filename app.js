@@ -769,8 +769,10 @@ function buildSel(){
   if(!sel)return;
   sel.innerHTML='<option value="">— Seleccionar —</option>';
   if(!DB||!DB.caballeros)return;
-  [...DB.caballeros].sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(c=>{
-    const o=document.createElement('option');o.value=c.id;o.textContent=c.nombre;sel.appendChild(o);
+  [...DB.caballeros].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'')).forEach(c=>{
+    const o=document.createElement('option');o.value=c.id;
+    o.textContent=(c.nombreMostrar&&String(c.nombreMostrar).trim())?c.nombreMostrar.trim():c.nombre||'';
+    sel.appendChild(o);
   });
 }
 function onMiembroSelChange(){
@@ -822,10 +824,8 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');if(el)el.classList.add('active');
-  if(id==='t-grupos')renderGrupos();
-  if(id==='t-cabs')renderCabs();
-  if(id==='t-clases')renderClases();
-  if(id==='t-calgr')renderCalGr();
+  if(id==='t-cabs'){renderCabs();renderGrupos();}
+  if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
