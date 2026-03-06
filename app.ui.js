@@ -193,6 +193,17 @@ function openListaCaballerosPV(){
   const html=list.length?list.map(c=>mkCabCard(c)).join(''):'<p style="color:var(--text3);font-size:13px">No hay caballeros.</p>';
   openSheet('👥','Caballeros',`${list.length} caballeros · por puntuación`,'<div class="card-list" style="max-height:70vh;overflow-y:auto">'+html+'</div>');
 }
+function openListaGruposPV(){
+  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  let h='';
+  (GRUPOS||[]).forEach(g=>{
+    const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+    const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
+    const col=(typeof GCOL!=='undefined'&&GCOL[g])||'var(--teal)';
+    h+=`<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:13px;color:${col};margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ${col}33;">${g}</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;">${ms.length} caballeros · Promedio: ${avg}</div><div style="display:flex;flex-direction:column;gap:4px;">${ms.map(c=>`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;"><span style="font-weight:600;color:var(--dark);">${nombreCorto(c)||c.nombre}</span><span style="font-weight:800;color:var(--teal);">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div></div>`;
+  });
+  openSheet('📊','Grupos',`${(GRUPOS||[]).length} grupos · integrantes por puntaje`,'<div style="max-height:70vh;overflow-y:auto">'+(h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>')+'</div>');
+}
 function confirmDelCab(id){
   const c=DB.caballeros.find(x=>x.id===id);
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
@@ -517,15 +528,17 @@ function openGrade(key){
 
   const sorted=[...DB.caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
   let html='';let lastG='';
+  const getEvalSc=typeof getEvalDisplayScoreForCab==='function'?getEvalDisplayScoreForCab:()=>0;
   sorted.forEach(c=>{
     if(c.grupo!==lastG){
       lastG=c.grupo;
       const col=GCOL[c.grupo]||'var(--teal)';
-      html+=`<tr class="grp-sep"><td colspan="7" style="color:${col}">${c.grupo}</td></tr>`;
+      html+=`<tr class="grp-sep"><td colspan="8" style="color:${col}">${c.grupo}</td></tr>`;
     }
     const q=cl.cal[c.id]||{a:0,i:'',p:'',d:'',pa:''};
     const pres=!!q.a;
     const nombre=c.nombre.split(' ').slice(0,2).join(' ');
+    const evalSc=getEvalSc(c.id);
     html+=`<tr id="tr-${c.id}">
       <td><div class="gname">${nombre}</div></td>
       <td><button class="att-btn ${pres?'yes':''}" id="att-${c.id}" onclick="togAtt('${c.id}')">${pres?'✅':'○'}</button></td>
@@ -533,6 +546,7 @@ function openGrade(key){
       <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
+      <td class="total-cell" style="font-weight:700;color:${evalSc>0?'var(--teal)':'var(--text3)'}">${evalSc}</td>
       <td class="total-cell" id="tot-${c.id}">${pres?fmtScore(rowTotal(q)):'—'}</td>
     </tr>`;
   });
@@ -736,12 +750,11 @@ function renderPersonal(cabId){
     const msg=pct>=100?'Perfil completo ✅':'Perfil '+pct+'% completo';
     let subt;
     if(pct>=100){
-      subt='¡Gracias por completar tu perfil! Ahora puedes generar tu informe en PDF cuando quieras.';
-    }else if(pct>80){
-      subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
-    }else{
-      subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
+      completionEl.innerHTML=`<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #22c55e;border-radius:14px;padding:14px 18px;text-align:center;"><span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:#166534;">Perfil completo ✅</span></div>`;
+      return;
     }
+    if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
+    else subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
     completionEl.innerHTML=`
       <div class="panel panel-soft-teal">
         <div class="panel-title">${msg}</div>
@@ -800,33 +813,18 @@ function renderPersonal(cabId){
     }
   }
   const evalEl=document.getElementById('pv-eval-summary');
-  if(evalEl&&typeof getEvalSummaryForCab==='function'){
-    const info=getEvalSummaryForCab(cabId);
-    if(info){
-      const {count,last,ev,nota10}=info;
-      const fechaStr=last.fecha?new Date(last.fecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'';
-      const tituloEv=ev&&ev.titulo?escAttr(ev.titulo):'Cuestionario';
-      const vecesTxt=count===1?'Has respondido 1 cuestionario.':`Has respondido ${count} cuestionarios.`;
-      const baseRes=`${last.puntuacion}/${last.totalPreguntas||0} correctas`;
-      const notaTxt=nota10!=null?` (${nota10}/10)`:'';
-      evalEl.innerHTML=`<div class="panel panel-soft-teal">
-        <div class="panel-title">📝 Evaluaciones respondidas</div>
-        <div class="panel-desc">${vecesTxt}</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:4px;">Última: <strong>${tituloEv}</strong>${fechaStr?` · ${fechaStr}`:''} · ${baseRes}${notaTxt}</div>
-      </div>`;
-    }else{
-      evalEl.innerHTML='';
-    }
-  }
+  if(evalEl)evalEl.innerHTML='';
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const top5Wrap=document.getElementById('pv-top5-wrap');
   if(top5Wrap){
     const all=ranking();
+    const top5=all.slice(0,5);
     const delGrupo=all.filter(x=>x.grupo===c.grupo);
-    const top3=delGrupo.slice(0,3);
-    top5Wrap.innerHTML=top3.length
-      ?('<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 3 de tu grupo</div>'+top3.map((cab,i)=>mkCabCard(cab,i+1)).join(''))
-      :'';
+    const top3Grupo=delGrupo.slice(0,3);
+    let h='';
+    if(top5.length)h+='<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 5 Caballeros</div>'+top5.map((cab,i)=>mkCabCard(cab,i+1)).join('');
+    if(top3Grupo.length)h+='<div class="sec-ttl" style="margin-top:20px;margin-bottom:8px">🏆 Top 3 de tu grupo</div>'+top3Grupo.map((cab,i)=>mkCabCard(cab,i+1)).join('');
+    top5Wrap.innerHTML=h;
   }
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTableCompact(cabId);
@@ -837,9 +835,31 @@ function renderPersonal(cabId){
   renderTelefonoCard(c);
   renderEncuestaCampamento(c);
   renderCumpleBanners(cabId);
+  renderEvalPendienteBanner(cabId);
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
+}
+function renderEvalPendienteBanner(cabId){
+  const wrap=document.getElementById('pv-eval-pendiente-wrap');
+  if(!wrap)return;
+  const list=(DB.evaluaciones||[]).filter(e=>!!e.titulo&&e.activo!==false);
+  const respuestas=DB.evaluacionRespuestas||[];
+  const pendientes=list.filter(ev=>{
+    const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
+    return !miResp||!!(miResp&&miResp.puedeRepetir);
+  });
+  if(!pendientes.length){wrap.innerHTML='';wrap.style.display='none';return;}
+  wrap.style.display='block';
+  const n=pendientes.length;
+  wrap.innerHTML=`<div onclick="showPvTab('evaluaciones')" style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.25);cursor:pointer;display:flex;align-items:center;gap:14px;">
+    <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📝</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#92400e;">Tienes cuestionarios de evaluación por completar</div>
+      <div style="font-size:12px;color:#b45309;margin-top:2px;">${n} ${n===1?'cuestionario pendiente':'cuestionarios pendientes'} · Toca para ir</div>
+    </div>
+    <div style="font-size:20px;color:#d97706;flex-shrink:0;">→</div>
+  </div>`;
 }
 
 // Versículo del día (RVR60) — orientado a hombres (fortaleza, integridad, paternidad)

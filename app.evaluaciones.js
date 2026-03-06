@@ -192,14 +192,20 @@ function renderEvaluacionesPV(){
     const yaRespondido=!!miResp;
     const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
     const puedeComenzar=!yaRespondido||puedeRepetir;
-    return`<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:800;color:var(--dark);margin-bottom:4px;">${escAttr(ev.titulo)}</div>
-        <div style="font-size:12px;color:var(--text3);">${nPreg} preguntas${yaRespondido?' · Respondido':''}</div>
+    const col=yaRespondido?'#d1fae5':'#fef3c7';
+    const borde=yaRespondido?'#10b981':'#f59e0b';
+    const icono=yaRespondido?'✅':'📝';
+    return`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="background:linear-gradient(135deg,${col} 0%,${yaRespondido?'#a7f3d0':'#fde68a'} 100%);border:2px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 16px ${yaRespondido?'rgba(16,185,129,0.2)':'rgba(245,158,11,0.2)'};transition:transform .2s,box-shadow .2s;">
+      <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
+        <div style="width:48px;height:48px;border-radius:14px;background:${yaRespondido?'rgba(16,185,129,0.2)':'rgba(245,158,11,0.25)'};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${icono}</div>
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:#1a1f2e;margin-bottom:2px;">${escAttr(ev.titulo)}</div>
+          <div style="font-size:12px;color:#4b5563;">${nPreg} preguntas${yaRespondido?' · Completado':''}</div>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;">
-        ${yaRespondido?`<button class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}
-        ${puedeComenzar?`<button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Responder de nuevo':'Comenzar'}</button>`:''}
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        ${yaRespondido?`<button type="button" class="btn boutline" style="font-size:11px;padding:8px 14px;" onclick="event.stopPropagation();verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}
+        ${puedeComenzar?`<button type="button" class="btn bteal" style="font-size:12px;padding:8px 16px;font-weight:800;" onclick="event.stopPropagation();iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Responder de nuevo':'Comenzar'}</button>`:''}
       </div>
     </div>`;
   }).join(''):'<p style="color:var(--text3);font-size:13px;">No hay cuestionarios disponibles.</p>';
@@ -242,20 +248,25 @@ function iniciarCuestionarioPV(evId){
   const prev=(DB.evaluacionRespuestas||[]).find(r=>r.evaluacionId===evId&&r.cabId===cabId);
   if(prev&&!prev.puedeRepetir){verResultadoEvaluacionPV(evId);return;}
   const preguntas=ev.preguntas;
-  let html='<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:16px;color:var(--dark);">'+escAttr(ev.titulo)+'</div>';
-  if(ev.descripcion)html+='<div style="font-size:13px;color:var(--text3);margin-top:4px;">'+escAttr(ev.descripcion)+'</div></div>';
+  let html='<div style="margin-bottom:20px;padding:16px 18px;background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%);border-radius:14px;border:2px solid #2dd4bf;"><div style="font-family:\'Montserrat\',sans-serif;font-weight:900;font-size:17px;color:#0f766e;">'+escAttr(ev.titulo)+'</div>';
+  if(ev.descripcion)html+='<div style="font-size:13px;color:#115e59;margin-top:6px;line-height:1.45;">'+escAttr(ev.descripcion)+'</div>';
+  html+='</div>';
   preguntas.forEach((p,i)=>{
-    const opts=(p.opciones||[]).map((o,j)=>`<label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .2s;" class="evq-opt" data-pidx="${i}" data-oidx="${j}"><input type="radio" name="evq-resp-${evId}-${i}" value="${j}"><span>${escAttr(o.texto)||'Opción '+(j+1)}</span></label>`).join('');
-    html+=`<div class="evq-preg-pv" style="margin-bottom:20px;">
-      <div style="font-weight:700;color:var(--dark);margin-bottom:8px;">${i+1}. ${escAttr(p.texto)||'Pregunta '+(i+1)}</div>
+    const opts=(p.opciones||[]).map((o,j)=>`<label style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px solid #e5e7eb;border-radius:12px;margin-bottom:10px;cursor:pointer;transition:all .2s;background:white;font-size:14px;" class="evq-opt" data-pidx="${i}" data-oidx="${j}"><input type="radio" name="evq-resp-${evId}-${i}" value="${j}" style="width:18px;height:18px;"><span>${escAttr(o.texto)||'Opción '+(j+1)}</span></label>`).join('');
+    html+=`<div class="evq-preg-pv" style="margin-bottom:24px;padding:16px;background:#f8fafc;border-radius:14px;border:1.5px solid #e2e8f0;">
+      <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:#1a1f2e;margin-bottom:12px;line-height:1.4;">${i+1}. ${escAttr(p.texto)||'Pregunta '+(i+1)}</div>
       <div class="evq-opts-pv">${opts}</div>
     </div>`;
   });
-  html+=`<button type="button" class="btn bteal bfull" onclick="enviarRespuestasPV('${evId}')">Enviar respuestas</button>`;
+  html+=`<button type="button" class="btn bteal bfull" style="padding:14px 20px;font-size:15px;font-weight:800;border-radius:12px;" onclick="enviarRespuestasPV('${evId}')">✓ Enviar respuestas</button>`;
   openSheet('📋',ev.titulo,'',html);
   window._evqActual={evId,preguntas:ev.preguntas};
   document.querySelectorAll('.evq-opt').forEach(lab=>{
-    lab.onclick=function(){lab.querySelector('input[type="radio"]').checked=true;document.querySelectorAll('.evq-opt').forEach(l=>l.style.background='');lab.style.background='var(--teal-bg)';};
+    lab.onclick=function(){
+      lab.querySelector('input[type="radio"]').checked=true;
+      document.querySelectorAll('.evq-opt').forEach(l=>{l.style.background='white';l.style.borderColor='#e5e7eb';});
+      lab.style.background='var(--teal-bg)';lab.style.borderColor='var(--teal)';
+    };
   });
 }
 

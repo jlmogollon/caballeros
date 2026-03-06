@@ -670,6 +670,17 @@ function avgEvalScoreForCab(cabId){
   });
   return n?+(sum/n).toFixed(1):null;
 }
+// Puntuación media de cuestionarios (0-10) para mostrar en calificaciones; 0 si no ha respondido
+function getEvalDisplayScoreForCab(cabId){
+  const todas=DB.evaluacionRespuestas||[];
+  const mias=todas.filter(r=>r.cabId===cabId);
+  if(!mias.length)return 0;
+  let sum=0;
+  mias.forEach(r=>{
+    if(r.totalPreguntas>0)sum+=r.puntuacion/r.totalPreguntas*10;
+  });
+  return mias.length?+(sum/mias.length).toFixed(1):0;
+}
 // Resumen de evaluaciones de cuestionario para un caballero (para vistas admin y personal)
 function getEvalSummaryForCab(cabId){
   const todas=DB.evaluacionRespuestas||[];

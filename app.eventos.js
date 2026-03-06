@@ -130,6 +130,9 @@ function renderEventosPV(){
 
   const html=items.map((item,idx)=>{
     const n=diffDaysEv(item.fecha,today);
+    const esProximo=idx===0;
+    const estiloProximo=esProximo?'background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 50%,#99f6e4 100%);border:2px solid #2dd4bf;box-shadow:0 8px 24px rgba(45,212,191,0.25);':'background:white;border:1.5px solid #e9edf2;box-shadow:0 2px 12px rgba(0,0,0,0.06);';
+    const badgeProximo=esProximo?'<span style="background:linear-gradient(135deg,#14b8a6,#0d9488);color:white;font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(20,184,166,0.4);">PRÓXIMO</span>':'';
 
     if(item.tipo==='culto'){
       const nomCulto=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
@@ -138,22 +141,22 @@ function renderEventosPV(){
         ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
           ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
           <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
-      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nomCulto}</div>
           <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
           ${temaLine}
         </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
     }
 
     if(item.tipo==='estudio'){
       const nomEstudio=(ovEstudio[item.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
-      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
@@ -161,7 +164,7 @@ function renderEventosPV(){
           <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
           <div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${item.grupo}</div>
         </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
     }
 
@@ -170,8 +173,8 @@ function renderEventosPV(){
       const fechaRango=ev.fechaFin
         ?` – ${new Date(ev.fechaFin+'T00:00:00').getDate()} de ${meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]}`
         :'';
-      return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.06);display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
@@ -179,7 +182,7 @@ function renderEventosPV(){
           ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
           <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
         </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
     }
     return'';
