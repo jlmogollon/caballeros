@@ -1,4 +1,4 @@
-﻿// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
 // ═══════════════════════════════════════════════════════════════
 function showSc(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
@@ -18,6 +18,7 @@ function showTab(id,el){
 }
 function initAdmin(){
   buildSel();renderDash();renderCabs();
+  if(typeof renderEventosAdmin==='function')renderEventosAdmin();
   const wrap=document.getElementById('admin-perfil-wrap');
   const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
   const tieneFoto=!!DB.adminPhoto;
