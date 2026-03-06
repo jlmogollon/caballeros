@@ -313,7 +313,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .vine-ico{font-size:16px;color:var(--teal);}
 
 /* ── PERSONAL VIEW TABS ── */
-.pv-nav{background:var(--dark2);display:flex;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.pv-nav{background:var(--dark2);display:flex;flex-direction:column;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;gap:2px 0;padding-bottom:4px;}
+.pv-nav-row{display:flex;flex-wrap:wrap;gap:2px;}
 .pv-nav::-webkit-scrollbar{display:none;}
 .pv-ntab{flex:0 0 auto;min-width:max-content;padding:11px 10px;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;text-align:center;border-bottom:2.5px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
 .pv-ntab.active{color:var(--teal);border-bottom-color:var(--teal);}
@@ -645,7 +646,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="h-sub">Mi Perfil · Evidencias 2026</div>
       </div>
     </div>
-    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openListaCaballerosPV()" title="Caballeros">⚔️</button><button class="btn-hdr" onclick="openListaGruposPV()" title="Grupos">📊</button><button class="btn-hdr" onclick="openChangeCabPw()" title="Mi perfil">👤</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
+    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openChangeCabPw()" title="Mi perfil">👤</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
   <div class="pv-hero">
     <div class="pv-av-wrap">
@@ -661,11 +662,16 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 
   <!-- PESTAÑAS NAVEGACIÓN -->
   <nav class="pv-nav">
-    <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
-    <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
-    <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
-    <div class="pv-ntab"        id="pvtab-evaluaciones-btn" onclick="showPvTab('evaluaciones')">📝 Evaluaciones</div>
+    <div class="pv-nav-row">
+      <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
+      <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
+      <div class="pv-ntab"        id="pvtab-evaluaciones-btn" onclick="showPvTab('evaluaciones')">📝 Evaluaciones</div>
+    </div>
+    <div class="pv-nav-row">
+      <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
+      <div class="pv-ntab"        id="pvtab-caballeros-btn" onclick="showPvTab('caballeros')">⚔️ Caballeros</div>
+      <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
+    </div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -804,6 +810,14 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="sec-ttl" style="color:#9ca3af;font-size:12px;">📅 Eventos pasados</div>
         <div id="pv-eventos-pasados" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: CABALLEROS (PV) ── -->
+  <div class="pv-tab" id="pvtab-caballeros">
+    <div class="pv-body">
+      <div class="sec-ttl" style="margin-bottom:10px;">👥 Caballeros · por puntuación</div>
+      <div id="pv-caballeros-pg" class="card-list" style="max-height:70vh;overflow-y:auto"></div>
     </div>
   </div>
 

@@ -751,8 +751,7 @@ function renderPersonal(cabId){
     let subt;
     if(pct>=100){
       completionEl.innerHTML=`<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #22c55e;border-radius:14px;padding:14px 18px;text-align:center;"><span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:#166534;">Perfil completo ✅</span></div>`;
-      return;
-    }
+    }else{
     if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
     else subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
     completionEl.innerHTML=`
@@ -836,6 +835,7 @@ function renderPersonal(cabId){
   renderEncuestaCampamento(c);
   renderCumpleBanners(cabId);
   renderEvalPendienteBanner(cabId);
+  if(typeof renderGrupoSection==='function')renderGrupoSection(c);
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
@@ -917,17 +917,24 @@ function openVersoEnBiblia(){
 }
 
 function showPvTab(tab){
-  ['perfil','oracion','eventos','calgr','evaluaciones','finanzas'].forEach(t=>{
+  ['perfil','oracion','eventos','caballeros','calgr','evaluaciones','finanzas'].forEach(t=>{
     const el=document.getElementById('pvtab-'+t);
     const btn=document.getElementById('pvtab-'+t+'-btn');
     if(el)el.classList.toggle('active',t===tab);
     if(btn)btn.classList.toggle('active',t===tab);
   });
   if(tab==='eventos')  renderEventosPV();
+  if(tab==='caballeros') renderCaballerosPV();
   if(tab==='calgr')    renderCalGr('pv-calgr-pg');
   if(tab==='oracion')  cargarPeticiones();
   if(tab==='evaluaciones'){if(typeof renderEvaluacionesPV==='function')renderEvaluacionesPV();}
   if(tab==='finanzas') renderFinanzas();
+}
+function renderCaballerosPV(){
+  const el=document.getElementById('pv-caballeros-pg');
+  if(!el)return;
+  const list=ranking();
+  el.innerHTML=list.length?list.map(c=>mkCabCard(c)).join(''):'<p style="color:var(--text3);font-size:13px">No hay caballeros.</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
