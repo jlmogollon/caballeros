@@ -100,8 +100,10 @@ function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCab
 
 function mkCabCard(c,rank){
   const cal=calcCab(c.id);
+  const evalAvg=typeof avgEvalScoreForCab==='function'?avgEvalScoreForCab(c.id):null;
   const bd=mkBadges(c);
   const nm=nombreCorto(c);
+  const evalTxt=evalAvg!=null?`<div class="cab-eval" title="Calificación complementaria (evaluaciones)">Eval. ${evalAvg}</div>`:'';
   return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
     <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(nm||c.nombre)}</span>`)}</div>
     <div class="cab-inf">
@@ -109,7 +111,7 @@ function mkCabCard(c,rank){
       <div class="cab-mt">${c.dist} · ${c.grupo}</div>
       ${bd?`<div class="badges">${bd}</div>`:''}
     </div>
-    <div class="cab-sc">${cal.total.toFixed(1)}</div>
+    <div class="cab-scores"><div class="cab-sc">${cal.total.toFixed(1)}</div>${evalTxt}</div>
   </div>`;
 }
 

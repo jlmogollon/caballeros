@@ -640,7 +640,7 @@ let _rankCache=null;
 function invalidateCache(){_calcCache={};_rankCache=null;}
 
 function rowTotal(q){return+((q.i*0.3)+(q.p*0.3)+(q.d*0.2)+(q.pa*0.2)).toFixed(2);}
-// Puntuación 0-10 de la evaluación vinculada a una clase (null = no hay evaluación; 0 = no respondió)
+// Puntuación 0-10 de la evaluación vinculada a una clase (null = no hay evaluación; 0 = no la ha hecho, le falta el 30%)
 function getEvalScoreForClassAndCab(claseId,cabId){
   if(!claseId||!cabId)return null;
   const ev=(DB.evaluaciones||[]).find(e=>e.claseId===claseId);
@@ -657,6 +657,18 @@ function classScoreForCab(cl,cabId){
   const evScore=getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId);
   if(evScore==null)return base;
   return+(0.7*base+0.3*evScore).toFixed(2);
+}
+// Promedio de evaluación (0-10) del caballero en clases con cuestionario vinculado; null si no tiene ninguna
+function avgEvalScoreForCab(cabId){
+  const evals=DB.evaluaciones||[];
+  const conClase=evals.filter(e=>e.claseId);
+  if(!conClase.length)return null;
+  let sum=0,n=0;
+  conClase.forEach(ev=>{
+    const s=getEvalScoreForClassAndCab(ev.claseId,cabId);
+    if(s!=null&&s>0){sum+=s;n++;}
+  });
+  return n?+(sum/n).toFixed(1):null;
 }
 function calcCab(id){
   if(_calcCache[id])return _calcCache[id];
@@ -915,8 +927,10 @@ function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCab
 
 function mkCabCard(c,rank){
   const cal=calcCab(c.id);
+  const evalAvg=typeof avgEvalScoreForCab==='function'?avgEvalScoreForCab(c.id):null;
   const bd=mkBadges(c);
   const nm=nombreCorto(c);
+  const evalTxt=evalAvg!=null?`<div class="cab-eval" title="Calificación complementaria (evaluaciones)">Eval. ${evalAvg}</div>`:'';
   return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
     <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(nm||c.nombre)}</span>`)}</div>
     <div class="cab-inf">
@@ -924,7 +938,7 @@ function mkCabCard(c,rank){
       <div class="cab-mt">${c.dist} · ${c.grupo}</div>
       ${bd?`<div class="badges">${bd}</div>`:''}
     </div>
-    <div class="cab-sc">${cal.total.toFixed(1)}</div>
+    <div class="cab-scores"><div class="cab-sc">${cal.total.toFixed(1)}</div>${evalTxt}</div>
   </div>`;
 }
 
