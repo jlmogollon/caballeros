@@ -311,16 +311,7 @@ const SEED_EVAL_DISPENSACIONES={
   descripcion:'Cuestionario sobre el estudio de las dispensaciones (inmutabilidad de Dios, revelación progresiva, mayordomía, etc.).',
   activo:true,
   preguntas:[
-    {
-      id:'disp1',
-      texto:'¿Cómo explica el texto la relación entre la inmutabilidad de Dios y Sus diferentes formas de tratar con el hombre?',
-      opciones:[
-        {texto:'Dios cambia Su carácter dependiendo de la época histórica.',correcta:false},
-        {texto:'Dios es el mismo siempre, pero Sus métodos de administración varían según el tiempo y el hombre.',correcta:true},
-        {texto:'Dios trata a todos los hombres de la misma manera exacta desde Adán hasta hoy.',correcta:false},
-        {texto:'La Biblia sugiere que Dios evoluciona a medida que el hombre aprende más.',correcta:false}
-      ]
-    },
+    {id:'disp1',texto:'¿Cómo explica el texto la relación entre la inmutabilidad de Dios y Sus diferentes formas de tratar con el hombre?',opciones:[{texto:'Dios cambia Su carácter dependiendo de la época histórica.',correcta:false},{texto:'Dios es el mismo siempre, pero Sus métodos de administración varían según el tiempo y el hombre.',correcta:true},{texto:'Dios trata a todos los hombres de la misma manera exacta desde Adán hasta hoy.',correcta:false},{texto:'La Biblia sugiere que Dios evoluciona a medida que el hombre aprende más.',correcta:false}]},
     {
       id:'disp2',
       texto:'¿Qué concepto describe que Dios no entrega toda Su verdad al hombre de una sola vez?',
@@ -611,9 +602,10 @@ function ensureDbShape(){
   if(!Array.isArray(DB.evaluaciones))DB.evaluaciones=[];
   if(!Array.isArray(DB.evaluacionRespuestas))DB.evaluacionRespuestas=[];
   if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES){
-    if(!DB.evaluaciones.some(e=>e.id===SEED_EVAL_DISPENSACIONES.id)){
-      DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES)));
-    }
+    const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES.id);
+    const seedCopy=JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES));
+    if(idx>=0)DB.evaluaciones[idx]=seedCopy;
+    else DB.evaluaciones.push(seedCopy);
   }
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
