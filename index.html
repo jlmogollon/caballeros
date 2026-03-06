@@ -638,7 +638,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="h-sub">Mi Perfil · Evidencias 2026</div>
       </div>
     </div>
-    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openListaCaballerosPV()" title="Caballeros">⚔️</button><button class="btn-hdr" onclick="openChangeCabPw()">🔑</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
+    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openListaCaballerosPV()" title="Caballeros">⚔️</button><button class="btn-hdr" onclick="openChangeCabPw()" title="Mi perfil">👤</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
   </div>
   <div class="pv-hero">
     <div class="pv-av-wrap">
@@ -1045,8 +1045,27 @@ function openCabDetail(id){
   const waUrl=tel!=='—'?telParaWa(tel):'';
   const telEsc=escAttr(tel);const waEsc=escAttr(waUrl);const telNum=numeroParaEnlace(tel);const telHref=telNum?'tel:+'+telNum:'';
   const telHtml=tel!=='—'?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-weight:700;">${telEsc}</span>${waUrl?`<a href="${waEsc}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#25d366;color:white;text-decoration:none;" title="Enviar WhatsApp">📱</a>`:''}<a href="${escAttr(telHref)}" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--teal);color:white;text-decoration:none;" title="Llamar">📞</a></div>`:'<span style="font-weight:700;">—</span>';
+  const ocultar=esAdmin?[]:(Array.isArray(c.ocultarAOtros)?c.ocultarAOtros:[]);
+  const prof=escAttr(c.profesionOficio||'');const gustos=escAttr(c.gustosAficiones||'');const rol=escAttr(c.rolActual||'');const lema=escAttr(c.lema||'');
+  const estCivil=c.estadoCivil==='soltero'?'Soltero':c.estadoCivil==='casado'?'Casado':c.estadoCivil==='noviazgo'?'En noviazgo':c.estadoCivil==='otro'?'Otro':'';
+  const hijosTxt=c.tieneHijos==='no'?'No':c.tieneHijos==='si'?(c.numHijos?`Sí (${escAttr(c.numHijos)})`:'Sí'):'';
+  const lineasPublicas=[
+    prof&&!ocultar.includes('profesionOficio')&&`<div><span style="font-size:11px;color:var(--text3);">Profesión u oficio</span><div style="font-weight:700;">${prof}</div></div>`,
+    gustos&&!ocultar.includes('gustosAficiones')&&`<div><span style="font-size:11px;color:var(--text3);">Gustos / aficiones</span><div style="font-weight:700;">${gustos}</div></div>`,
+    rol&&!ocultar.includes('rolActual')&&`<div><span style="font-size:11px;color:var(--text3);">Rol actual</span><div style="font-weight:700;">${rol}</div></div>`,
+    lema&&!ocultar.includes('lema')&&`<div><span style="font-size:11px;color:var(--text3);">Versículo o lema</span><div style="font-weight:700;">${lema}</div></div>`,
+    estCivil&&!ocultar.includes('estadoCivil')&&`<div><span style="font-size:11px;color:var(--text3);">Estado civil</span><div style="font-weight:700;">${estCivil}</div></div>`,
+    hijosTxt&&!ocultar.includes('tieneHijos')&&`<div><span style="font-size:11px;color:var(--text3);">¿Tienes hijos?</span><div style="font-weight:700;">${hijosTxt}</div></div>`
+  ].filter(Boolean);
+  const perfilPublicoH=lineasPublicas.length?`<div class="dsec"><div class="dhead">Perfil</div><div style="display:flex;flex-wrap:wrap;gap:16px;">${lineasPublicas.join('')}</div></div>`:'';
+  const ciudadNac=escAttr(c.ciudadNacimiento||'');const paisNac=escAttr(c.paisNacimiento||'');const anioConv=escAttr(c.anioConversion||'');const iglesiaProc=escAttr(c.iglesiaProcedencia||'');const infoHijos=escAttr(c.infoHijos||'');
+  const fbautAdmin=c.fechaBautizado&&c.bautizado?escAttr(c.fechaBautizado):'';const fsellAdmin=c.fechaSellado&&c.sellado?escAttr(c.fechaSellado):'';
+  const lineasAdmin=[ciudadNac&&`<div><span style="font-size:11px;color:var(--text3);">Ciudad de nacimiento</span><div>${ciudadNac}</div></div>`,paisNac&&`<div><span style="font-size:11px;color:var(--text3);">País de nacimiento</span><div>${paisNac}</div></div>`,anioConv&&`<div><span style="font-size:11px;color:var(--text3);">Año de conversión</span><div>${anioConv}</div></div>`,iglesiaProc&&`<div><span style="font-size:11px;color:var(--text3);">Iglesia de procedencia</span><div>${iglesiaProc}</div></div>`,infoHijos&&`<div><span style="font-size:11px;color:var(--text3);">Sobre sus hijos</span><div>${infoHijos}</div></div>`,fbautAdmin&&`<div><span style="font-size:11px;color:var(--text3);">Fecha bautizado</span><div>${fbautAdmin}</div></div>`,fsellAdmin&&`<div><span style="font-size:11px;color:var(--text3);">Fecha sellado</span><div>${fsellAdmin}</div></div>`].filter(Boolean);
+  const datosAdminH=esAdmin&&lineasAdmin.length?`<div class="dsec"><div class="dhead">Datos completos (solo admin)</div><div style="display:flex;flex-wrap:wrap;gap:16px;">${lineasAdmin.join('')}</div></div>`:'';
   openSheet(avH2,nombreCorto(c)||c.nombre,`${c.dist} · Rank #${rank} · ${c.grupo}`,`
     <div class="dsec"><div class="dhead">Contacto</div><div style="display:flex;flex-wrap:wrap;gap:16px;"><div><span style="font-size:11px;color:var(--text3);">Cumpleaños</span><div style="font-weight:700;">${cumple}</div></div><div><span style="font-size:11px;color:var(--text3);">Teléfono</span>${telHtml}</div></div></div>
+    ${perfilPublicoH}
+    ${datosAdminH}
     <div class="dsec"><div class="dhead">Estado Espiritual</div>
       <div class="badges">${mkBadges(c)||'<span style="color:var(--text3);font-size:12px">Sin distinciones</span>'}</div>
       <div class="star-row" style="margin-top:10px">${starH}</div>
@@ -1918,7 +1937,7 @@ function renderTelefonoCard(c){
   el.style.display='block';
   el.innerHTML=`<div style="background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%);border:1.5px solid rgba(14,165,233,0.3);border-radius:14px;padding:14px 16px;">
     <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#0c4a6e;margin-bottom:6px;">📱 Tu número de teléfono</div>
-    <div style="font-size:11px;color:#64748b;margin-bottom:10px;">Lo verán los hermanos en la ficha del caballero. Luego podrás editarlo en el panel de cambiar contraseña (🔑).</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:10px;">Lo verán los hermanos en la ficha del caballero. Luego podrás editarlo en tu panel de perfil (👤).</div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <input type="tel" id="pv-telefono-inp" placeholder="Ej. 600 000 000" value="" style="flex:1;min-width:160px;padding:10px 12px;border:1.5px solid #bae6fd;border-radius:10px;font-size:13px;">
       <button onclick="guardarTelefonoPV()" style="background:#0ea5e9;border:none;color:white;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
@@ -2167,12 +2186,93 @@ function openChangeCabPw(){
   const nombreEsc=escAttr(c.nombre||'');
   const nombreMostrarEsc=escAttr(c.nombreMostrar||'');
   const telefonoEsc=escAttr(c.telefono||'');
-  openSheet('🔑','Mi Contraseña',nombreCorto(c)||c.nombre,`
+  const fnacEsc=c.fnac||'';
+  const fbautEsc=c.fechaBautizado||'';
+  const fsellEsc=c.fechaSellado||'';
+  const campResp=c.campamentoRespuesta||'';
+  const tieneFoto=!!c.photo;
+  const esBautizado=!!c.bautizado;
+  const esSellado=!!c.sellado;
+  const ciudadNacEsc=escAttr(c.ciudadNacimiento||'');
+  const paisNacEsc=escAttr(c.paisNacimiento||'');
+  const lemaEsc=escAttr(c.lema||'');
+  const profesionEsc=escAttr(c.profesionOficio||'');
+  const anioConvEsc=escAttr(c.anioConversion||'');
+  const iglesiaProcEsc=escAttr(c.iglesiaProcedencia||'');
+  const gustosEsc=escAttr(c.gustosAficiones||'');
+  const rolEsc=escAttr(c.rolActual||'');
+  const estadoCivilEsc=escAttr(c.estadoCivil||'');
+  const tieneHijosEsc=escAttr(c.tieneHijos||'');
+  const numHijosEsc=escAttr(c.numHijos||'');
+  const infoHijosEsc=escAttr(c.infoHijos||'');
+  const ocultar=Array.isArray(c.ocultarAOtros)?c.ocultarAOtros:[];
+  const oc=(key)=>ocultar.includes(key)?'checked':'';
+  openSheet('👤','Mi Perfil',nombreCorto(c)||c.nombre,`
     <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div id="cpw-photo-preview" style="width:56px;height:56px;border-radius:50%;overflow:hidden;background:#e5e7eb;border:2px solid #d1d5db;flex-shrink:0;">${tieneFoto?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>'}</div>
+        <div style="flex:1;min-width:0;">
+          <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px;">Foto de perfil</label>
+          <input type="file" id="cpw-photo-inp" accept="image/*" style="font-size:11px;">
+          <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Usa una foto clara de tu rostro.</div>
+        </div>
+      </div>
       <div class="fr" style="margin-bottom:10px;"><label>Nombre completo</label><input type="text" id="cpw-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Nombre a mostrar</label><input type="text" id="cpw-nombreMostrar" value="${nombreMostrarEsc}" placeholder="Ej. Juan García"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Teléfono</label><input type="tel" id="cpw-telefono" value="${telefonoEsc}" placeholder="Ej. 600 000 000"></div>
-      <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="doSaveCabPerfilPV();">💾 Guardar nombre y teléfono</button>
+      <div class="fr" style="margin-bottom:10px;"><label>Fecha de nacimiento</label><input type="date" id="cpw-fnac" value="${fnacEsc}"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Ciudad de nacimiento</label><input type="text" id="cpw-ciudadNac" value="${ciudadNacEsc}" placeholder="Ej. Bogotá"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>País de nacimiento</label><input type="text" id="cpw-paisNac" value="${paisNacEsc}" placeholder="Ej. Colombia"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Año de conversión</label><input type="number" id="cpw-anioConv" value="${anioConvEsc}" placeholder="Ej. 2015"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Iglesia de procedencia</label><input type="text" id="cpw-iglesiaProc" value="${iglesiaProcEsc}" placeholder="Donde te congregabas antes"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Profesión u oficio</label><input type="text" id="cpw-profesion" value="${profesionEsc}" placeholder="Ej. Ingeniero, carpintero, estudiante"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Gustos / aficiones</label><input type="text" id="cpw-gustos" value="${gustosEsc}" placeholder="Deportes, música, hobbies..."></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Rol actual</label><input type="text" id="cpw-rol" value="${rolEsc}" placeholder="Ej. Servidor, directivo, ujier"></div>
+      <div class="fr" style="margin-bottom:10px;">
+        <label>Estado civil</label>
+        <select id="cpw-estadoCivil" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
+          <option value="" ${estadoCivilEsc===''?'selected':''}>Prefiero no decir</option>
+          <option value="soltero" ${estadoCivilEsc==='soltero'?'selected':''}>Soltero</option>
+          <option value="casado" ${estadoCivilEsc==='casado'?'selected':''}>Casado</option>
+          <option value="noviazgo" ${estadoCivilEsc==='noviazgo'?'selected':''}>En noviazgo</option>
+          <option value="otro" ${estadoCivilEsc==='otro'?'selected':''}>Otro</option>
+        </select>
+      </div>
+      <div class="fr" style="margin-bottom:10px;">
+        <label>¿Tienes hijos?</label>
+        <select id="cpw-tieneHijos" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
+          <option value="" ${tieneHijosEsc===''?'selected':''}>Prefiero no decir</option>
+          <option value="no" ${tieneHijosEsc==='no'?'selected':''}>No</option>
+          <option value="si" ${tieneHijosEsc==='si'?'selected':''}>Sí</option>
+        </select>
+      </div>
+      <div class="fr" style="margin-bottom:10px;"><label>Número de hijos</label><input type="number" id="cpw-numHijos" value="${numHijosEsc}" min="0" placeholder="Ej. 2"></div>
+      <div class="fr" style="margin-bottom:10px;"><label>Comentario sobre tus hijos</label><input type="text" id="cpw-infoHijos" value="${infoHijosEsc}" placeholder="Ej. Aún viven conmigo, ya tienen su familia..."></div>
+      ${esBautizado?`<div class="fr" style="margin-bottom:10px;"><label>Fecha de bautizado</label><input type="date" id="cpw-fbaut" value="${fbautEsc}"></div>`:''}
+      ${esSellado?`<div class="fr" style="margin-bottom:10px;"><label>Fecha de sellado</label><input type="date" id="cpw-fsell" value="${fsellEsc}"></div>`:''}
+      <div class="fr" style="margin-bottom:10px;"><label>Versículo favorito o lema personal</label><input type="text" id="cpw-lema" value="${lemaEsc}" placeholder="Ej. Filipenses 4:13 o una frase que te inspire"></div>
+      <div class="dsec" style="margin-top:14px;padding-top:14px;border-top:1px solid #e5e7eb;">
+        <div class="dhead" style="margin-bottom:8px;">👁️ Qué ocultar a los demás</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Marca los datos que no quieres que otros caballeros vean en tu ficha. El admin siempre ve todo.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px 20px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;"><input type="checkbox" id="cpw-oc-profesion" ${oc('profesionOficio')}> Profesión</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;"><input type="checkbox" id="cpw-oc-gustos" ${oc('gustosAficiones')}> Gustos / aficiones</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;"><input type="checkbox" id="cpw-oc-rol" ${oc('rolActual')}> Rol actual</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;"><input type="checkbox" id="cpw-oc-lema" ${oc('lema')}> Versículo o lema</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;"><input type="checkbox" id="cpw-oc-estadoCivil" ${oc('estadoCivil')}> Estado civil</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;"><input type="checkbox" id="cpw-oc-tieneHijos" ${oc('tieneHijos')}> ¿Tienes hijos?</label>
+        </div>
+      </div>
+      <div class="fr" style="margin-bottom:10px;">
+        <label>Campamento de Caballeros</label>
+        <select id="cpw-camp" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
+          <option value="" ${campResp===''?'selected':''}>Aún no lo sé</option>
+          <option value="si" ${campResp==='si'?'selected':''}>Sí voy</option>
+          <option value="no" ${campResp==='no'?'selected':''}>No voy</option>
+          <option value="aun_no_se" ${campResp==='aun_no_se'?'selected':''}>Aún no lo sé</option>
+        </select>
+      </div>
+      <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="doSaveCabPerfilPV();">💾 Guardar perfil</button>
     </div>
     ${tienePass?`<div class="fr"><label>Contraseña actual</label><input type="password" id="cpw-curr" placeholder="Tu contraseña actual"></div>`:'<div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--teal2)">🔑 Todavía no tienes contraseña personal. Crea una para proteger tu perfil.</div>'}
     <div class="fr"><label>${tienePass?'Nueva contraseña':'Crear contraseña'}</label><input type="password" id="cpw-new" placeholder="Mínimo 4 caracteres"></div>
@@ -2180,12 +2280,63 @@ function openChangeCabPw(){
     <div class="login-err" id="cpw-err" style="display:none;margin-bottom:10px"></div>
     <button class="btn bteal bfull" onclick="doChangeCabPw(${tienePass})">🔒 ${tienePass?'Cambiar Contraseña':'Crear Contraseña'}</button>
   `);
+  const photoInp=document.getElementById('cpw-photo-inp');
+  if(photoInp){
+    photoInp.onchange=async function(e){
+      const f=e.target.files[0];if(!f)return;
+      const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+      const prev=document.getElementById('cpw-photo-preview');
+      if(prev)prev.innerHTML='<img src="'+data+'" style="width:100%;height:100%;object-fit:cover;">';
+      window._cpwPhotoPending=data;
+    };
+  }
 }
 async function doSaveCabPerfilPV(){
   const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
   c.nombre=(document.getElementById('cpw-nombre')?.value||'').trim();
   c.nombreMostrar=(document.getElementById('cpw-nombreMostrar')?.value||'').trim();
   c.telefono=(document.getElementById('cpw-telefono')?.value||'').trim();
+  const fnacEl=document.getElementById('cpw-fnac');
+  const fbautEl=document.getElementById('cpw-fbaut');
+  const fsellEl=document.getElementById('cpw-fsell');
+  const campEl=document.getElementById('cpw-camp');
+  const ciudadNacEl=document.getElementById('cpw-ciudadNac');
+  const paisNacEl=document.getElementById('cpw-paisNac');
+  const lemaEl=document.getElementById('cpw-lema');
+  const profesionEl=document.getElementById('cpw-profesion');
+  const anioConvEl=document.getElementById('cpw-anioConv');
+  const iglesiaProcEl=document.getElementById('cpw-iglesiaProc');
+  const gustosEl=document.getElementById('cpw-gustos');
+  const rolEl=document.getElementById('cpw-rol');
+  const estadoCivilEl=document.getElementById('cpw-estadoCivil');
+  const tieneHijosEl=document.getElementById('cpw-tieneHijos');
+  const numHijosEl=document.getElementById('cpw-numHijos');
+  const infoHijosEl=document.getElementById('cpw-infoHijos');
+  if(fnacEl)c.fnac=fnacEl.value||'';
+  if(fbautEl)c.fechaBautizado=fbautEl.value||'';
+  if(fsellEl)c.fechaSellado=fsellEl.value||'';
+  if(campEl)c.campamentoRespuesta=campEl.value||'';
+  if(ciudadNacEl)c.ciudadNacimiento=ciudadNacEl.value.trim()||'';
+  if(paisNacEl)c.paisNacimiento=paisNacEl.value.trim()||'';
+  if(lemaEl)c.lema=lemaEl.value.trim()||'';
+   if(profesionEl)c.profesionOficio=profesionEl.value.trim()||'';
+   if(anioConvEl)c.anioConversion=anioConvEl.value.trim()||'';
+   if(iglesiaProcEl)c.iglesiaProcedencia=iglesiaProcEl.value.trim()||'';
+   if(gustosEl)c.gustosAficiones=gustosEl.value.trim()||'';
+   if(rolEl)c.rolActual=rolEl.value.trim()||'';
+   if(estadoCivilEl)c.estadoCivil=estadoCivilEl.value||'';
+   if(tieneHijosEl)c.tieneHijos=tieneHijosEl.value||'';
+   if(numHijosEl)c.numHijos=numHijosEl.value||'';
+   if(infoHijosEl)c.infoHijos=infoHijosEl.value.trim()||'';
+  const ocultarAOtros=[];
+  if(document.getElementById('cpw-oc-profesion')?.checked)ocultarAOtros.push('profesionOficio');
+  if(document.getElementById('cpw-oc-gustos')?.checked)ocultarAOtros.push('gustosAficiones');
+  if(document.getElementById('cpw-oc-rol')?.checked)ocultarAOtros.push('rolActual');
+  if(document.getElementById('cpw-oc-lema')?.checked)ocultarAOtros.push('lema');
+  if(document.getElementById('cpw-oc-estadoCivil')?.checked)ocultarAOtros.push('estadoCivil');
+  if(document.getElementById('cpw-oc-tieneHijos')?.checked)ocultarAOtros.push('tieneHijos');
+  c.ocultarAOtros=ocultarAOtros;
+  if(window._cpwPhotoPending){c.photo=window._cpwPhotoPending;window._cpwPhotoPending=null;}
   await saveDB();toast('✅ Datos guardados','ok');
 }
 async function doChangeCabPw(tienePass){
