@@ -1818,24 +1818,3 @@ function renderEventosPV(){
   }
 }
 // ═══════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════
-// ── Init
-async function initApp(){
-  await loadDB();
-  buildSel();
-  setInterval(function(){if(document.hidden)location.reload();},3600000);
-  window._reportLogos={favicon:'',ev:(document.querySelector('#screen-admin .ev-banner img')||document.querySelector('.ev-banner img'))?.src||''};
-  fetch('favicon.png').then(r=>r.blob()).then(blob=>new Promise((res,rej)=>{const rd=new FileReader();rd.onload=()=>res(rd.result);rd.onerror=rej;rd.readAsDataURL(blob);})).then(dataUrl=>{window._reportLogos.favicon=dataUrl;}).catch(()=>{});
-  // Clonar banner de evidencias para que también lo vean los caballeros
-  const adminBanner=document.querySelector('#screen-admin .ev-banner');
-  const personalWrap=document.getElementById('ev-banner-personal-wrap');
-  if(adminBanner&&personalWrap)personalWrap.innerHTML=adminBanner.innerHTML;
-  if(adminBanner&&window._reportLogos)window._reportLogos.ev=adminBanner.querySelector('img')?.src||window._reportLogos.ev;
-  renderVersoDelDia();
-  const acts=document.querySelector('.hacts');
-}
-
-document.addEventListener('DOMContentLoaded', initApp);
-</script>
