@@ -613,13 +613,13 @@ const SEED_EVAL_DISPENSACIONES_CUESTIONARIO={
   ]
 };
 
-// Cuestionario Dispensaciones — Texto (desde Dispensaciones Cuestionario (1).json) — 28 preguntas
+// Cuestionario Dispensaciones — Texto (desde Dispensaciones Cuestionario (1).json) — 28 preguntas — vinculado a clase 27 feb
 const SEED_EVAL_DISPENSACIONES_TEXTO={
   id:'evq-dispensaciones-texto',
   titulo:'Dispensaciones — Cuestionario (Texto)',
   descripcion:'Cuestionario sobre el estudio de las dispensaciones: gobierno de Dios, revelación progresiva, mayordomía, interpretación literal, etc.',
   activo:true,
-  claseId:'',
+  claseId:'cl2',
   preguntas:[
     {id:'dt1',texto:'¿Qué significa fundamentalmente el término \'dispensación\' según el texto?',opciones:[{texto:'Un periodo de tiempo donde las leyes de la naturaleza cambian.',correcta:false},{texto:'La manera en que Dios gobierna su casa en diferentes tiempos.',correcta:true},{texto:'Un pacto secreto que solo los profetas podían entender.',correcta:false},{texto:'La salvación automática de todas las personas en una época.',correcta:false}]},
     {id:'dt2',texto:'En la ilustración del Sr. Jones, ¿por qué el hijo de 20 años tiene reglas diferentes a las del hijo de 10 años?',opciones:[{texto:'Porque el padre ama más al hijo mayor.',correcta:false},{texto:'Porque el hijo mayor tiene más privilegios pero también más responsabilidades.',correcta:true},{texto:'Porque las reglas del hogar original fueron un fracaso total.',correcta:false},{texto:'Porque el hijo de 20 años ya no está sujeto a la autoridad de su padre.',correcta:false}]},
