@@ -8,6 +8,10 @@ let DB = {};
 let currentCabId = null;
 let gradeClaseId = null;
 
+// Moneda y locale unificados (pantalla e informes PDF)
+const MONEDA = { symbol: '$', locale: 'es-CO' };
+function fmtMonto(n){ return (Number(n)||0).toLocaleString(MONEDA.locale,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
 // ═══════════════════════════════════════════════════════════════
 // NUBE — Firebase Firestore (como Escuela Dominical)
 // ═══════════════════════════════════════════════════════════════
@@ -856,121 +860,8 @@ function renderCumpleBanners(cabId){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PETICIONES: ahora en app.peticiones.js
-// EVENTOS — helpers compartidos + vista personal + admin
+// PETICIONES: app.peticiones.js | EVENTOS: helpers y CRUD en app.eventos.js
 // ═══════════════════════════════════════════════════════════════
-function lastSundayOfMonth(year,month){
-  // Retrocede desde el último día del mes hasta encontrar domingo (0)
-  const fin=new Date(year,month,0); // día 0 del mes+1 = último día del mes
-  fin.setHours(0,0,0,0);
-  while(fin.getDay()!==0) fin.setDate(fin.getDate()-1);
-  return fin;
-}
-
-function proximaFechaEvento(ev, desde){
-  if(ev.fecha==='por_definir') return null;
-  if(ev.fecha==='recurrente_ultimo_domingo'){
-    // Buscar el próximo último domingo desde 'desde'
-    let y=desde.getFullYear(), m=desde.getMonth()+1;
-    for(let i=0;i<14;i++){
-      const d=lastSundayOfMonth(y,m);
-      if(d>=desde) return d;
-      m++;if(m>12){m=1;y++;}
-    }
-    return null;
-  }
-  const d=new Date(ev.fecha+'T00:00:00');
-  return d>=desde?d:null;
-}
-
-function fmtEvDate(d){
-  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  return`${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
-}
-
-function diffDaysEv(d,today){return Math.round((d-today)/(1000*60*60*24));}
-
-function badgeEv(n){
-  if(n===0)return`<span style="background:#dcfce7;color:#15803d;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">¡HOY!</span>`;
-  if(n===1)return`<span style="background:#fef3c7;color:#b45309;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">MAÑANA</span>`;
-  if(n<0)return`<span style="background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">✓ Pasó</span>`;
-  return`<span style="background:rgba(58,171,186,0.12);color:#2d8f9c;font-size:10px;font-weight:800;padding:2px 10px;border-radius:20px;letter-spacing:1px;">En ${n} días</span>`;
-}
-
-function esEventoPasado(ev,todayStr){
-  if(!ev.fecha||ev.fecha==='por_definir'||ev.fecha==='recurrente_ultimo_domingo')return false;
-  const fin=ev.fechaFin||ev.fecha;
-  return fin<todayStr;
-}
-
-const TEMAS_CULTO=[
-  {mes:1,titulo:'Evidencia de una Muerte',sub:'Arrepentimiento',ref:'Romanos 6:6'},
-  {mes:2,titulo:'Evidencia de una Resurrección',sub:'Nueva Vida',ref:'Juan 5:24'},
-  {mes:3,titulo:'Evidencia de una Experiencia',sub:'Bautismo del Espíritu Santo',ref:'Hechos 2:33'},
-  {mes:4,titulo:'Evidencia de Gozo',sub:'',ref:'Hechos 8:38-39 NBV'},
-  {mes:5,titulo:'Evidencia de la Paz',sub:'Tranquilidad en medio de las pruebas',ref:'Hechos 16:25 / Filipenses 4:9'},
-  {mes:6,titulo:'Evidencia de Comunión',sub:'',ref:'Hechos 2:42-44 / 1 Juan 1:7'},
-  {mes:7,titulo:'Evidencia de Testimonio',sub:'Ejemplo',ref:'Daniel 3 / Mateo 5:16 PDT'},
-  {mes:8,titulo:'Evidencia de una Marca',sub:'Enseñanza para hermanos apartados',ref:'Mateo 26:73'},
-  {mes:9,titulo:'Evidencia de Dependencia',sub:'Enseñanza para hermanos apartados',ref:'2 Corintios 3:4-5'},
-  {mes:10,titulo:'Evidencia de una Herida',sub:'Pruebas',ref:'2 Corintios 4:8-9'},
-  {mes:11,titulo:'Evidencia de un Servicio',sub:'Especial nativos / Las marcas de Cristo',ref:'Gálatas 6:17'},
-  {mes:12,titulo:'Evidencia de una Perseverancia al fin',sub:'',ref:'Filipenses 3:12-14'},
-];
-const ESTUDIOS_CALENDARIO=[
-  {fecha:'2026-02-13',grupo:'Caballeros del Cielo'},{fecha:'2026-02-27',grupo:'Emanuel'},
-  {fecha:'2026-03-13',grupo:'Embajadores del Rey'},{fecha:'2026-03-27',grupo:'Centinelas'},
-  {fecha:'2026-04-10',grupo:'Caballeros del Cielo'},{fecha:'2026-04-24',grupo:'Emanuel'},
-  {fecha:'2026-05-08',grupo:'Embajadores del Rey'},{fecha:'2026-05-22',grupo:'Centinelas'},
-  {fecha:'2026-06-05',grupo:'Caballeros del Cielo'},{fecha:'2026-06-19',grupo:'Emanuel'},
-  {fecha:'2026-07-03',grupo:'Embajadores del Rey'},{fecha:'2026-07-17',grupo:'Centinelas'},
-  {fecha:'2026-07-31',grupo:'Caballeros del Cielo'},{fecha:'2026-08-14',grupo:'Emanuel'},
-  {fecha:'2026-08-28',grupo:'Embajadores del Rey'},{fecha:'2026-09-11',grupo:'Centinelas'},
-  {fecha:'2026-09-25',grupo:'Caballeros del Cielo'},{fecha:'2026-10-09',grupo:'Emanuel'},
-  {fecha:'2026-10-23',grupo:'Embajadores del Rey'},{fecha:'2026-11-06',grupo:'Centinelas'},
-  {fecha:'2026-11-20',grupo:'Caballeros del CIELO'},{fecha:'2026-12-04',grupo:'Emanuel'},
-  {fecha:'2026-12-18',grupo:'Embajadores del Rey'},{fecha:'2027-01-01',grupo:'Centinelas'},
-  {fecha:'2027-01-15',grupo:'Caballeros del Cielo'},{fecha:'2027-01-29',grupo:'Emanuel'},
-  {fecha:'2027-02-12',grupo:'Embajadores del Rey'},
-];
-function getCultoDate(y,m){
-  if(y===2026&&m===2)return new Date(2026,1,26);
-  const d=new Date(y,m-1,1);
-  d.setDate(1+((4-d.getDay()+7)%7));return d;
-}
-function getEventosCompletos(){
-  const today=new Date();today.setHours(0,0,0,0);
-  const todayStr=today.toISOString().split('T')[0];
-  const ocultosCulto=DB.eventosCultosOverride||{};
-  const ocultosEstudio=DB.eventosEstudiosOverride||{};
-  const allItems=[];
-  // Cultos: solo hasta diciembre 2026 (la programación termina en diciembre)
-  for(let y=2026;y<=2026;y++){
-    for(let m=1;m<=12;m++){
-      const d=getCultoDate(y,m);
-      const fechaStr=d.toISOString().split('T')[0];
-      if(ocultosCulto[fechaStr]?.oculto)continue;
-      allItems.push({tipo:'culto',fecha:d,fechaStr,tema:TEMAS_CULTO.find(t=>t.mes===m)||null});
-    }
-  }
-  ESTUDIOS_CALENDARIO.forEach(e=>{
-    if(ocultosEstudio[e.fecha]?.oculto)return;
-    allItems.push({tipo:'estudio',fecha:new Date(e.fecha+'T00:00:00'),fechaStr:e.fecha,grupo:e.grupo});
-  });
-  (DB.eventos||[]).forEach(ev=>{
-    const d=proximaFechaEvento(ev,today);
-    if(d) allItems.push({tipo:'evento',fecha:d,ev});
-  });
-  (DB.eventos||[]).forEach(ev=>{
-    if(!esEventoPasado(ev,todayStr))return;
-    const d=new Date((ev.fechaFin||ev.fecha)+'T00:00:00');
-    allItems.push({tipo:'evento',fecha:d,ev});
-  });
-  const proximos=allItems.filter(x=>x.fecha>=today).sort((a,b)=>a.fecha-b.fecha);
-  const pasados=allItems.filter(x=>x.fecha<today).sort((a,b)=>b.fecha-a.fecha);
-  return {proximos,pasados,today,todayStr};
-}
 
 // EVENTOS: Vista Personal — todos ordenados por fecha
 function renderEventosPV(){
@@ -1318,103 +1209,6 @@ function readFormEvento(){
   };
 }
 
-async function doAddEvento(){
-  const d=readFormEvento();
-  if(!d.nombre){toast('Escribe el nombre del evento','err');return;}
-  if(!DB.eventos)DB.eventos=[];
-  DB.eventos.push({id:'ev'+Date.now(),...d});
-  closeModal();toast('💾 Guardando...','info');
-  await saveDB();toast('✅ Evento creado','ok');
-  renderEventosAdmin();
-}
-async function doSaveEvento(id){
-  const d=readFormEvento();
-  if(!d.nombre){toast('Escribe el nombre del evento','err');return;}
-  const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
-  Object.assign(ev,d);
-  closeModal();toast('💾 Guardando...','info');
-  await saveDB();toast('✅ Evento actualizado','ok');
-  renderEventosAdmin();
-}
-function confirmarDelEvento(id){
-  const ev=(DB.eventos||[]).find(e=>e.id===id);if(!ev)return;
-  openSheet('🗑','Eliminar evento','',`
-    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Eliminar <strong>${ev.nombre}</strong>? Esta acción no se puede deshacer.</p>
-    <div style="display:flex;gap:10px;">
-      <button class="btn boutline" onclick="closeModal()" style="flex:1;">Cancelar</button>
-      <button class="btn bred" onclick="closeModal();doDelEvento('${id}')" style="flex:1;">Eliminar</button>
-    </div>
-  `);
-}
-async function doDelEvento(id){
-  DB.eventos=(DB.eventos||[]).filter(e=>e.id!==id);
-  toast('💾 Guardando...','info');await saveDB();toast('Evento eliminado','ok');
-  renderEventosAdmin();
-  renderEventosPV();
-}
-
-function openFormCulto(fechaStr){
-  const ov=(DB.eventosCultosOverride||{})[fechaStr]||{};
-  const nom=ov.nombre||'';
-  openSheet('⚔️','Editar culto',`📅 ${fechaStr}`,''
-    +`<div class="fr"><label>Nombre a mostrar</label><input id="evc-nombre" value="${(nom||'').replace(/"/g,'&quot;')}" placeholder="Ej: Culto de Caballeros · Evidencia de..."></div>`
-    +`<button class="btn bteal bfull" onclick="doSaveCultoOverride('${fechaStr}')">💾 Guardar</button>`
-  );
-}
-async function doSaveCultoOverride(fechaStr){
-  const nombre=document.getElementById('evc-nombre').value.trim();
-  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
-  DB.eventosCultosOverride[fechaStr]={...(DB.eventosCultosOverride[fechaStr]||{}),nombre:nombre||undefined,oculto:false};
-  closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Guardado','ok');
-  renderEventosAdmin();renderEventosPV();
-}
-function confirmarDelCulto(fechaStr){
-  openSheet('🗑','Ocultar culto','',`
-    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Ocultar este culto de la lista? Podrás volver a mostrarlo editando.</p>
-    <div style="display:flex;gap:10px;">
-      <button class="btn boutline" onclick="closeModal()" style="flex:1;">Cancelar</button>
-      <button class="btn bred" onclick="closeModal();doDelCultoOverride('${fechaStr}')" style="flex:1;">Ocultar</button>
-    </div>
-  `);
-}
-async function doDelCultoOverride(fechaStr){
-  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
-  DB.eventosCultosOverride[fechaStr]={...(DB.eventosCultosOverride[fechaStr]||{}),oculto:true};
-  toast('💾 Guardando...','info');await saveDB();toast('Culto oculto','ok');
-  renderEventosAdmin();renderEventosPV();
-}
-
-function openFormEstudio(fechaStr){
-  const ov=(DB.eventosEstudiosOverride||{})[fechaStr]||{};
-  const nom=ov.nombre||'';
-  openSheet('📚','Editar estudio',`📅 ${fechaStr}`,''
-    +`<div class="fr"><label>Nombre a mostrar</label><input id="eve-nombre" value="${(nom||'').replace(/"/g,'&quot;')}" placeholder="Ej: Estudio de las Dispensaciones"></div>`
-    +`<button class="btn bteal bfull" onclick="doSaveEstudioOverride('${fechaStr}')">💾 Guardar</button>`
-  );
-}
-async function doSaveEstudioOverride(fechaStr){
-  const nombre=document.getElementById('eve-nombre').value.trim();
-  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
-  DB.eventosEstudiosOverride[fechaStr]={...(DB.eventosEstudiosOverride[fechaStr]||{}),nombre:nombre||undefined,oculto:false};
-  closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Guardado','ok');
-  renderEventosAdmin();renderEventosPV();
-}
-function confirmarDelEstudio(fechaStr){
-  openSheet('🗑','Ocultar estudio','',`
-    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Ocultar este estudio de la lista? Podrás volver a mostrarlo editando.</p>
-    <div style="display:flex;gap:10px;">
-      <button class="btn boutline" onclick="closeModal()" style="flex:1;">Cancelar</button>
-      <button class="btn bred" onclick="closeModal();doDelEstudioOverride('${fechaStr}')" style="flex:1;">Ocultar</button>
-    </div>
-  `);
-}
-async function doDelEstudioOverride(fechaStr){
-  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
-  DB.eventosEstudiosOverride[fechaStr]={...(DB.eventosEstudiosOverride[fechaStr]||{}),oculto:true};
-  toast('💾 Guardando...','info');await saveDB();toast('Estudio oculto','ok');
-  renderEventosAdmin();renderEventosPV();
-}
-
 // ═══════════════════════════════════════════════════════════════
 // FINANZAS DEL COMITÉ (Admin + Vista Personal)
 // ═══════════════════════════════════════════════════════════════
@@ -1448,7 +1242,7 @@ function renderListaGastos(){
     const nom=cab?cab.nombre:'—';
     const por=getGuardadoPorNombre(g.guardadoPor);
     return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
-      <span style="font-size:13px;">${g.fecha||'—'} · ${(g.concepto||'').slice(0,40)} · €${Number(g.monto||0).toFixed(2)} · ${nom} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
+      <span style="font-size:13px;">${g.fecha||'—'} · ${(g.concepto||'').slice(0,40)} · ${MONEDA.symbol}${fmtMonto(g.monto||0)} · ${nom} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
       <button onclick="delGasto('${g.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
     </div>`;
   }).join('');
@@ -1464,7 +1258,7 @@ function renderListaActividades(){
     const nom=cab?cab.nombre:'—';
     const por=getGuardadoPorNombre(a.guardadoPor);
     return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
-      <span style="font-size:13px;">${a.fecha||'—'} · ${(a.nombre||'').slice(0,35)} · E:€${Number(a.efectivo||0).toFixed(2)} T:€${Number(a.tpv||0).toFixed(2)} G:€${Number(a.gastos||0).toFixed(2)} · ${nom} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
+      <span style="font-size:13px;">${a.fecha||'—'} · ${(a.nombre||'').slice(0,35)} · E:${MONEDA.symbol}${fmtMonto(a.efectivo||0)} T:${MONEDA.symbol}${fmtMonto(a.tpv||0)} G:${MONEDA.symbol}${fmtMonto(a.gastos||0)} · ${nom} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
       <button onclick="delActividad('${a.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
     </div>`;
   }).join('');
@@ -1481,7 +1275,7 @@ function renderListaDonativos(){
     const otro=d.otroDonante?` · Otro: ${d.otroDonante}`:'';
     const por=getGuardadoPorNombre(d.guardadoPor);
     return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
-      <span style="font-size:13px;">${d.fecha||'—'} · ${(d.concepto||'').slice(0,30)} · E:€${Number(d.efectivo||0).toFixed(2)} T:€${Number(d.tpv||0).toFixed(2)} · ${nom}${otro} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
+      <span style="font-size:13px;">${d.fecha||'—'} · ${(d.concepto||'').slice(0,30)} · E:${MONEDA.symbol}${fmtMonto(d.efectivo||0)} T:${MONEDA.symbol}${fmtMonto(d.tpv||0)} · ${nom}${otro} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
       <button onclick="delDonativo('${d.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
     </div>`;
   }).join('');
@@ -1498,7 +1292,7 @@ function renderListaVotos(){
     const otro=v.nombreNoMaestro?` · No maestro: ${v.nombreNoMaestro}`:'';
     const por=getGuardadoPorNombre(v.guardadoPor);
     return `<div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:10px 12px;border:1px solid #e9edf2;">
-      <span style="font-size:13px;">${v.fecha||'—'} · ${(v.concepto||'').slice(0,30)} · E:€${Number(v.efectivo||0).toFixed(2)} T:€${Number(v.tpv||0).toFixed(2)} · ${nom}${otro} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
+      <span style="font-size:13px;">${v.fecha||'—'} · ${(v.concepto||'').slice(0,30)} · E:${MONEDA.symbol}${fmtMonto(v.efectivo||0)} T:${MONEDA.symbol}${fmtMonto(v.tpv||0)} · ${nom}${otro} <span style="color:#6b7280;font-size:11px;">(${por})</span></span>
       <button onclick="delVoto('${v.id}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;">🗑</button>
     </div>`;
   }).join('');
@@ -1763,11 +1557,11 @@ async function generarInformeEconomico(){
   const balance=totalActIng+totalDon+totalVotos-totalGastos-totalActGas;
   const totalMov=totalGastos+totalActIng+totalActGas+totalDon+totalVotos;
   const barrasEco=totalMov>0?'<div style="padding:14px 20px 8px">'+barRow('Gastos comité',totalGastos.toFixed(2),totalMov,'#ef4444')+barRow('Ingresos actividades',totalActIng.toFixed(2),totalMov,'#16a34a')+barRow('Gastos actividades',totalActGas.toFixed(2),totalMov,'#f5c518')+barRow('Donativos',totalDon.toFixed(2),totalMov,'#3aabba')+barRow('Votos',totalVotos.toFixed(2),totalMov,'#2d8f9c')+'</div>':'';
-  const resumen='<div class="section"><div class="section-title">💰 Resumen Económico</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:20px"><div class="stat"><div class="stat-lbl">Total gastos comité</div><div class="stat-val neg">€'+totalGastos.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Ingresos actividades</div><div class="stat-val pos">€'+totalActIng.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Gastos actividades</div><div class="stat-val neg">€'+totalActGas.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val pos">€'+totalDon.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val pos">€'+totalVotos.toFixed(2)+'</div></div><div class="stat"><div class="stat-lbl">Balance</div><div class="stat-val" style="color:'+(balance>=0?'#16a34a':'#ef4444')+'">€'+balance.toFixed(2)+'</div></div></div>'+barrasEco+'</div>';
-  const filasG=gastos.map(g=>{const r=(DB.caballeros||[]).find(c=>c.id===g.responsable);return '<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="neg">€'+(Number(g.monto)||0).toFixed(2)+'</td></tr>';}).join('');
-  const filasA=actividades.map(a=>{const r=(DB.caballeros||[]).find(c=>c.id===a.responsable);const ing=(Number(a.efectivo)||0)+(Number(a.tpv)||0);const gas=Number(a.gastos)||0;return '<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+ing.toFixed(2)+'</td><td class="neg">€'+gas.toFixed(2)+'</td></tr>';}).join('');
-  const filasD=donativos.map(d=>{const r=(DB.caballeros||[]).find(c=>c.id===d.responsable);return '<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>';}).join('');
-  const filasV=votos.map(v=>{const r=(DB.caballeros||[]).find(c=>c.id===v.responsable);return '<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>';}).join('');
+  const resumen='<div class="section"><div class="section-title">💰 Resumen Económico</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:20px"><div class="stat"><div class="stat-lbl">Total gastos comité</div><div class="stat-val neg">'+MONEDA.symbol+fmtMonto(totalGastos)+'</div></div><div class="stat"><div class="stat-lbl">Ingresos actividades</div><div class="stat-val pos">'+MONEDA.symbol+fmtMonto(totalActIng)+'</div></div><div class="stat"><div class="stat-lbl">Gastos actividades</div><div class="stat-val neg">'+MONEDA.symbol+fmtMonto(totalActGas)+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val pos">'+MONEDA.symbol+fmtMonto(totalDon)+'</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val pos">'+MONEDA.symbol+fmtMonto(totalVotos)+'</div></div><div class="stat"><div class="stat-lbl">Balance</div><div class="stat-val" style="color:'+(balance>=0?'#16a34a':'#ef4444')+'">'+MONEDA.symbol+fmtMonto(balance)+'</div></div></div>'+barrasEco+'</div>';
+  const filasG=gastos.map(g=>{const r=(DB.caballeros||[]).find(c=>c.id===g.responsable);return '<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="neg">'+MONEDA.symbol+fmtMonto(g.monto)+'</td></tr>';}).join('');
+  const filasA=actividades.map(a=>{const r=(DB.caballeros||[]).find(c=>c.id===a.responsable);const ing=(Number(a.efectivo)||0)+(Number(a.tpv)||0);const gas=Number(a.gastos)||0;return '<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">'+MONEDA.symbol+fmtMonto(ing)+'</td><td class="neg">'+MONEDA.symbol+fmtMonto(gas)+'</td></tr>';}).join('');
+  const filasD=donativos.map(d=>{const r=(DB.caballeros||[]).find(c=>c.id===d.responsable);return '<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(d.efectivo)||0)+(Number(d.tpv)||0))+'</td></tr>';}).join('');
+  const filasV=votos.map(v=>{const r=(DB.caballeros||[]).find(c=>c.id===v.responsable);return '<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td>'+(r?r.nombre:'—')+'</td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(v.efectivo)||0)+(Number(v.tpv)||0))+'</td></tr>';}).join('');
   const secciones='<div class="section"><div class="section-title">🐷 Gastos del Comité</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Monto</th></tr></thead><tbody>'+(filasG||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin gastos registrados</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">💡 Actividades del Comité</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Responsable</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+(filasA||'<tr><td colspan="5" style="text-align:center;color:#9ca3af">Sin actividades registradas</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">🤲 Donativos</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Total</th></tr></thead><tbody>'+(filasD||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin donativos registrados</td></tr>')+'</tbody></table></div><div class="section"><div class="section-title">📜 Votos</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Responsable</th><th>Total</th></tr></thead><tbody>'+(filasV||'<tr><td colspan="4" style="text-align:center;color:#9ca3af">Sin votos registrados</td></tr>')+'</tbody></table></div>';
   generarPDF('Informe Económico',resumen+secciones);
 }
@@ -1828,15 +1622,15 @@ function generarInformeIndividualPorId(id){
   const miRank=ranking.indexOf(miGrupo)+1;
   const medal=miRank===1?'🥇':miRank===2?'🥈':miRank===3?'🥉':'';
   const secEstadisticasGrupo='<div class="section"><div class="section-title">📊 Estadísticas gráficas del grupo</div><div style="padding:14px 20px"><div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%);border-radius:10px;padding:12px 16px;margin-bottom:12px;color:white;"><div style="font-size:11px;opacity:0.8;margin-bottom:4px">Mi grupo</div><div style="font-size:16px;font-weight:900">'+medal+' '+(miGrupo||'—')+'</div><div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap"><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.avgPts??'—')+'</div><div style="font-size:9px;opacity:0.8">Prom. pts</div></div><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.pctAsist??0)+'%</div><div style="font-size:9px;opacity:0.8">Asistencia</div></div><div><div style="font-size:18px;font-weight:900">#'+miRank+'</div><div style="font-size:9px;opacity:0.8">Ranking</div></div></div></div><div style="font-size:11px;font-weight:700;color:#4b5563;margin-bottom:8px">Comparación con el resto de grupos</div>'+ranking.map((g,i)=>{const st=grupoStats[g];const esMio=g===miGrupo;const pct=maxAvg>0?Math.round((st.avgPts/maxAvg)*100):0;return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:700;color:'+(esMio?col:'#374151')+'">'+(i+1)+'. '+g+'</span><span style="font-weight:800">'+st.avgPts+' pts · '+st.pctAsist+'% asist</span></div><div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+(esMio?col:'#9ca3af')+';border-radius:999px"></div></div></div>';}).join('')+'</div></div></div>';
-  const secFinanzas='<div class="section"><div class="section-title">💰 Información financiera aportada al comité</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' (€'+totalDon.toFixed(2)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' (€'+totalVot.toFixed(2)+')</div></div></div></div>';
+  const secFinanzas='<div class="section"><div class="section-title">💰 Información financiera aportada al comité</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' ('+MONEDA.symbol+fmtMonto(totalDon)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' ('+MONEDA.symbol+fmtMonto(totalVot)+')</div></div></div></div>';
   const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
   const peticionesCab=(DB.peticiones||[]).filter(p=>p.cabId===id&&p.nombre!=='Anónimo').sort((a,b)=>(b.ts||0)-(a.ts||0));
   const filasPet=peticionesCab.map(p=>'<tr><td>'+(p.fecha||'—')+'</td><td>'+(p.texto||'').replace(/</g,'&lt;').substring(0,120)+(p.texto&&p.texto.length>120?'…':'')+'</td></tr>').join('');
   const secPeticiones=peticionesCab.length?'<div class="section"><div class="section-title">🙏 Historial de peticiones a su nombre</div><table><thead><tr><th>Fecha</th><th>Petición</th></tr></thead><tbody>'+filasPet+'</tbody></table></div>':'';
-  const filasG=gastos.map(g=>'<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="neg">€'+(Number(g.monto)||0).toFixed(2)+'</td></tr>').join('');
-  const filasA=act.map(a=>'<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(a.efectivo)||0)+(Number(a.tpv)||0)).toFixed(2)+'</td><td class="neg">€'+(Number(a.gastos)||0).toFixed(2)+'</td></tr>').join('');
-  const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(d.efectivo)||0)+(Number(d.tpv)||0)).toFixed(2)+'</td></tr>').join('');
-  const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">€'+((Number(v.efectivo)||0)+(Number(v.tpv)||0)).toFixed(2)+'</td></tr>').join('');
+  const filasG=gastos.map(g=>'<tr><td>'+(g.fecha||'—')+'</td><td><strong>'+(g.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="neg">'+MONEDA.symbol+fmtMonto(g.monto)+'</td></tr>').join('');
+  const filasA=act.map(a=>'<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(a.efectivo)||0)+(Number(a.tpv)||0))+'</td><td class="neg">'+MONEDA.symbol+fmtMonto(a.gastos)+'</td></tr>').join('');
+  const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(d.efectivo)||0)+(Number(d.tpv)||0))+'</td></tr>').join('');
+  const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(v.efectivo)||0)+(Number(v.tpv)||0))+'</td></tr>').join('');
   const secciones=secEstadisticasGrupo+secFinanzas+'<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
   generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
 }

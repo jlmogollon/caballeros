@@ -43,17 +43,17 @@ function renderResumenFinanzas(){
     <div class="fin-cards">
       <div class="fin-card fin-card-ing">
         <div class="fin-label">Ingresos totales</div>
-        <div class="fin-valor">$${totalIngresos.toLocaleString('es-CO')}</div>
+        <div class="fin-valor">${typeof MONEDA!=='undefined'?MONEDA.symbol:'$'}${typeof fmtMonto==='function'?fmtMonto(totalIngresos):totalIngresos.toLocaleString('es-CO')}</div>
         <div class="fin-sub">Actividades, donativos y votos</div>
       </div>
       <div class="fin-card fin-card-gas">
         <div class="fin-label">Gastos</div>
-        <div class="fin-valor">$${totalGastos.toLocaleString('es-CO')}</div>
+        <div class="fin-valor">${typeof MONEDA!=='undefined'?MONEDA.symbol:'$'}${typeof fmtMonto==='function'?fmtMonto(totalGastos):totalGastos.toLocaleString('es-CO')}</div>
         <div class="fin-sub">Salidas registradas</div>
       </div>
       <div class="fin-card fin-card-bal">
         <div class="fin-label">Balance estimado</div>
-        <div class="fin-valor ${balance>=0?'pos':'neg'}">$${balance.toLocaleString('es-CO')}</div>
+        <div class="fin-valor ${balance>=0?'pos':'neg'}">${typeof MONEDA!=='undefined'?MONEDA.symbol:'$'}${typeof fmtMonto==='function'?fmtMonto(balance):balance.toLocaleString('es-CO')}</div>
         <div class="fin-sub">${balance>=0?'A favor del comité':'Por cubrir'}</div>
       </div>
     </div>
@@ -64,7 +64,7 @@ function renderListasFinanzas(){
   const {gastos,actividades,donativos,votos}=getFinanzasArrays();
   const mapList=(arr,tipo)=>arr.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).map(it=>{
     const fecha=it.fecha||'—';
-    const monto=Number(it.monto||0).toLocaleString('es-CO');
+    const monto=typeof fmtMonto==='function'?fmtMonto(it.monto||0):Number(it.monto||0).toLocaleString('es-CO');
     const nota=it.nota?`<div class="fin-nota">${it.nota}</div>`:'';
     const quien=getGuardadoPorNombre(it.guardadoPor);
     return `<div class="fin-row">
@@ -73,7 +73,7 @@ function renderListasFinanzas(){
         ${nota}
         <div class="fin-meta">${fecha} · Registrado por ${escAttr(quien)}</div>
       </div>
-      <div class="fin-monto ${tipo==='gasto'?'neg':'pos'}">$${monto}</div>
+      <div class="fin-monto ${tipo==='gasto'?'neg':'pos'}">${typeof MONEDA!=='undefined'?MONEDA.symbol:'$'}${monto}</div>
       <button class="fin-del" onclick="delFinanza('${tipo}','${it.id}')">🗑</button>
     </div>`;
   }).join('')||'<div class="fin-empty">Sin registros.</div>';
