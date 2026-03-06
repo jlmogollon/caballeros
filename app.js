@@ -116,21 +116,7 @@ async function loadDB(){
       const data=await cloudLoad();
       if(data&&data.caballeros&&data.caballeros.length>0){
         DB=data;
-        // Migración: asegurar que todos los caballeros tengan campo pw
-        DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';if(c.telefono===undefined)c.telefono='';if(c.nombreMostrar===undefined)c.nombreMostrar='';});
-        // Migración: asegurar array de peticiones
-        if(!DB.peticiones)DB.peticiones=[];
-        // Migración: asegurar array de eventos
-        if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
-        if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
-        if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
-        if(!DB.finanzasGastos)DB.finanzasGastos=[];
-        if(!DB.finanzasActividades)DB.finanzasActividades=[];
-        if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
-        if(!DB.finanzasVotos)DB.finanzasVotos=[];
-        if(DB.adminNombre===undefined)DB.adminNombre='';
-        if(DB.adminPhoto===undefined)DB.adminPhoto='';
-        addClasesFaltantes();
+        ensureDbShape();
         // Recuperación automática: si en localStorage hay copia antigua con fotos/claves/peticiones, fusionar y guardar en Firebase
         try{
           const raw=localStorage.getItem(SK);
@@ -162,21 +148,7 @@ async function loadDB(){
   // localStorage como respaldo
   try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
   if(!DB||!DB.caballeros)DB=seedDB();
-  // Migración: asegurar campo pw en todos
-  DB.caballeros.forEach(c=>{if(c.pw===undefined)c.pw='';if(c.fnac===undefined)c.fnac='';if(c.fechaBautizado===undefined)c.fechaBautizado='';if(c.fechaSellado===undefined)c.fechaSellado='';if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';if(c.telefono===undefined)c.telefono='';if(c.nombreMostrar===undefined)c.nombreMostrar='';});
-  // Migración: asegurar array de peticiones
-  if(!DB.peticiones)DB.peticiones=[];
-  // Migración: asegurar array de eventos
-  if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
-  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
-  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
-  if(!DB.finanzasGastos)DB.finanzasGastos=[];
-  if(!DB.finanzasActividades)DB.finanzasActividades=[];
-  if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
-  if(!DB.finanzasVotos)DB.finanzasVotos=[];
-  if(DB.adminNombre===undefined)DB.adminNombre='';
-  if(DB.adminPhoto===undefined)DB.adminPhoto='';
-  addClasesFaltantes();
+  ensureDbShape();
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
   hideLoading();
 }
@@ -315,6 +287,32 @@ function addClasesFaltantes(){
     fechasEnDB.add(seed.fecha);
   });
   DB.clases.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+}
+
+// Asegura que la estructura de DB tenga todos los campos esperados
+function ensureDbShape(){
+  if(!DB)DB={};
+  if(!Array.isArray(DB.caballeros))DB.caballeros=[];
+  DB.caballeros.forEach(c=>{
+    if(c.pw===undefined)c.pw='';
+    if(c.fnac===undefined)c.fnac='';
+    if(c.fechaBautizado===undefined)c.fechaBautizado='';
+    if(c.fechaSellado===undefined)c.fechaSellado='';
+    if(c.campamentoRespuesta===undefined)c.campamentoRespuesta='';
+    if(c.telefono===undefined)c.telefono='';
+    if(c.nombreMostrar===undefined)c.nombreMostrar='';
+  });
+  if(!DB.peticiones)DB.peticiones=[];
+  if(!DB.eventos)DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
+  if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
+  if(!DB.eventosEstudiosOverride)DB.eventosEstudiosOverride={};
+  if(!DB.finanzasGastos)DB.finanzasGastos=[];
+  if(!DB.finanzasActividades)DB.finanzasActividades=[];
+  if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
+  if(!DB.finanzasVotos)DB.finanzasVotos=[];
+  if(DB.adminNombre===undefined)DB.adminNombre='';
+  if(DB.adminPhoto===undefined)DB.adminPhoto='';
+  addClasesFaltantes();
 }
 
 // ═══════════════════════════════════════════════════════════════
