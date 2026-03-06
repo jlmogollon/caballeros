@@ -14,6 +14,7 @@ function showTab(id,el){
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
+  if(id==='t-evaluaciones-admin'){if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
   if(id==='t-informes'){renderInformes();}
 }
 function initAdmin(){
@@ -859,7 +860,7 @@ function openVersoEnBiblia(){
 }
 
 function showPvTab(tab){
-  ['perfil','oracion','eventos','calgr','finanzas'].forEach(t=>{
+  ['perfil','oracion','eventos','calgr','evaluaciones','finanzas'].forEach(t=>{
     const el=document.getElementById('pvtab-'+t);
     const btn=document.getElementById('pvtab-'+t+'-btn');
     if(el)el.classList.toggle('active',t===tab);
@@ -868,6 +869,7 @@ function showPvTab(tab){
   if(tab==='eventos')  renderEventosPV();
   if(tab==='calgr')    renderCalGr('pv-calgr-pg');
   if(tab==='oracion')  cargarPeticiones();
+  if(tab==='evaluaciones'){if(typeof renderEvaluacionesPV==='function')renderEvaluacionesPV();}
   if(tab==='finanzas') renderFinanzas();
 }
 

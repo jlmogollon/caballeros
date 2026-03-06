@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <!-- PWA / Home Screen Icon -->
@@ -354,6 +354,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 <script src="app.peticiones.js"></script>
 <script src="app.eventos.js"></script>
 <script src="app.finanzas.js"></script>
+<script src="app.evaluaciones.js"></script>
 <script>
 (function(){
   var FIREBASE_CONFIG = {
@@ -423,6 +424,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
     <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
+    <div class="ntab" onclick="showTab('t-evaluaciones-admin',this)">📝 Evaluaciones</div>
     <div class="ntab" onclick="showTab('t-informes',this)">📊 Informes</div>
   </div>
 
@@ -603,6 +605,16 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     </div>
   </div>
 
+  <!-- EVALUACIONES (cuestionarios interactivos) -->
+  <div id="t-evaluaciones-admin" class="tab">
+    <div class="pg" style="max-width:800px;">
+      <div class="sec-ttl">📝 Evaluaciones</div>
+      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Crea cuestionarios para que los caballeros respondan. Cada pregunta puede tener varias opciones y una respuesta correcta; al enviar se calcula la puntuación.</p>
+      <div id="evaluaciones-admin-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <button type="button" class="btn bteal" style="margin-top:12px;" onclick="openFormEvaluacion(null)">+ Nuevo cuestionario</button>
+    </div>
+  </div>
+
   <!-- INFORMES -->
   <div id="t-informes" class="tab">
     <div class="pg" style="max-width:700px;">
@@ -658,6 +670,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
     <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
+    <div class="pv-ntab"        id="pvtab-evaluaciones-btn" onclick="showPvTab('evaluaciones')">📝 Evaluaciones</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -800,6 +813,13 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <div class="pv-tab" id="pvtab-calgr">
     <div class="pv-body">
       <div id="pv-calgr-pg"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: EVALUACIONES (cuestionarios) ── -->
+  <div class="pv-tab" id="pvtab-evaluaciones">
+    <div class="pv-body">
+      <div id="evaluaciones-pv-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
     </div>
   </div>
 

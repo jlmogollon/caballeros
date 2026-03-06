@@ -339,6 +339,8 @@ function ensureDbShape(){
   if(!DB.finanzasActividades)DB.finanzasActividades=[];
   if(!DB.finanzasDonativos)DB.finanzasDonativos=[];
   if(!DB.finanzasVotos)DB.finanzasVotos=[];
+  if(!Array.isArray(DB.evaluaciones))DB.evaluaciones=[];
+  if(!Array.isArray(DB.evaluacionRespuestas))DB.evaluacionRespuestas=[];
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
   addClasesFaltantes();
