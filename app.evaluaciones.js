@@ -192,12 +192,12 @@ function renderEvaluacionesPV(){
     const yaRespondido=!!miResp;
     const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
     const puedeComenzar=!yaRespondido||puedeRepetir;
-    const col=yaRespondido?'#d1fae5':'#fef3c7';
-    const borde=yaRespondido?'#10b981':'#f59e0b';
+    const col=yaRespondido?'#fefce8':'#fef9c3';
+    const borde=yaRespondido?'rgba(212,168,0,0.5)':'rgba(245,197,24,0.5)';
     const icono=yaRespondido?'✅':'📝';
-    return`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="background:linear-gradient(135deg,${col} 0%,${yaRespondido?'#a7f3d0':'#fde68a'} 100%);border:2px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 16px ${yaRespondido?'rgba(16,185,129,0.2)':'rgba(245,158,11,0.2)'};transition:transform .2s,box-shadow .2s;">
+    return`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="background:linear-gradient(145deg,${col} 0%,${yaRespondido?'#fef08a':'#fef3c7'} 100%);border:1.5px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 20px rgba(245,197,24,0.15);transition:transform .2s,box-shadow .2s;">
       <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
-        <div style="width:48px;height:48px;border-radius:14px;background:${yaRespondido?'rgba(16,185,129,0.2)':'rgba(245,158,11,0.25)'};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${icono}</div>
+        <div style="width:48px;height:48px;border-radius:14px;background:rgba(245,197,24,0.2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${icono}</div>
         <div>
           <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:#1a1f2e;margin-bottom:2px;">${escAttr(ev.titulo)}</div>
           <div style="font-size:12px;color:#4b5563;">${nPreg} preguntas${yaRespondido?' · Completado':''}</div>

@@ -66,9 +66,10 @@ function showLoading(msg){
     el.style.cssText='position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:Lato,sans-serif;gap:14px;';
     el.innerHTML=`<div style="font-size:42px">🛡️</div><div style="font-family:Montserrat,sans-serif;font-size:18px;font-weight:800;color:#1a1f2e">Hombres de Verdad</div><div id="fb-load-msg" style="color:#3aabba;font-size:13px;font-weight:600">${msg}</div><div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#3aabba;border-radius:50%;animation:spin 0.7s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
     document.body.appendChild(el);
+    window._loadingTimeout=setTimeout(hideLoading,15000);
   }else{const m=document.getElementById('fb-load-msg');if(m)m.textContent=msg;}
 }
-function hideLoading(){const el=document.getElementById('fb-loading');if(el)el.remove();}
+function hideLoading(){clearTimeout(window._loadingTimeout);window._loadingTimeout=null;const el=document.getElementById('fb-loading');if(el)el.remove();}
 
 const CARLOS_FINANZAS_ID='c9';
 function seedDB(){
@@ -99,6 +100,16 @@ function mergeLegacyIntoDB(legacy,forcePeticiones){
   }
 }
 
+function descargarBackupDB(){
+  const json=JSON.stringify(DB,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='caballeros-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ Copia descargada. Guárdala en un lugar seguro.','ok');
+}
 async function recuperarDesdeBackup(){
   const ta=document.getElementById('legacy-json-inp');
   if(!ta||!ta.value.trim()){toast('Pega el JSON de la base anterior en el cuadro de texto','err');return;}
@@ -126,47 +137,46 @@ async function recuperarDesdeBackup(){
 
 async function loadDB(){
   showLoading('Cargando datos...');
-  // Intentar nube
-  if(useCloud()){
-    try{
-      const data=await cloudLoad();
-      if(data&&data.caballeros&&data.caballeros.length>0){
-        DB=data;
-        ensureDbShape();
-        // Recuperación automática: si en localStorage hay copia antigua con fotos/claves/peticiones, fusionar y guardar en Firebase
-        try{
-          const raw=localStorage.getItem(SK);
-          if(raw){
-            const legacy=JSON.parse(raw);
-            const hasLegacyPhotos=legacy.caballeros&&legacy.caballeros.some(c=>c.photo&&c.photo.length>50);
-            const hasLegacyPeticiones=legacy.peticiones&&legacy.peticiones.length>0;
-            const currentHasPhotos=DB.caballeros.some(c=>c.photo&&c.photo.length>50);
-            const needRecovery=(hasLegacyPhotos&&!currentHasPhotos)||(hasLegacyPeticiones&&(!DB.peticiones||DB.peticiones.length<legacy.peticiones.length));
-            if(needRecovery){
-              mergeLegacyIntoDB(legacy);
-              await cloudSave(DB);
-              toast('✅ Recuperadas fotos, claves y peticiones de la copia anterior','ok');
+  try{
+    if(useCloud()){
+      try{
+        const data=await cloudLoad();
+        if(data&&data.caballeros&&Array.isArray(data.caballeros)&&data.caballeros.length>0){
+          DB=data;
+          ensureDbShape();
+          try{
+            const raw=localStorage.getItem(SK);
+            if(raw){
+              const legacy=JSON.parse(raw);
+              const hasLegacyPhotos=legacy.caballeros&&legacy.caballeros.some(c=>c.photo&&c.photo.length>50);
+              const hasLegacyPeticiones=legacy.peticiones&&legacy.peticiones.length>0;
+              const currentHasPhotos=DB.caballeros.some(c=>c.photo&&c.photo.length>50);
+              const needRecovery=(hasLegacyPhotos&&!currentHasPhotos)||(hasLegacyPeticiones&&(!DB.peticiones||DB.peticiones.length<legacy.peticiones.length));
+              if(needRecovery){
+                mergeLegacyIntoDB(legacy);
+                await cloudSave(DB);
+                toast('✅ Recuperadas fotos, claves y peticiones de la copia anterior','ok');
+              }
             }
-          }
-        }catch(e){console.warn('Legacy merge:',e);}
-        hideLoading();return;
+          }catch(e){console.warn('Legacy merge:',e);}
+          return;
+        }
+        showLoading('Cargando datos iniciales...');
+        DB=seedDB();
+        ensureDbShape();
+        await cloudSave(DB);
+        return;
+      }catch(e){
+        console.warn('Nube falló:',e);
+        toast('⚠️ Sin conexión a la nube','err');
       }
-      // Bin vacío — cargar datos iniciales
-      showLoading('Cargando datos iniciales...');
-      DB=seedDB();
-      await cloudSave(DB);
-      hideLoading();return;
-    }catch(e){
-      console.warn('Nube falló, usando localStorage:',e);
-      toast('⚠️ Sin conexión a la nube','err');
     }
+    try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
+    if(!DB||!DB.caballeros)DB=seedDB();
+    ensureDbShape();
+  }finally{
+    hideLoading();
   }
-  // localStorage como respaldo
-  try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
-  if(!DB||!DB.caballeros)DB=seedDB();
-  ensureDbShape();
-  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  hideLoading();
 }
 
 async function saveDB(){
@@ -310,6 +320,7 @@ const SEED_EVAL_DISPENSACIONES={
   titulo:'Dispensaciones — Cuestionario',
   descripcion:'Cuestionario sobre el estudio de las dispensaciones (inmutabilidad de Dios, revelación progresiva, mayordomía, etc.).',
   activo:true,
+  claseId:'cl1',
   preguntas:[
     {id:'disp1',texto:'¿Cómo explica el texto la relación entre la inmutabilidad de Dios y Sus diferentes formas de tratar con el hombre?',opciones:[{texto:'Dios cambia Su carácter dependiendo de la época histórica.',correcta:false},{texto:'Dios es el mismo siempre, pero Sus métodos de administración varían según el tiempo y el hombre.',correcta:true},{texto:'Dios trata a todos los hombres de la misma manera exacta desde Adán hasta hoy.',correcta:false},{texto:'La Biblia sugiere que Dios evoluciona a medida que el hombre aprende más.',correcta:false}]},
     {
@@ -605,7 +616,7 @@ function ensureDbShape(){
     const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES.id);
     const seedCopy=JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES));
     if(idx>=0)DB.evaluaciones[idx]=seedCopy;
-    else DB.evaluaciones.push(seedCopy);
+    else{DB.evaluaciones.push(seedCopy);saveDB().then(()=>{}).catch(()=>{});}
   }
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
@@ -742,18 +753,24 @@ function abrevTema(t){
 }
 // Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
 function mkHistoryTable(cabId,forPdf){
-  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:classScoreForCab(cl,cabId)})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>{
+    const ev=getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId);
+    return{fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],ev,t:classScoreForCab(cl,cabId)};
+  }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
   const temaStyle=forPdf?'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;':'font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.4;';
-  const headers=forPdf?'<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Total</th></tr>':'<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr>';
+  const headers=forPdf?'<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Evaluación</th><th>Total</th></tr>':'<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr>';
   return`<table class="dtable ${forPdf?'dtable-pdf':'dtable-perfil'}"><thead>${headers}</thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${forPdf?(r.tema||'—').replace(/</g,'&lt;'):abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${forPdf?(r.tema||'—').replace(/</g,'&lt;'):abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
   }</tbody></table>`;
 }
 
 // Versión compacta para vista personal: agrupa por año y permite plegar
 function mkHistoryTableCompact(cabId){
-  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:classScoreForCab(cl,cabId)})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>{
+    const ev=getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId);
+    return{fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],ev,t:classScoreForCab(cl,cabId)};
+  }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
   const byYear={};
   hist.forEach(r=>{
@@ -773,13 +790,14 @@ function mkHistoryTableCompact(cabId){
       <td>${r.a?r.i:'—'}</td>
       <td>${r.a?r.d:'—'}</td>
       <td>${r.a?r.pa:'—'}</td>
+      <td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td>
       <td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td>
     </tr>`).join('');
     out+=`<details ${idx===0?'open':''} style="margin-bottom:8px;">
       <summary style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;cursor:pointer;outline:none;">📅 ${y} (${byYear[y].length} clases)</summary>
       <div style="margin-top:6px;">
         <table class="dtable dtable-perfil">
-          <thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -854,17 +872,20 @@ function logout(){document.getElementById('admin-pw').value='';document.getEleme
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
 // ═══════════════════════════════════════════════════════════════
-function showSc(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showSc(id){const el=document.getElementById(id);if(!el)return;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el.classList.add('active');}
 function showTab(id,el){
+  const tabEl=document.getElementById(id);
+  if(!tabEl)return;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');if(el)el.classList.add('active');
+  tabEl.classList.add('active');if(el)el.classList.add('active');
   if(id==='t-cabs'){renderCabs();renderGrupos();}
   if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
+  if(id==='t-evaluaciones-admin'){if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
   if(id==='t-informes'){renderInformes();}
 }
 function initAdmin(){

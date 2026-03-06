@@ -1,11 +1,13 @@
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
 // ═══════════════════════════════════════════════════════════════
-function showSc(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showSc(id){const el=document.getElementById(id);if(!el)return;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el.classList.add('active');}
 function showTab(id,el){
+  const tabEl=document.getElementById(id);
+  if(!tabEl)return;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');if(el)el.classList.add('active');
+  tabEl.classList.add('active');if(el)el.classList.add('active');
   if(id==='t-cabs'){renderCabs();renderGrupos();}
   if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
   if(id==='t-cumple')renderCumple();
@@ -204,6 +206,18 @@ function openListaGruposPV(){
   });
   openSheet('📊','Grupos',`${(GRUPOS||[]).length} grupos · integrantes por puntaje`,'<div style="max-height:70vh;overflow-y:auto">'+(h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>')+'</div>');
 }
+function openGrupoIntegrantes(nombreGrupo){
+  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  const ms=(map[nombreGrupo]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+  const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
+  const col=GCOL[nombreGrupo]||'var(--teal)';
+  const h=ms.length?ms.map((c,i)=>`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;transition:background .15s;">
+    <div style="width:36px;height:36px;border-radius:50%;background:${col}22;display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:11px;font-weight:900;color:${col};">${i+1}</div>
+    <div style="flex:1;min-width:0;"><div style="font-weight:700;color:var(--dark);">${nombreCorto(c)||c.nombre}</div><div style="font-size:11px;color:var(--text3);">${c.dist||''}</div></div>
+    <span style="font-weight:800;color:var(--teal);font-size:15px;">${calcCab(c.id).total.toFixed(1)}</span>
+  </div>`).join(''):'<p style="color:var(--text3);font-size:13px">No hay integrantes en este grupo.</p>';
+  openSheet('👥',nombreGrupo,`${ms.length} integrantes · Prom: ${avg}`,'<div style="max-height:70vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">'+h+'</div>');
+}
 function confirmDelCab(id){
   const c=DB.caballeros.find(x=>x.id===id);
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
@@ -376,8 +390,9 @@ function renderGrupos(){
     const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
     const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
     const col=GCOL[g]||'var(--teal)';
-    h+=`<div class="gr-card"><div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} · Prom: ${avg}</div></div>
-      ${ms.map(c=>`<div class="gr-row" onclick="openCabDetail('${c.id}')"><div><span class="gr-rname">${nombreCorto(c)||c.nombre}</span><span class="gr-rdist">${c.dist}</span></div><span class="gr-rsc">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div>`;
+    h+=`<div class="gr-card" onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="cursor:pointer;">
+      <div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} integrantes · Prom: ${avg} · Toca para ver</div></div>
+    </div>`;
   });
   document.getElementById('grupos-pg').innerHTML=h;
 }
@@ -434,8 +449,11 @@ function getClaseByKey(key){
 }
 function openClaseDetail(key){
   const cl=getClaseByKey(key);if(!cl)return;
-  const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
-  const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')}</tbody></table>`;
+  const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>{
+    const ev=typeof getEvalScoreForClassAndCab==='function'?getEvalScoreForClassAndCab(cl.id||cl.fecha,c.id):null;
+    return{nom:c.nombre,...cl.cal[c.id],ev,t:typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(cl.cal[c.id])};
+  }).sort((a,b)=>b.t-a.t);
+  const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Eval</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')}</tbody></table>`;
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   const clave=cl.fecha;
@@ -528,17 +546,18 @@ function openGrade(key){
 
   const sorted=[...DB.caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
   let html='';let lastG='';
-  const getEvalSc=typeof getEvalDisplayScoreForCab==='function'?getEvalDisplayScoreForCab:()=>0;
+  const getEvalSc=typeof getEvalScoreForClassAndCab==='function'?(cabId)=>getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId):()=>null;
   sorted.forEach(c=>{
     if(c.grupo!==lastG){
       lastG=c.grupo;
       const col=GCOL[c.grupo]||'var(--teal)';
-      html+=`<tr class="grp-sep"><td colspan="8" style="color:${col}">${c.grupo}</td></tr>`;
+      html+=`<tr class="grp-sep"><td colspan="9" style="color:${col}">${c.grupo}</td></tr>`;
     }
     const q=cl.cal[c.id]||{a:0,i:'',p:'',d:'',pa:''};
     const pres=!!q.a;
     const nombre=c.nombre.split(' ').slice(0,2).join(' ');
     const evalSc=getEvalSc(c.id);
+    const totVal=pres?(typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(q)):null;
     html+=`<tr id="tr-${c.id}">
       <td><div class="gname">${nombre}</div></td>
       <td><button class="att-btn ${pres?'yes':''}" id="att-${c.id}" onclick="togAtt('${c.id}')">${pres?'✅':'○'}</button></td>
@@ -546,8 +565,8 @@ function openGrade(key){
       <td><input class="sc-inp" id="sp-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.p!==''?q.p:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td><input class="sc-inp" id="sd-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.d!==''?q.d:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
       <td><input class="sc-inp" id="spa-${c.id}" type="number" min="0" max="10" step="1" value="${pres&&q.pa!==''?q.pa:''}" placeholder="—" ${pres?'':'disabled'} onfocus="this.select()" oninput="clamp(this);updTotal('${c.id}');jumpNextGrade(this)"></td>
-      <td class="total-cell" style="font-weight:700;color:${evalSc>0?'var(--teal)':'var(--text3)'}">${evalSc}</td>
-      <td class="total-cell" id="tot-${c.id}">${pres?fmtScore(rowTotal(q)):'—'}</td>
+      <td class="total-cell" style="font-weight:700;color:${evalSc!=null&&evalSc>0?'var(--teal)':'var(--text3)'}">${evalSc!=null?fmtScore(evalSc):'—'}</td>
+      <td class="total-cell" id="tot-${c.id}">${totVal!=null?fmtScore(totVal):'—'}</td>
     </tr>`;
   });
   document.getElementById('grade-tbody').innerHTML=html;
@@ -568,7 +587,13 @@ function togAtt(cabId){
     if(now)inp.value='1';else inp.value='';
   });
   const tot=document.getElementById('tot-'+cabId);
-  if(tot)tot.textContent=now?'1.00':'—';
+  if(tot){
+    if(now){
+      const evScore=typeof getEvalScoreForClassAndCab==='function'&&gradeClaseId?getEvalScoreForClassAndCab(gradeClaseId,cabId):null;
+      const base=rowTotal({i:1,p:1,d:1,pa:1});
+      tot.textContent=fmtScore(evScore!=null?+(0.7*base+0.3*evScore).toFixed(2):base);
+    }else tot.textContent='—';
+  }
 }
 function clamp(inp){if(+inp.value>10)inp.value=10;if(+inp.value<0)inp.value=0;}
 function jumpNextGrade(inp){
@@ -595,7 +620,10 @@ function updTotal(cabId){
   const p=+document.getElementById('sp-'+cabId).value||0;
   const d=+document.getElementById('sd-'+cabId).value||0;
   const pa=+document.getElementById('spa-'+cabId).value||0;
-  tot.textContent=fmtScore(rowTotal({i,p,d,pa}));
+  const base=rowTotal({i,p,d,pa});
+  const evScore=typeof getEvalScoreForClassAndCab==='function'&&gradeClaseId?getEvalScoreForClassAndCab(gradeClaseId,cabId):null;
+  const final=evScore!=null?+(0.7*base+0.3*evScore).toFixed(2):base;
+  tot.textContent=fmtScore(final);
 }
 function closeGrade(){document.getElementById('grade-screen').classList.remove('open');gradeClaseId=null;}
 
@@ -647,52 +675,30 @@ async function doSaveGrade(){
 // ═══════════════════════════════════════════════════════════════
 function renderCalGr(targetId){
   const el=document.getElementById(targetId||'calgr-pg');if(!el)return;
+  const esPv=targetId==='pv-calgr-pg';
+  // Pestaña Grupos caballero: solo tarjetas de grupos; tap = integrantes por puntaje
+  if(esPv){
+    const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+    let h='<div class="sec-ttl" style="margin-bottom:14px;">👥 Grupos</div><p style="font-size:12px;color:var(--text3);margin-bottom:16px;">Toca un grupo para ver sus integrantes ordenados por puntuación.</p>';
+    (GRUPOS||[]).forEach(g=>{
+      const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
+      const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
+      const col=GCOL[g]||'var(--teal)';
+      h+=`<div onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.04);cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;" onmouseover="this.style.borderColor='${col}';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'" onmouseout="this.style.borderColor='#e9edf2';this.style.boxShadow='0 2px 10px rgba(0,0,0,0.04)'">
+        <div style="width:44px;height:44px;border-radius:12px;background:${col}22;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👥</div>
+        <div style="flex:1;min-width:0;"><div style="font-family:Montserrat,sans-serif;font-size:14px;font-weight:800;color:${col};">${g}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${ms.length} integrantes · Prom: ${avg}</div></div>
+        <div style="font-size:18px;color:var(--text3);flex-shrink:0;">→</div>
+      </div>`;
+    });
+    el.innerHTML=h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>';
+    return;
+  }
   const sorted=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
   if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
   const porAnio={};
   sorted.forEach(cl=>{const y=cl.fecha.substring(0,4);if(!porAnio[y])porAnio[y]=[];porAnio[y].push(cl);});
   const anos=Object.keys(porAnio).sort();
-  const esPv=targetId==='pv-calgr-pg';
-  let h=esPv?'<div class="sec-ttl">📊 Mi grupo vs otros</div>':'<div class="sec-ttl">Calificaciones por Grupo</div>';
-  if(esPv&&currentCabId){
-    const cab=DB.caballeros.find(x=>x.id===currentCabId);
-    if(cab){
-      const list=ranking();
-      const delGrupo=list.filter(x=>x.grupo===cab.grupo);
-      const grupoAvg=delGrupo.length?(delGrupo.reduce((s,c)=>s+calcCab(c.id).total,0)/delGrupo.length).toFixed(1):'0.0';
-      const miTotal=calcCab(cab.id).total.toFixed(1);
-      const arriba=parseFloat(miTotal)>=parseFloat(grupoAvg);
-      // Media de grupo en el trimestre actual
-      const now=new Date();
-      const year=now.getFullYear();
-      const q=Math.floor(now.getMonth()/3);
-      const start=new Date(year,q*3,1);
-      const end=new Date(year,q*3+3,0);
-      let sumQ=0,nQ=0;
-      sorted.forEach(cl=>{
-        const d=new Date(cl.fecha);
-        if(d<start||d>end)return;
-        DB.caballeros.forEach(c2=>{
-          if(c2.grupo!==cab.grupo)return;
-          const qv=(cl.cal||{})[c2.id];
-          if(qv&&qv.a){sumQ+=(typeof classScoreForCab==='function'?classScoreForCab(cl,c2.id):rowTotal(qv));nQ++;}
-        });
-      });
-      const grupoQuarterAvg=nQ? (sumQ/nQ).toFixed(1):null;
-      const rankGrupo=delGrupo.findIndex(x=>x.id===cab.id)+1;
-      let info=`Tu grupo <strong>${cab.grupo}</strong> tiene media general <strong>${grupoAvg}</strong>. `;
-      if(grupoQuarterAvg){
-        info+=`En este trimestre la media de tu grupo es <strong>${grupoQuarterAvg}</strong>. `;
-      }
-      if(rankGrupo>0){
-        info+=`Dentro de tu grupo estás en la posición <strong>#${rankGrupo} de ${delGrupo.length}</strong> (${arriba?'por encima':'por debajo'} de la media, <strong>${miTotal}</strong> pts).`;
-        if(rankGrupo<=3){
-          info+=` <span style="color:#eab308;font-weight:800;margin-left:4px;">🏆 Top 3</span>`;
-        }
-      }
-      h+=`<p style="font-size:12px;color:var(--text2);margin-bottom:10px;">${info}</p>`;
-    }
-  }
+  let h='<div class="sec-ttl">Calificaciones por Grupo</div>';
   anos.forEach(y=>{
     h+=`<div class="cl-year-ttl" style="margin-top:${h.includes('cl-year-ttl')?16:0}px">${y}</div>`;
     porAnio[y].forEach(cl=>{
@@ -752,9 +758,9 @@ function renderPersonal(cabId){
     if(pct>=100){
       completionEl.innerHTML=`<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #22c55e;border-radius:14px;padding:14px 18px;text-align:center;"><span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:#166534;">Perfil completo ✅</span></div>`;
     }else{
-    if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
-    else subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
-    completionEl.innerHTML=`
+      if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
+      else subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
+      completionEl.innerHTML=`
       <div class="panel panel-soft-teal">
         <div class="panel-title">${msg}</div>
         <div class="panel-desc">${subt}</div>
@@ -763,6 +769,7 @@ function renderPersonal(cabId){
         </div>
       </div>
     `;
+    }
   }
   const lastMsgEl=document.getElementById('pv-last-class-msg');
   if(lastMsgEl){
@@ -814,17 +821,6 @@ function renderPersonal(cabId){
   const evalEl=document.getElementById('pv-eval-summary');
   if(evalEl)evalEl.innerHTML='';
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
-  const top5Wrap=document.getElementById('pv-top5-wrap');
-  if(top5Wrap){
-    const all=ranking();
-    const top5=all.slice(0,5);
-    const delGrupo=all.filter(x=>x.grupo===c.grupo);
-    const top3Grupo=delGrupo.slice(0,3);
-    let h='';
-    if(top5.length)h+='<div class="sec-ttl" style="margin-bottom:8px">🏆 Top 5 Caballeros</div>'+top5.map((cab,i)=>mkCabCard(cab,i+1)).join('');
-    if(top3Grupo.length)h+='<div class="sec-ttl" style="margin-top:20px;margin-bottom:8px">🏆 Top 3 de tu grupo</div>'+top3Grupo.map((cab,i)=>mkCabCard(cab,i+1)).join('');
-    top5Wrap.innerHTML=h;
-  }
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTableCompact(cabId);
   renderFbautCard(c);
@@ -835,7 +831,9 @@ function renderPersonal(cabId){
   renderEncuestaCampamento(c);
   renderCumpleBanners(cabId);
   renderEvalPendienteBanner(cabId);
-  if(typeof renderGrupoSection==='function')renderGrupoSection(c);
+  // Caballeros del grupo quitado del inicio (se ve en pestaña Grupos)
+  const grupoEl=document.getElementById('pv-grupo-section');
+  if(grupoEl){grupoEl.innerHTML='';grupoEl.style.display='none';const prev=grupoEl.previousElementSibling;if(prev&&prev.classList.contains('vine-div'))prev.style.display='none';}
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
@@ -982,7 +980,7 @@ async function doChangePw(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AUTOCALIFICACIÓN DEVOTO
+// AUTOCALIFICACIÓN DEVOTO — Rediseño pro
 // ═══════════════════════════════════════════════════════════════
 function renderDevotoCard(c){
   const el=document.getElementById('pv-devoto-card');
@@ -990,30 +988,30 @@ function renderDevotoCard(c){
   const esDevoto=!!c.devoto;
   if(esDevoto){
     el.innerHTML=`
-    <div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:1.5px solid #6ee7b7;border-radius:12px;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:20px;">🌿</span>
-        <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#065f46;">Soy Devoto</span>
+    <div style="background:linear-gradient(165deg,#0f172a 0%,#1e293b 35%,#334155 100%);border-radius:16px;padding:18px 20px;box-shadow:0 8px 32px rgba(15,23,42,0.5),0 0 0 1px rgba(245,197,24,0.15);position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(245,197,24,0.2) 0%,transparent 65%);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(245,197,24,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;position:relative;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,rgba(245,197,24,0.25),rgba(212,168,0,0.15));border:1px solid rgba(245,197,24,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;box-shadow:0 4px 12px rgba(245,197,24,0.2);">★</div>
+          <div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:2px;">Distinción</div>
+            <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#f5c518;letter-spacing:0.5px;">Soy Devoto</div>
+          </div>
+        </div>
+        <button onclick="toggleDevoto()" style="width:40px;height:40px;border-radius:12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Quitar distinción" onmouseover="this.style.background='rgba(239,68,68,0.25)'" onmouseout="this.style.background='rgba(239,68,68,0.15)'">✕</button>
       </div>
-      <button onclick="toggleDevoto()" style="background:transparent;border:none;padding:6px;cursor:pointer;font-size:18px;color:#b91c1c;font-weight:bold;" title="Quitar distinción">✕</button>
     </div>`;
     return;
   }
   el.innerHTML=`
-  <div style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-    <div style="display:flex;align-items:flex-start;gap:12px;">
-      <div style="font-size:26px;flex-shrink:0;margin-top:2px;">🕊️</div>
+  <div style="background:linear-gradient(165deg,#f8fafc 0%,#f1f5f9 100%);border:1.5px solid #e2e8f0;border-radius:16px;padding:18px 20px;box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+    <div style="display:flex;align-items:flex-start;gap:16px;">
+      <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🕊️</div>
       <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-          <div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#1a1f2e;">¿Eres Devoto?</div>
-            <div style="font-size:11px;color:#9ca3af;margin-top:2px;">Aún no has marcado esta distinción</div>
-          </div>
-          <button onclick="toggleDevoto()" style="background:linear-gradient(135deg,#059669,#047857);border:none;color:white;border-radius:10px;padding:9px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;box-shadow:0 3px 10px rgba(5,150,105,0.3);letter-spacing:0.5px;flex-shrink:0;">Marcarme como Devoto</button>
-        </div>
-        <div style="margin-top:10px;background:rgba(156,163,175,0.07);border-radius:8px;padding:8px 10px;">
-          <div style="font-size:10px;color:#6b7280;line-height:1.6;"><span style="font-weight:700;letter-spacing:0.5px;">¿Qué es un Devoto?</span> Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</div>
-        </div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:#1e293b;margin-bottom:4px;">¿Eres Devoto?</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.5;margin-bottom:14px;">Es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio.</div>
+        <button onclick="toggleDevoto()" style="background:linear-gradient(135deg,#0f172a,#1e293b);border:none;color:#f5c518;border-radius:12px;padding:12px 20px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(15,23,42,0.3);">Marcarme como Devoto</button>
       </div>
     </div>
   </div>`;

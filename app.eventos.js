@@ -131,22 +131,22 @@ function renderEventosPV(){
   const html=items.map((item,idx)=>{
     const n=diffDaysEv(item.fecha,today);
     const esProximo=idx===0;
-    const estiloProximo=esProximo?'background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 50%,#99f6e4 100%);border:2px solid #2dd4bf;box-shadow:0 8px 24px rgba(45,212,191,0.25);':'background:white;border:1.5px solid #e9edf2;box-shadow:0 2px 12px rgba(0,0,0,0.06);';
-    const badgeProximo=esProximo?'<span style="background:linear-gradient(135deg,#14b8a6,#0d9488);color:white;font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(20,184,166,0.4);">PRÓXIMO</span>':'';
+    const estiloProximo=esProximo?'background:linear-gradient(145deg,#0f172a 0%,#1e293b 40%,#334155 100%);border:1.5px solid rgba(245,197,24,0.35);box-shadow:0 8px 28px rgba(15,23,42,0.4);':'background:white;border:1.5px solid #e9edf2;box-shadow:0 2px 12px rgba(0,0,0,0.06);';
+    const badgeProximo=esProximo?'<span style="background:linear-gradient(135deg,#f5c518,#d4a800);color:#1a1f2e;font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(245,197,24,0.4);">PRÓXIMO</span>':'';
 
     if(item.tipo==='culto'){
       const nomCulto=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
       const {tema}=item;
       const temaLine=tema&&!ovCulto[item.fechaStr]?.nombre
-        ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;margin-top:2px;">${tema.titulo}</div>
-          ${tema.sub?`<div style="font-size:11px;color:#3aabba;font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
-          <div style="font-size:10px;color:#9ca3af;margin-top:2px;">📖 ${tema.ref}</div>`:'';
+        ?`<div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:${esProximo?'#fff':'#1a1f2e'};line-height:1.3;margin-top:2px;">${tema.titulo}</div>
+          ${tema.sub?`<div style="font-size:11px;color:${esProximo?'#f5c518':'#3aabba'};font-style:italic;margin-top:1px;">${tema.sub}</div>`:''}
+          <div style="font-size:10px;color:${esProximo?'rgba(255,255,255,0.7)':'#9ca3af'};margin-top:2px;">📖 ${tema.ref}</div>`:'';
       return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#3aabba,#1d6b77);border-radius:4px 0 0 4px;"></div>
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nomCulto}</div>
-          <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nomCulto}</div>
+          <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};">📅 ${fmtEvDate(item.fecha)}</div>
           ${temaLine}
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
@@ -159,10 +159,10 @@ function renderEventosPV(){
         <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${nomEstudio}</div>
-          <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
-          <div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${item.grupo}</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:${esProximo?'#fff':'#1a1f2e'};line-height:1.3;">${nomEstudio}</div>
+          <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+          <div style="display:inline-flex;align-items:center;gap:5px;background:${esProximo?'rgba(245,197,24,0.25)':'#ede9fe'};color:${esProximo?'#f5c518':'#6d28d9'};font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${item.grupo}</div>
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
@@ -174,13 +174,13 @@ function renderEventosPV(){
         ?` – ${new Date(ev.fechaFin+'T00:00:00').getDate()} de ${meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]}`
         :'';
       return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:${ev.color||'#6b7280'};border-radius:4px 0 0 4px;opacity:0.8;"></div>
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:${esProximo?'linear-gradient(180deg,#f5c518,#d4a800)':(ev.color||'#6b7280')};border-radius:4px 0 0 4px;opacity:0.9;"></div>
         <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
-          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:#1a1f2e;line-height:1.3;">${ev.nombre}</div>
-          ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
-          <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:${esProximo?'#fff':'#1a1f2e'};line-height:1.3;">${ev.nombre}</div>
+          ${ev.nota?`<div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.8)':(ev.color||'#6b7280')};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
+          <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
