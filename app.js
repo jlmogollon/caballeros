@@ -1,4 +1,4 @@
-﻿// Extraído desde index.html: lógica principal de la app Caballeros
+// Extraído desde index.html: lógica principal de la app Caballeros
 
 // ═══════════════════════════════════════════════════════════════
 // CONFIG & DB
@@ -868,7 +868,11 @@ function renderCumpleBanners(cabId){
   const fechaStr=`${proximoMasCercano.dia} ${M[proximoMasCercano.mes-1]}`;
   const diasTxt=proximoMasCercano.diasRest===1?'Mañana':`En ${proximoMasCercano.diasRest} días`;
   wrap.style.display='block';
-  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:4px;">🎂 Próximo cumpleaños</div><div style="font-size:13px;color:#92400e;font-weight:700;margin-bottom:2px;">'+nom+'</div><div style="font-size:12px;color:#b45309;">'+fechaStr+' · '+diasTxt+'</div></div>';
+  const edad=proximoMasCercano.edad;
+  const edadTxt=edad&&Number.isFinite(edad)?' · Cumple '+edad+' años':'';
+  const grupo=escAttr(proximoMasCercano.grupo||'');
+  const grupoHtml=grupo?'<div style="font-size:12px;color:#b45309;margin-top:2px;">👥 Grupo: '+grupo+'</div>':'';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:4px;">🎂 Próximo cumpleaños</div><div style="font-size:13px;color:#92400e;font-weight:700;margin-bottom:2px;">'+nom+'</div><div style="font-size:12px;color:#b45309;">'+fechaStr+' · '+diasTxt+edadTxt+'</div>'+grupoHtml+'<div style="font-size:11px;color:#92400e;margin-top:6px;">💌 Ora por este caballero y aprovecha para enviarle un saludo especial.</div></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
