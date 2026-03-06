@@ -693,8 +693,20 @@ function renderPersonal(cabId){
   if(completionEl){
     const req=[];
     req.push({ok:!!c.photo,label:'Foto de perfil'});
+    req.push({ok:!!(c.nombreMostrar&&String(c.nombreMostrar).trim()),label:'Nombre a mostrar'});
     req.push({ok:!!(c.telefono&&String(c.telefono).trim()),label:'Teléfono'});
     req.push({ok:!!(c.fnac&&c.fnac.length>=10),label:'Fecha de nacimiento'});
+    req.push({ok:!!(c.ciudadNacimiento&&String(c.ciudadNacimiento).trim()),label:'Ciudad de nacimiento'});
+    req.push({ok:!!(c.paisNacimiento&&String(c.paisNacimiento).trim()),label:'País de nacimiento'});
+    req.push({ok:!!(c.anioConversion&&String(c.anioConversion).trim()),label:'Año de conversión'});
+    req.push({ok:!!(c.iglesiaProcedencia&&String(c.iglesiaProcedencia).trim()),label:'Iglesia de procedencia'});
+    req.push({ok:!!(c.profesionOficio&&String(c.profesionOficio).trim()),label:'Profesión u oficio'});
+    req.push({ok:!!(c.gustosAficiones&&String(c.gustosAficiones).trim()),label:'Gustos o aficiones'});
+    req.push({ok:!!(c.rolActual&&String(c.rolActual).trim()),label:'Rol en la iglesia'});
+    req.push({ok:!!(c.estadoCivil&&String(c.estadoCivil).trim()),label:'Estado civil'});
+    req.push({ok:!!(c.tieneHijos&&String(c.tieneHijos).trim()),label:'¿Tienes hijos?'});
+    req.push({ok:!!(c.lema&&String(c.lema).trim()),label:'Versículo o lema'});
+    req.push({ok:!!(c.campamentoRespuesta&&String(c.campamentoRespuesta).trim()),label:'Campamento (¿vas?)'});
     if(c.bautizado)req.push({ok:!!(c.fechaBautizado&&c.fechaBautizado.length>=10),label:'Fecha de bautismo'});
     if(c.sellado)req.push({ok:!!(c.fechaSellado&&c.fechaSellado.length>=10),label:'Fecha de sellado'});
     const total=req.length||1;
