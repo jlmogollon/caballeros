@@ -459,6 +459,44 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   box-shadow:0 6px 24px rgba(15,23,42,0.45);
 }
 
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  background:#111827;
+  color:white;
+  padding:10px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-family:'Lato',sans-serif;
+  box-shadow:0 8px 22px rgba(15,23,42,0.35);
+  z-index:9999;
+  max-width:90%;
+  text-align:center;
+  border:1px solid rgba(31,41,55,0.9);
+  animation:toast-in .18s ease-out;
+}
+.toast.ok{
+  background:#022c22;
+  border-color:#16a34a;
+  color:#bbf7d0;
+}
+.toast.err{
+  background:#450a0a;
+  border-color:#ef4444;
+  color:#fee2e2;
+}
+.toast.info{
+  background:#0f172a;
+  border-color:#3b82f6;
+  color:#dbeafe;
+}
+@keyframes toast-in{
+  from{opacity:0;transform:translate(-50%,20px);}
+  to{opacity:1;transform:translate(-50%,0);}
+}
+
 button:focus-visible,
 .btn:focus-visible,
 .btn-hdr:focus-visible{

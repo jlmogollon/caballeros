@@ -1613,10 +1613,66 @@ async function addVotoCarlos(){
   toast('💾 Guardando...','info');await saveDB();toast('✅ Voto añadido','ok');
   renderListaVotos();
 }
-async function delGasto(id){if(!confirm('¿Eliminar este gasto?'))return;DB.finanzasGastos=(DB.finanzasGastos||[]).filter(g=>g.id!==id);await saveDB();renderListaGastos();toast('Gasto eliminado','ok');}
-async function delActividad(id){if(!confirm('¿Eliminar esta actividad?'))return;DB.finanzasActividades=(DB.finanzasActividades||[]).filter(a=>a.id!==id);await saveDB();renderListaActividades();toast('Actividad eliminada','ok');}
-async function delDonativo(id){if(!confirm('¿Eliminar este donativo?'))return;DB.finanzasDonativos=(DB.finanzasDonativos||[]).filter(d=>d.id!==id);await saveDB();renderListaDonativos();toast('Donativo eliminado','ok');}
-async function delVoto(id){if(!confirm('¿Eliminar este voto?'))return;DB.finanzasVotos=(DB.finanzasVotos||[]).filter(v=>v.id!==id);await saveDB();renderListaVotos();toast('Voto eliminado','ok');}
+function delGasto(id){
+  const g=(DB.finanzasGastos||[]).find(x=>x.id===id);
+  openSheet('🗑','Eliminar gasto','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:10px;">¿Eliminar este gasto${g&&g.concepto?` <strong>${escAttr(g.concepto)}</strong>`:''}?</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Esta acción no se puede deshacer.</p>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button class="btn bred" onclick="doDelGasto('${id}')">Eliminar</button>
+    </div>
+  `);
+}
+async function doDelGasto(id){
+  DB.finanzasGastos=(DB.finanzasGastos||[]).filter(g=>g.id!==id);
+  await saveDB();renderListaGastos();toast('Gasto eliminado','ok');closeModal();
+}
+function delActividad(id){
+  const a=(DB.finanzasActividades||[]).find(x=>x.id===id);
+  openSheet('🗑','Eliminar actividad','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:10px;">¿Eliminar la actividad${a&&a.nombre?` <strong>${escAttr(a.nombre)}</strong>`:''}?</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Esta acción no se puede deshacer.</p>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button class="btn bred" onclick="doDelActividad('${id}')">Eliminar</button>
+    </div>
+  `);
+}
+async function doDelActividad(id){
+  DB.finanzasActividades=(DB.finanzasActividades||[]).filter(a=>a.id!==id);
+  await saveDB();renderListaActividades();toast('Actividad eliminada','ok');closeModal();
+}
+function delDonativo(id){
+  const d=(DB.finanzasDonativos||[]).find(x=>x.id===id);
+  openSheet('🗑','Eliminar donativo','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:10px;">¿Eliminar este donativo${d&&d.concepto?` <strong>${escAttr(d.concepto)}</strong>`:''}?</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Esta acción no se puede deshacer.</p>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button class="btn bred" onclick="doDelDonativo('${id}')">Eliminar</button>
+    </div>
+  `);
+}
+async function doDelDonativo(id){
+  DB.finanzasDonativos=(DB.finanzasDonativos||[]).filter(d=>d.id!==id);
+  await saveDB();renderListaDonativos();toast('Donativo eliminado','ok');closeModal();
+}
+function delVoto(id){
+  const v=(DB.finanzasVotos||[]).find(x=>x.id===id);
+  openSheet('🗑','Eliminar voto','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:10px;">¿Eliminar este voto${v&&v.concepto?` <strong>${escAttr(v.concepto)}</strong>`:''}?</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Esta acción no se puede deshacer.</p>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button class="btn bred" onclick="doDelVoto('${id}')">Eliminar</button>
+    </div>
+  `);
+}
+async function doDelVoto(id){
+  DB.finanzasVotos=(DB.finanzasVotos||[]).filter(v=>v.id!==id);
+  await saveDB();renderListaVotos();toast('Voto eliminado','ok');closeModal();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // INFORMES PDF (HTML + window.print — estilo Escuela Dominical)

@@ -1372,7 +1372,17 @@ async function doCrearClase(){
   const fecha=document.getElementById('nc-fecha').value;
   if(!fecha){toast('Selecciona la fecha','err');return;}
   const dup=DB.clases.find(c=>c.fecha===fecha);
-  if(dup&&!confirm(`Ya hay una clase el ${fmtDate(fecha)}. ¿Continuar?`))return;
+  if(dup&&!window._ncForce){
+    openSheet('⚠️','Clase ya existente','',`
+      <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Ya hay una clase el <strong>${fmtDate(fecha)}</strong>.</p>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Si continúas, se añadirá otra clase para la misma fecha.</p>
+      <div class="btn-row">
+        <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+        <button class="btn bteal" onclick="window._ncForce=true;doCrearClase();window._ncForce=false;">Continuar</button>
+      </div>
+    `);
+    return;
+  }
   const id='cl'+Date.now();
   DB.clases.push({id,fecha,tema:document.getElementById('nc-tema').value.trim()||'Estudio de las Dispensaciones',grupoResp:document.getElementById('nc-grupo').value,cal:{}});
   await saveDB();closeModal();openGrade(id);
@@ -2436,12 +2446,14 @@ function importData(e){
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.caballeros||!data.clases)throw new Error('Formato incorrecto');
-      if(confirm('¿Importar estos datos? Se reemplazará todo lo actual.')){
-        DB=data;closeModal();initAdmin();buildSel();
-        toast('💾 Guardando en la nube...','info');
-        await saveDB();
-        toast('✅ Datos importados correctamente','ok');
-      }
+      openSheet('📥','Importar datos','',`
+        <p style="font-size:14px;color:var(--text);margin-bottom:10px;">¿Importar estos datos?</p>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Se reemplazará todo lo actual (caballeros, clases, eventos, finanzas...). Te recomendamos tener una copia exportada antes de continuar.</p>
+        <div class="btn-row">
+          <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+          <button class="btn bteal" onclick="(async ()=>{DB=${'data'};closeModal();initAdmin();buildSel();toast('💾 Guardando en la nube...','info');await saveDB();toast('✅ Datos importados correctamente','ok');})();">Importar</button>
+        </div>
+      `);
     }catch(err){toast('⚠️ Archivo inválido','err');}
   };
   reader.readAsText(file);
