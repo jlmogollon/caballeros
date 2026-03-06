@@ -1046,13 +1046,13 @@ function openCabDetail(id){
   const telEsc=escAttr(tel);const waEsc=escAttr(waUrl);const telNum=numeroParaEnlace(tel);const telHref=telNum?'tel:+'+telNum:'';
   const telHtml=tel!=='—'?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-weight:700;">${telEsc}</span>${waUrl?`<a href="${waEsc}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#25d366;color:white;text-decoration:none;" title="Enviar WhatsApp">📱</a>`:''}<a href="${escAttr(telHref)}" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--teal);color:white;text-decoration:none;" title="Llamar">📞</a></div>`:'<span style="font-weight:700;">—</span>';
   const ocultar=esAdmin?[]:(Array.isArray(c.ocultarAOtros)?c.ocultarAOtros:[]);
-  const prof=escAttr(c.profesionOficio||'');const gustos=escAttr(c.gustosAficiones||'');const rol=escAttr(c.rolActual||'');const lema=escAttr(c.lema||'');
+  const prof=escAttr(c.profesionOficio||'');const gustos=escAttr(c.gustosAficiones||'');const rolEsc=escAttr(c.rolActual||'');const rolHtml=rolEsc.replace(/\n/g,'<br>');const lema=escAttr(c.lema||'');
   const estCivil=c.estadoCivil==='soltero'?'Soltero':c.estadoCivil==='casado'?'Casado':c.estadoCivil==='noviazgo'?'En noviazgo':c.estadoCivil==='otro'?'Otro':'';
   const hijosTxt=c.tieneHijos==='no'?'No':c.tieneHijos==='si'?(c.numHijos?`Sí (${escAttr(c.numHijos)})`:'Sí'):'';
   const lineasPublicas=[
     prof&&!ocultar.includes('profesionOficio')&&`<div><span style="font-size:11px;color:var(--text3);">Profesión u oficio</span><div style="font-weight:700;">${prof}</div></div>`,
     gustos&&!ocultar.includes('gustosAficiones')&&`<div><span style="font-size:11px;color:var(--text3);">Gustos / aficiones</span><div style="font-weight:700;">${gustos}</div></div>`,
-    rol&&!ocultar.includes('rolActual')&&`<div><span style="font-size:11px;color:var(--text3);">Rol actual</span><div style="font-weight:700;">${rol}</div></div>`,
+    rolEsc&&!ocultar.includes('rolActual')&&`<div><span style="font-size:11px;color:var(--text3);">Rol o roles en la iglesia</span><div style="font-weight:700;">${rolHtml}</div></div>`,
     lema&&!ocultar.includes('lema')&&`<div><span style="font-size:11px;color:var(--text3);">Versículo o lema</span><div style="font-weight:700;">${lema}</div></div>`,
     estCivil&&!ocultar.includes('estadoCivil')&&`<div><span style="font-size:11px;color:var(--text3);">Estado civil</span><div style="font-weight:700;">${estCivil}</div></div>`,
     hijosTxt&&!ocultar.includes('tieneHijos')&&`<div><span style="font-size:11px;color:var(--text3);">¿Tienes hijos?</span><div style="font-weight:700;">${hijosTxt}</div></div>`
@@ -2227,7 +2227,11 @@ function openChangeCabPw(){
       <div class="fr" style="margin-bottom:10px;"><label>Iglesia de procedencia</label><input type="text" id="cpw-iglesiaProc" value="${iglesiaProcEsc}" placeholder="Donde te congregabas antes"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Profesión u oficio</label><input type="text" id="cpw-profesion" value="${profesionEsc}" placeholder="Ej. Ingeniero, carpintero, estudiante"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Gustos / aficiones</label><input type="text" id="cpw-gustos" value="${gustosEsc}" placeholder="Deportes, música, hobbies..."></div>
-      <div class="fr" style="margin-bottom:10px;"><label>Rol actual</label><input type="text" id="cpw-rol" value="${rolEsc}" placeholder="Ej. Servidor, directivo, ujier"></div>
+      <div class="fr" style="margin-bottom:10px;">
+        <label>Rol o roles en la iglesia</label>
+        <textarea id="cpw-rol" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-family:'Lato',sans-serif;resize:vertical;" placeholder="Ej. Servidor de ujieres&#10;Líder de célula&#10;Maestro de niños">${rolEsc}</textarea>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px;">Escribe hasta tres roles, uno por línea (en tu iglesia local).</div>
+      </div>
       <div class="fr" style="margin-bottom:10px;">
         <label>Estado civil</label>
         <select id="cpw-estadoCivil" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
