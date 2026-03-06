@@ -126,9 +126,26 @@ function openCabDetail(id){
   const starH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const barK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const bars=barK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
+  const esAdmin=document.getElementById('screen-admin')&&document.getElementById('screen-admin').classList.contains('active');
+  const esMismo=typeof currentCabId!=='undefined'&&currentCabId===id;
   const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:typeof classScoreForCab==='function'?classScoreForCab(cl,id):rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const histH=mkHistoryTable(id);
-  const esAdmin=document.getElementById('screen-admin')&&document.getElementById('screen-admin').classList.contains('active');
+  let evalBlock='';
+  if((esAdmin||esMismo)&&typeof getEvalSummaryForCab==='function'){
+    const info=getEvalSummaryForCab(id);
+    if(info){
+      const {count,last,ev,nota10}=info;
+      const fechaStr=last.fecha?new Date(last.fecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'';
+      const tituloEv=ev&&ev.titulo?escAttr(ev.titulo):'Cuestionario';
+      const baseRes=`${last.puntuacion}/${last.totalPreguntas||0} correctas`;
+      const notaTxt=nota10!=null?` (${nota10}/10)`:'';
+      const vecesTxt=count===1?'Has respondido 1 cuestionario.':`Has respondido ${count} cuestionarios.`;
+      evalBlock=`<div class="dsec"><div class="dhead">Evaluaciones de cuestionario</div>
+        <div style="font-size:13px;color:var(--text3);">${vecesTxt}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">Último: <strong>${tituloEv}</strong>${fechaStr?` · ${fechaStr}`:''} · ${baseRes}${notaTxt}</div>
+      </div>`;
+    }
+  }
   const btnRow=esAdmin?`<div class="btn-row">
       <button class="btn boutline" onclick="closeModal();openFormCab('${id}')">✏️ Editar</button>
       <button class="btn bred" onclick="confirmDelCab('${id}')">🗑 Eliminar</button>
@@ -165,6 +182,7 @@ function openCabDetail(id){
       <div style="text-align:center;font-size:11px;color:var(--text3);margin-top:4px">Valoración automática por estado</div>
     </div>
     <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total.toFixed(1)} pts</span> · Asistencia: ${cal.asist}/${cal.totalClases}</div>${bars}</div>
+    ${evalBlock}
     <div class="dsec"><div class="dhead">Historial de Clases</div>${histH}</div>
     ${btnRow}
   `);
@@ -779,6 +797,25 @@ function renderPersonal(cabId){
       `;
     }else{
       achEl.innerHTML='';
+    }
+  }
+  const evalEl=document.getElementById('pv-eval-summary');
+  if(evalEl&&typeof getEvalSummaryForCab==='function'){
+    const info=getEvalSummaryForCab(cabId);
+    if(info){
+      const {count,last,ev,nota10}=info;
+      const fechaStr=last.fecha?new Date(last.fecha).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'';
+      const tituloEv=ev&&ev.titulo?escAttr(ev.titulo):'Cuestionario';
+      const vecesTxt=count===1?'Has respondido 1 cuestionario.':`Has respondido ${count} cuestionarios.`;
+      const baseRes=`${last.puntuacion}/${last.totalPreguntas||0} correctas`;
+      const notaTxt=nota10!=null?` (${nota10}/10)`:'';
+      evalEl.innerHTML=`<div class="panel panel-soft-teal">
+        <div class="panel-title">📝 Evaluaciones respondidas</div>
+        <div class="panel-desc">${vecesTxt}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px;">Última: <strong>${tituloEv}</strong>${fechaStr?` · ${fechaStr}`:''} · ${baseRes}${notaTxt}</div>
+      </div>`;
+    }else{
+      evalEl.innerHTML='';
     }
   }
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];

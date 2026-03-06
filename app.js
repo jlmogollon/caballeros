@@ -670,6 +670,26 @@ function avgEvalScoreForCab(cabId){
   });
   return n?+(sum/n).toFixed(1):null;
 }
+// Resumen de evaluaciones de cuestionario para un caballero (para vistas admin y personal)
+function getEvalSummaryForCab(cabId){
+  const todas=DB.evaluacionRespuestas||[];
+  const mias=todas.filter(r=>r.cabId===cabId);
+  if(!mias.length)return null;
+  const ordenadas=[...mias].sort((a,b)=>{
+    const fa=a.fecha||'';
+    const fb=b.fecha||'';
+    return fa<fb?1:fa>fb?-1:0;
+  });
+  const last=ordenadas[0];
+  const ev=(DB.evaluaciones||[]).find(e=>e.id===last.evaluacionId)||null;
+  const nota10=last.totalPreguntas>0?+(last.puntuacion/last.totalPreguntas*10).toFixed(1):null;
+  return{
+    count:mias.length,
+    last,
+    ev,
+    nota10
+  };
+}
 function calcCab(id){
   if(_calcCache[id])return _calcCache[id];
   let si=0,sp=0,sd=0,spa=0,n=0,tot=0;
