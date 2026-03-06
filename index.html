@@ -311,8 +311,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .vine-ico{font-size:16px;color:var(--teal);}
 
 /* ── PERSONAL VIEW TABS ── */
-.pv-nav{background:var(--dark2);display:flex;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;}
-.pv-ntab{flex:1;padding:11px 6px;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;text-align:center;border-bottom:2.5px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;}
+.pv-nav{background:var(--dark2);display:flex;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.pv-nav::-webkit-scrollbar{display:none;}
+.pv-ntab{flex:0 0 auto;min-width:max-content;padding:11px 10px;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;text-align:center;border-bottom:2.5px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
 .pv-ntab.active{color:var(--teal);border-bottom-color:var(--teal);}
 .pv-tab{display:none;flex:1;overflow-y:auto;}
 .pv-tab.active{display:block;}

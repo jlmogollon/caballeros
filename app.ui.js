@@ -717,12 +717,12 @@ function renderPersonal(cabId){
     const barColor=pct>=100?'linear-gradient(90deg,#16a34a,#22c55e)':pct>=70?'linear-gradient(90deg,#3aabba,#2d8f9c)':'linear-gradient(90deg,#f59e0b,#f97316)';
     const msg=pct>=100?'Perfil completo ✅':'Perfil '+pct+'% completo';
     let subt;
-    if(faltan.length){
-      const siguiente=faltan[0];
-      subt='Te falta: '+faltan.join(', ')+'. ';
-      subt+='Siguiente paso recomendado: completa "'+siguiente+'".';
-    }else{
+    if(pct>=100){
       subt='¡Gracias por completar tu perfil! Ahora puedes generar tu informe en PDF cuando quieras.';
+    }else if(pct>80){
+      subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
+    }else{
+      subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
     }
     completionEl.innerHTML=`
       <div class="panel panel-soft-teal">

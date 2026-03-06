@@ -165,7 +165,7 @@ function renderEventosPV(){
         <div style="font-size:11px;color:#0369a1;">📅 ${fechaTxt} · ${diasTxt}</div>
         ${lineaExtra}
       </div>
-      <button type="button" class="btn bteal" style="font-size:11px;padding:7px 10px;white-space:nowrap;" onclick="showPvTab('eventos')">Ver detalles</button>
+      <button type="button" class="btn bteal" style="font-size:11px;padding:7px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle()">Ver detalles</button>
     </div>`;
   }
 
@@ -316,6 +316,58 @@ function renderEventosPV(){
     }).join('');
     elPasados.innerHTML=htmlPasados||'<div style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">No hay eventos pasados.</div>';
   }
+}
+
+function openProximoEventoDetalle(){
+  showPvTab('eventos');
+  const {proximos,today}=getEventosCompletos();
+  if(!proximos||!proximos.length){
+    toast('No hay eventos próximos para mostrar.','err');
+    return;
+  }
+  const next=proximos[0];
+  const ovCulto=DB.eventosCultosOverride||{};
+  const ovEstudio=DB.eventosEstudiosOverride||{};
+  let cuerpo='';
+  let icono='📅';
+  let titulo='Próximo evento';
+  let subt='';
+  const fechaTxt=fmtEvDate(next.fecha);
+  const diff=diffDaysEv(next.fecha,today);
+  const diasTxt=diff===0?'Hoy':diff===1?'Mañana':`En ${diff} días`;
+  if(next.tipo==='estudio'){
+    const nomEstudio=(ovEstudio[next.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
+    const grupo=next.grupo||'';
+    icono='📚';
+    titulo='Próximo estudio de Caballeros';
+    subt=`${fechaTxt} · ${diasTxt}`;
+    cuerpo=`<div style="font-size:13px;color:#374151;line-height:1.5;margin-bottom:8px;"><strong>${nomEstudio}</strong></div>
+      <div style="font-size:13px;color:#4b5563;margin-bottom:6px;">🕐 <strong>21:00 h</strong> por Zoom</div>
+      ${grupo?`<div style="font-size:13px;color:#6d28d9;margin-bottom:10px;">👥 <strong>Expone el grupo:</strong> ${grupo}</div>`:''}
+      <div style="background:rgba(58,171,186,0.08);border-radius:10px;padding:12px;border:1px solid rgba(58,171,186,0.4);margin-top:4px;">
+        <div style="font-size:12px;font-weight:800;color:#0e7490;margin-bottom:4px;">¡Conéctate al estudio!</div>
+        <div style="font-size:12px;color:#155e75;line-height:1.45;">Pide el enlace a tu coordinador o en el grupo de Caballeros para unirte a las 21:00 h.</div>
+      </div>`;
+  }else if(next.tipo==='culto'){
+    const nomCulto=(ovCulto[next.fechaStr]?.nombre)||(next.tema?'Culto de Caballeros · '+next.tema.titulo:'Culto de Caballeros');
+    icono='⚔️';
+    titulo='Próximo culto de Caballeros';
+    subt=`${fechaTxt} · ${diasTxt}`;
+    const temaLine=next.tema&&!ovCulto[next.fechaStr]?.nombre
+      ?`<div style="font-size:12px;color:#4b5563;margin-top:6px;">${next.tema.titulo}${next.tema.ref?` · ${next.tema.ref}`:''}</div>`:'';
+    cuerpo=`<div style="font-size:13px;color:#374151;"><strong>${nomCulto}</strong></div>${temaLine}`;
+  }else if(next.tipo==='evento'){
+    const ev=next.ev;
+    icono=ev.icono||'📅';
+    titulo='Próximo evento especial';
+    subt=`${fechaTxt} · ${diasTxt}`;
+    const nota=ev.nota||'';
+    cuerpo=`<div style="font-size:13px;color:#374151;"><strong>${ev.nombre}</strong></div>${nota?`<div style="font-size:12px;color:#6b7280;margin-top:8px;">${nota}</div>`:''}`;
+  }else{
+    subt=`${fechaTxt} · ${diasTxt}`;
+    cuerpo=`<div style="font-size:13px;color:#374151;">${subt}</div>`;
+  }
+  openSheet(icono,titulo,subt,`<div>${cuerpo}</div>`);
 }
 
 function renderCampamentoAdmin(){
