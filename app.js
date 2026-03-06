@@ -305,6 +305,275 @@ function addClasesFaltantes(){
   DB.clases.sort((a,b)=>a.fecha.localeCompare(b.fecha));
 }
 
+const SEED_EVAL_DISPENSACIONES={
+  id:'evq-dispensaciones',
+  titulo:'Dispensaciones — Cuestionario',
+  descripcion:'Cuestionario sobre el estudio de las dispensaciones (inmutabilidad de Dios, revelación progresiva, mayordomía, etc.).',
+  activo:true,
+  preguntas:[
+    {
+      id:'disp1',
+      texto:'¿Cómo explica el texto la relación entre la inmutabilidad de Dios y Sus diferentes formas de tratar con el hombre?',
+      opciones:[
+        {texto:'Dios cambia Su carácter dependiendo de la época histórica.',correcta:false},
+        {texto:'Dios es el mismo siempre, pero Sus métodos de administración varían según el tiempo y el hombre.',correcta:true},
+        {texto:'Dios trata a todos los hombres de la misma manera exacta desde Adán hasta hoy.',correcta:false},
+        {texto:'La Biblia sugiere que Dios evoluciona a medida que el hombre aprende más.',correcta:false}
+      ]
+    },
+    {
+      id:'disp2',
+      texto:'¿Qué concepto describe que Dios no entrega toda Su verdad al hombre de una sola vez?',
+      opciones:[
+        {texto:'Inspiración plenaria',correcta:false},
+        {texto:'Revelación progresiva',correcta:true},
+        {texto:'Iluminación espiritual',correcta:false},
+        {texto:'Tradición eclesiástica',correcta:false}
+      ]
+    },
+    {
+      id:'disp3',
+      texto:'Según el texto, ¿cuál era la diferencia principal entre las tareas dadas a Noé y a Salomón?',
+      opciones:[
+        {texto:'Noé debía predicar y Salomón debía escribir proverbios.',correcta:false},
+        {texto:'Noé tenía que construir un arca y Salomón un templo.',correcta:true},
+        {texto:'Noé vivía bajo la ley y Salomón bajo la gracia.',correcta:false},
+        {texto:'Noé no conocía a Dios y Salomón sí.',correcta:false}
+      ]
+    },
+    {
+      id:'disp4',
+      texto:'¿Qué analogía utiliza el autor para explicar por qué Dios revela la verdad poco a poco?',
+      opciones:[
+        {texto:'Un sembrador que espera la cosecha.',correcta:false},
+        {texto:'La alimentación de un bebé con leche y luego con carne.',correcta:true},
+        {texto:'La construcción de una casa desde los cimientos.',correcta:false},
+        {texto:'Un viaje por un camino que se ilumina con el sol.',correcta:false}
+      ]
+    },
+    {
+      id:'disp5',
+      texto:'¿De qué libros consistía la Biblia que poseía Moisés?',
+      opciones:[
+        {texto:'Solo el Génesis.',correcta:false},
+        {texto:'Génesis, Éxodo, Levítico, Números y Deuteronomio.',correcta:true},
+        {texto:'El Antiguo Testamento completo.',correcta:false},
+        {texto:'Moisés no tenía una Biblia escrita.',correcta:false}
+      ]
+    },
+    {
+      id:'disp6',
+      texto:'¿Cuál era la situación de la Biblia para Juan el Bautista?',
+      opciones:[
+        {texto:'Tenía todo el Nuevo Testamento pero nada del Antiguo.',correcta:false},
+        {texto:'Tenía todos los libros del Antiguo Testamento, pero ninguno del Nuevo.',correcta:true},
+        {texto:'Solo tenía los Salmos y los Profetas.',correcta:false},
+        {texto:'Su Biblia incluía los Evangelios porque conoció a Jesús.',correcta:false}
+      ]
+    },
+    {
+      id:'disp7',
+      texto:'A pesar de las diferencias dispensacionales, ¿qué elemento ha sido siempre el mismo para la salvación de hombres como Abraham, David o nosotros?',
+      opciones:[
+        {texto:'La obediencia estricta a los diez mandamientos.',correcta:false},
+        {texto:'La gracia de Dios por medio de la fe.',correcta:true},
+        {texto:'El cumplimiento de los sacrificios de animales.',correcta:false},
+        {texto:'La pertenencia a la nación de Israel.',correcta:false}
+      ]
+    },
+    {
+      id:'disp8',
+      texto:'¿Cuál es la diferencia fundamental respecto al sacerdocio entre el Antiguo Testamento y la época actual?',
+      opciones:[
+        {texto:'En el pasado no había sacerdotes y ahora sí los hay.',correcta:false},
+        {texto:'Antiguamente solo los hijos de Aarón eran sacerdotes; hoy todo creyente es un sacerdote.',correcta:true},
+        {texto:'Hoy en día los pastores cumplen la misma función que los sacerdotes de Aarón.',correcta:false},
+        {texto:'El sacerdocio ya no existe en ninguna forma.',correcta:false}
+      ]
+    },
+    {
+      id:'disp9',
+      texto:'En cuanto a la dieta humana, ¿qué cambio ocurrió específicamente después del Diluvio según Génesis 9:2-3?',
+      opciones:[
+        {texto:'Dios prohibió comer todo tipo de plantas.',correcta:false},
+        {texto:'Se permitió al hombre comer carne de animales.',correcta:true},
+        {texto:'Se establecieron las leyes de alimentos limpios e inmundos.',correcta:false},
+        {texto:'El hombre dejó de comer para alimentarse solo de maná.',correcta:false}
+      ]
+    },
+    {
+      id:'disp10',
+      texto:'¿Qué distinción de grupos humanos surgió a partir del llamado de Abraham?',
+      opciones:[
+        {texto:'La división entre creyentes e incrédulos.',correcta:false},
+        {texto:'La separación entre judíos y gentiles.',correcta:true},
+        {texto:'La creación de la Iglesia de Dios.',correcta:false},
+        {texto:'La división de la humanidad en diferentes lenguas.',correcta:false}
+      ]
+    },
+    {
+      id:'disp11',
+      texto:'Según el texto, ¿qué cambio ocurrió respecto al Espíritu Santo en el día de Pentecostés?',
+      opciones:[
+        {texto:'El Espíritu Santo dejó de actuar en el mundo.',correcta:false},
+        {texto:'El Espíritu pasó de estar “con” los discípulos a estar “en” ellos.',correcta:true},
+        {texto:'El Espíritu Santo fue creado en ese momento.',correcta:false},
+        {texto:'Solo los profetas recibieron al Espíritu en Pentecostés.',correcta:false}
+      ]
+    },
+    {
+      id:'disp12',
+      texto:'Después del Arrebatamiento, ¿cuántos grupos de personas habrá en el mundo según la perspectiva dispensacional descrita?',
+      opciones:[
+        {texto:'Tres: Judíos, Gentiles y la Iglesia.',correcta:false},
+        {texto:'Dos: Judíos y Gentiles.',correcta:true},
+        {texto:'Solo uno: los que se queden en la tierra.',correcta:false},
+        {texto:'Ninguno, la tierra quedará vacía.',correcta:false}
+      ]
+    },
+    {
+      id:'disp13',
+      texto:'¿Qué cambio se espera en el comportamiento animal durante el Reino Milenial?',
+      opciones:[
+        {texto:'Los animales salvajes se extinguirán por completo.',correcta:false},
+        {texto:'Los animales vivirán en paz y su naturaleza agresiva cambiará.',correcta:true},
+        {texto:'Los animales dejarán de existir y solo habrá seres espirituales.',correcta:false},
+        {texto:'No habrá cambios, la naturaleza seguirá bajo la ley del más fuerte.',correcta:false}
+      ]
+    },
+    {
+      id:'disp14',
+      texto:'¿Cuál es el origen etimológico de la palabra griega “oikonomia”?',
+      opciones:[
+        {texto:'Proviene de palabras que significan “mensaje” y “salvación”.',correcta:false},
+        {texto:'OIKOS (casa) y NOMOS (ley).',correcta:true},
+        {texto:'DIS (dos) y PENSAR (meditar).',correcta:false},
+        {texto:'THEOS (Dios) y LOGOS (palabra).',correcta:false}
+      ]
+    },
+    {
+      id:'disp15',
+      texto:'Según 1ª Corintios 4:2, ¿cuál es el requisito esencial de un mayordomo?',
+      opciones:[
+        {texto:'Ser muy inteligente y talentoso.',correcta:false},
+        {texto:'Ser hallado fiel.',correcta:true},
+        {texto:'Tener una posición social elevada.',correcta:false},
+        {texto:'Haber estudiado mucha geometría y álgebra.',correcta:false}
+      ]
+    },
+    {
+      id:'disp16',
+      texto:'En el ejemplo de José y Potifar, ¿quién era el dueño y quién el administrador?',
+      opciones:[
+        {texto:'José era el dueño y Potifar el administrador.',correcta:false},
+        {texto:'Potifar era el dueño y José el administrador.',correcta:true},
+        {texto:'Ambos eran dueños por partes iguales.',correcta:false},
+        {texto:'Dios era el dueño y ambos eran administradores por igual.',correcta:false}
+      ]
+    },
+    {
+      id:'disp17',
+      texto:'En el marco de una dispensación, ¿qué representa “la casa” según el Salmo 24:1?',
+      opciones:[
+        {texto:'El edificio físico de una iglesia local.',correcta:false},
+        {texto:'El mundo entero y la tierra.',correcta:true},
+        {texto:'Solo la nación de Israel.',correcta:false},
+        {texto:'El corazón individual de cada persona.',correcta:false}
+      ]
+    },
+    {
+      id:'disp18',
+      texto:'¿Qué término utiliza el autor para definir a una persona que reconoce las diferencias importantes en el trato de Dios a través de la historia?',
+      opciones:[
+        {texto:'Un teólogo sistemático.',correcta:false},
+        {texto:'Un dispensacionalista.',correcta:true},
+        {texto:'Un reformador.',correcta:false},
+        {texto:'Un historiador bíblico.',correcta:false}
+      ]
+    },
+    {
+      id:'disp19',
+      texto:'¿Cuál es la responsabilidad del “mayordomo” en el esquema de las dispensaciones?',
+      opciones:[
+        {texto:'Crear sus propias leyes para la casa.',correcta:false},
+        {texto:'Manejar fielmente lo que Dios ha puesto en sus manos.',correcta:true},
+        {texto:'Convertirse en el dueño de la propiedad tras un tiempo de servicio.',correcta:false},
+        {texto:'Decidir qué partes de la Biblia aplicar y cuáles ignorar.',correcta:false}
+      ]
+    },
+    {
+      id:'disp20',
+      texto:'¿Qué ocurrió con la duración de los lenguajes en la tierra después del juicio de Babel?',
+      opciones:[
+        {texto:'La gente dejó de hablar para comunicarse por señas.',correcta:false},
+        {texto:'La humanidad pasó de tener un solo lenguaje a tener muchos lenguajes.',correcta:true},
+        {texto:'Dios unificó todos los dialectos en una sola lengua perfecta.',correcta:false},
+        {texto:'Los lenguajes solo cambiaron para los que construían la torre.',correcta:false}
+      ]
+    },
+    {
+      id:'disp21',
+      texto:'Antes de la Cruz, bajo la ley de Moisés, había reglas dietéticas estrictas. ¿Qué pasaje se cita para mostrar el cambio después de la Cruz?',
+      opciones:[
+        {texto:'Levítico 11',correcta:false},
+        {texto:'1ª Timoteo 4:3-5',correcta:true},
+        {texto:'Génesis 1:29',correcta:false},
+        {texto:'Éxodo 20',correcta:false}
+      ]
+    },
+    {
+      id:'disp22',
+      texto:'¿Qué diferencia existe en la orden de predicar entre Mateo 10 y Mateo 28?',
+      opciones:[
+        {texto:'En Mateo 10 debían ir a todo el mundo; en el 28 solo a Israel.',correcta:false},
+        {texto:'En Mateo 10 la orden era limitada a Israel; en el 28 es para todas las naciones.',correcta:true},
+        {texto:'No hay ninguna diferencia, la orden siempre fue la misma.',correcta:false},
+        {texto:'En Mateo 10 se les prohibió hablar y en el 28 se les obligó.',correcta:false}
+      ]
+    },
+    {
+      id:'disp23',
+      texto:'¿Quién fue el hombre que escribió el último libro del Nuevo Testamento, completando así la Biblia?',
+      opciones:[
+        {texto:'El apóstol Pablo.',correcta:false},
+        {texto:'El apóstol Juan.',correcta:true},
+        {texto:'Pedro.',correcta:false},
+        {texto:'Moisés.',correcta:false}
+      ]
+    },
+    {
+      id:'disp24',
+      texto:'Antes del Diluvio, ¿existía la pena capital para los asesinos según el caso de Caín?',
+      opciones:[
+        {texto:'Sí, Dios ordenó matar a quien matara a otro.',correcta:false},
+        {texto:'No, Dios prohibió que alguien matara al asesino Caín.',correcta:true},
+        {texto:'Solo se aplicaba si el asesino no se arrepentía.',correcta:false},
+        {texto:'La pena capital existía desde la caída de Adán.',correcta:false}
+      ]
+    },
+    {
+      id:'disp25',
+      texto:'¿En cuántas ocasiones aparece la palabra “dispensación” en el Nuevo Testamento según el texto?',
+      opciones:[
+        {texto:'10 veces.',correcta:false},
+        {texto:'4 veces.',correcta:true},
+        {texto:'Ninguna, es un invento moderno.',correcta:false},
+        {texto:'Solo una vez en el Apocalipsis.',correcta:false}
+      ]
+    },
+    {
+      id:'disp26',
+      texto:'¿Qué simboliza el cambio del Sábado al Domingo en la era después de la Cruz?',
+      opciones:[
+        {texto:'Un error de los primeros cristianos al contar los días.',correcta:false},
+        {texto:'Un cambio administrativo tras la resurrección de Cristo.',correcta:true},
+        {texto:'Una imposición de los gentiles para diferenciarse de los judíos.',correcta:false},
+        {texto:'Que el Sábado ahora dura dos días en lugar de uno.',correcta:false}
+      ]
+    }
+  ]
+};
+
 // Asegura que la estructura de DB tenga todos los campos esperados
 function ensureDbShape(){
   if(!DB)DB={};
@@ -341,6 +610,11 @@ function ensureDbShape(){
   if(!DB.finanzasVotos)DB.finanzasVotos=[];
   if(!Array.isArray(DB.evaluaciones))DB.evaluaciones=[];
   if(!Array.isArray(DB.evaluacionRespuestas))DB.evaluacionRespuestas=[];
+  if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES){
+    if(!DB.evaluaciones.some(e=>e.id===SEED_EVAL_DISPENSACIONES.id)){
+      DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES)));
+    }
+  }
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
   addClasesFaltantes();
