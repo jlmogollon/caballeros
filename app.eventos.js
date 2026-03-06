@@ -128,83 +128,7 @@ function renderEventosPV(){
   const ovCulto=DB.eventosCultosOverride||{};
   const ovEstudio=DB.eventosEstudiosOverride||{};
 
-  const nextItem=items.length?items[0]:null;
-  const listItems=nextItem?items.slice(1):items;
-
-  let bannerHtml='';
-  if(nextItem){
-    const next=nextItem;
-    const nNext=diffDaysEv(next.fecha,today);
-    let titulo='Próximo evento';
-    let subtitulo='';
-    let lineaExtra='';
-    let icono='📅';
-    if(next.tipo==='culto'){
-      const nomCulto=(ovCulto[next.fechaStr]?.nombre)||(next.tema?'Culto de Caballeros · '+next.tema.titulo:'Culto de Caballeros');
-      titulo='Próximo culto de Caballeros';
-      subtitulo=nomCulto;
-      icono='⚔️';
-    }else if(next.tipo==='estudio'){
-      const nomEstudio=(ovEstudio[next.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
-      titulo='Próximo estudio de Caballeros';
-      subtitulo=nomEstudio;
-      lineaExtra=next.grupo?`<div style="font-size:11px;color:#6d28d9;font-weight:700;margin-top:2px;">👥 Expone: ${next.grupo}</div>`:'';
-      icono='📚';
-    }else if(next.tipo==='evento'){
-      titulo='Próximo evento especial';
-      subtitulo=next.ev.nombre;
-      icono=next.ev.icono||'📅';
-    }
-    const fechaTxt=fmtEvDate(next.fecha);
-    const diasTxt=nNext===0?'Hoy':nNext===1?'Mañana':`En ${nNext} días`;
-    bannerHtml=`<div class="panel panel-soft-teal" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:26px;">${icono}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="panel-title" style="margin-bottom:4px;">${titulo}</div>
-        <div class="panel-desc" style="margin-bottom:4px;">${subtitulo||''}</div>
-        <div style="font-size:11px;color:#0369a1;">📅 ${fechaTxt} · ${diasTxt}</div>
-        ${lineaExtra}
-      </div>
-      <button type="button" class="btn bteal" style="font-size:11px;padding:7px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle()">Ver detalles</button>
-    </div>`;
-  }
-
-  let detalleHtml='';
-  if(nextItem){
-    const next=nextItem;
-    if(next.tipo==='estudio'){
-      const nomEstudio=(ovEstudio[next.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
-      const grupo=next.grupo||'';
-      detalleHtml=`<div class="panel" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(245,197,18,0.08) 0%,rgba(245,197,18,0.04) 100%);border:1.5px solid rgba(245,197,18,0.35);border-radius:14px;padding:18px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#1a1f2e;margin-bottom:10px;">📚 Detalles del próximo estudio</div>
-        <div style="font-size:13px;color:#374151;line-height:1.5;margin-bottom:8px;"><strong>${nomEstudio}</strong></div>
-        <div style="font-size:13px;color:#4b5563;margin-bottom:6px;">🕐 <strong>21:00 h</strong> por Zoom</div>
-        ${grupo?`<div style="font-size:13px;color:#6d28d9;margin-bottom:10px;">👥 <strong>Expone el grupo:</strong> ${grupo}</div>`:''}
-        <div style="background:rgba(58,171,186,0.1);border-radius:10px;padding:14px;margin-top:12px;border:1px solid rgba(58,171,186,0.2);">
-          <div style="font-size:12px;font-weight:800;color:#0e7490;margin-bottom:6px;">¡Conéctate al estudio!</div>
-          <div style="font-size:12px;color:#155e75;line-height:1.45;">Te invitamos a conectarte a las 21:00 h por Zoom para compartir este estudio bíblico con tus hermanos. Pide el enlace a tu coordinador o en el grupo de Caballeros.</div>
-        </div>
-      </div>`;
-    }else if(next.tipo==='culto'){
-      const nomCulto=(ovCulto[next.fechaStr]?.nombre)||(next.tema?'Culto de Caballeros · '+next.tema.titulo:'Culto de Caballeros');
-      const temaLine=next.tema&&!ovCulto[next.fechaStr]?.nombre
-        ?`<div style="font-size:12px;color:#4b5563;margin-top:6px;">${next.tema.titulo}${next.tema.ref?` · ${next.tema.ref}`:''}</div>`:'';
-      detalleHtml=`<div class="panel" style="margin-bottom:16px;background:rgba(58,171,186,0.06);border:1.5px solid rgba(58,171,186,0.25);border-radius:14px;padding:18px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">⚔️ Detalles del próximo culto</div>
-        <div style="font-size:13px;color:#374151;"><strong>${nomCulto}</strong></div>
-        ${temaLine}
-      </div>`;
-    }else if(next.tipo==='evento'){
-      const nota=next.ev.nota||'';
-      detalleHtml=`<div class="panel" style="margin-bottom:16px;border:1.5px solid #e5e7eb;border-radius:14px;padding:18px;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">${next.ev.icono||'📅'} Detalles del evento</div>
-        <div style="font-size:13px;color:#374151;"><strong>${next.ev.nombre}</strong></div>
-        ${nota?`<div style="font-size:12px;color:#6b7280;margin-top:8px;">${nota}</div>`:''}
-      </div>`;
-    }
-  }
-
-  const html=listItems.map(item=>{
+  const html=items.map((item,idx)=>{
     const n=diffDaysEv(item.fecha,today);
 
     if(item.tipo==='culto'){
@@ -222,7 +146,7 @@ function renderEventosPV(){
           <div style="font-size:11px;color:#4b5563;">📅 ${fmtEvDate(item.fecha)}</div>
           ${temaLine}
         </div>
-        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
     }
 
@@ -237,7 +161,7 @@ function renderEventosPV(){
           <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
           <div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${item.grupo}</div>
         </div>
-        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
     }
 
@@ -255,14 +179,13 @@ function renderEventosPV(){
           ${ev.nota?`<div style="font-size:11px;color:${ev.color||'#6b7280'};margin-top:2px;font-weight:600;">${ev.nota}</div>`:''}
           <div style="font-size:11px;color:#4b5563;margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
         </div>
-        <div style="flex-shrink:0;">${badgeEv(n)}</div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="openProximoEventoDetalle(${idx})">Ver detalles</button></div>
       </div>`;
     }
     return'';
   }).join('');
 
-  const listLabel=nextItem&&listItems.length?'<div class="sec-ttl" style="font-size:12px;color:#9ca3af;margin-top:4px;margin-bottom:8px;">Más eventos próximos</div>':'';
-  el.innerHTML=bannerHtml+detalleHtml+listLabel+(html||(nextItem?'':'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>'));
+  el.innerHTML=html||'<div style="text-align:center;padding:16px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>';
 
   const elPasados=document.getElementById('pv-eventos-pasados');
   if(elPasados){
@@ -318,14 +241,15 @@ function renderEventosPV(){
   }
 }
 
-function openProximoEventoDetalle(){
+function openProximoEventoDetalle(idx){
   showPvTab('eventos');
   const {proximos,today}=getEventosCompletos();
   if(!proximos||!proximos.length){
     toast('No hay eventos próximos para mostrar.','err');
     return;
   }
-  const next=proximos[0];
+  const i=typeof idx==='number'&&idx>=0?Math.min(idx,proximos.length-1):0;
+  const next=proximos[i];
   const ovCulto=DB.eventosCultosOverride||{};
   const ovEstudio=DB.eventosEstudiosOverride||{};
   let cuerpo='';
@@ -339,30 +263,39 @@ function openProximoEventoDetalle(){
     const nomEstudio=(ovEstudio[next.fechaStr]?.nombre)||'Estudio de las Dispensaciones';
     const grupo=next.grupo||'';
     icono='📚';
-    titulo='Próximo estudio de Caballeros';
+    titulo='Detalles del estudio';
     subt=`${fechaTxt} · ${diasTxt}`;
-    cuerpo=`<div style="font-size:13px;color:#374151;line-height:1.5;margin-bottom:8px;"><strong>${nomEstudio}</strong></div>
+    cuerpo=`<div style="font-size:14px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">${nomEstudio}</div>
+      <div style="font-size:13px;color:#4b5563;margin-bottom:6px;">📅 ${fechaTxt}</div>
       <div style="font-size:13px;color:#4b5563;margin-bottom:6px;">🕐 <strong>21:00 h</strong> por Zoom</div>
       ${grupo?`<div style="font-size:13px;color:#6d28d9;margin-bottom:10px;">👥 <strong>Expone el grupo:</strong> ${grupo}</div>`:''}
-      <div style="background:rgba(58,171,186,0.08);border-radius:10px;padding:12px;border:1px solid rgba(58,171,186,0.4);margin-top:4px;">
+      <div style="background:rgba(58,171,186,0.08);border-radius:10px;padding:12px;border:1px solid rgba(58,171,186,0.4);margin-top:12px;">
         <div style="font-size:12px;font-weight:800;color:#0e7490;margin-bottom:4px;">¡Conéctate al estudio!</div>
         <div style="font-size:12px;color:#155e75;line-height:1.45;">Pide el enlace a tu coordinador o en el grupo de Caballeros para unirte a las 21:00 h.</div>
       </div>`;
   }else if(next.tipo==='culto'){
     const nomCulto=(ovCulto[next.fechaStr]?.nombre)||(next.tema?'Culto de Caballeros · '+next.tema.titulo:'Culto de Caballeros');
     icono='⚔️';
-    titulo='Próximo culto de Caballeros';
+    titulo='Detalles del culto';
     subt=`${fechaTxt} · ${diasTxt}`;
-    const temaLine=next.tema&&!ovCulto[next.fechaStr]?.nombre
-      ?`<div style="font-size:12px;color:#4b5563;margin-top:6px;">${next.tema.titulo}${next.tema.ref?` · ${next.tema.ref}`:''}</div>`:'';
-    cuerpo=`<div style="font-size:13px;color:#374151;"><strong>${nomCulto}</strong></div>${temaLine}`;
+    const temaBlock=next.tema&&!ovCulto[next.fechaStr]?.nombre
+      ?`<div style="background:rgba(58,171,186,0.08);border-radius:10px;padding:14px;margin-top:12px;border:1px solid rgba(58,171,186,0.2);">
+        <div style="font-size:14px;font-weight:800;color:#1a1f2e;">${next.tema.titulo}</div>
+        ${next.tema.sub?`<div style="font-size:12px;color:#3aabba;font-style:italic;margin-top:4px;">${next.tema.sub}</div>`:''}
+        ${next.tema.ref?`<div style="font-size:12px;color:#6b7280;margin-top:6px;">📖 ${next.tema.ref}</div>`:''}
+      </div>`:'';
+    cuerpo=`<div style="font-size:13px;color:#374151;"><strong>${nomCulto}</strong></div>
+      <div style="font-size:12px;color:#6b7280;margin-top:8px;">📅 ${fechaTxt}</div>${temaBlock}`;
   }else if(next.tipo==='evento'){
     const ev=next.ev;
     icono=ev.icono||'📅';
-    titulo='Próximo evento especial';
+    titulo='Detalles del evento';
     subt=`${fechaTxt} · ${diasTxt}`;
     const nota=ev.nota||'';
-    cuerpo=`<div style="font-size:13px;color:#374151;"><strong>${ev.nombre}</strong></div>${nota?`<div style="font-size:12px;color:#6b7280;margin-top:8px;">${nota}</div>`:''}`;
+    const fechaFinLine=ev.fechaFin?`<div style="font-size:12px;color:#6b7280;margin-top:4px;">Hasta: ${fmtEvDate(new Date(ev.fechaFin+'T00:00:00'))}</div>`:'';
+    cuerpo=`<div style="font-size:14px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">${ev.nombre}</div>
+      <div style="font-size:13px;color:#4b5563;">📅 ${fechaTxt}</div>${fechaFinLine}
+      ${nota?`<div style="font-size:13px;color:#6b7280;margin-top:12px;line-height:1.5;padding:12px;background:#f9fafb;border-radius:10px;">${nota}</div>`:''}`;
   }else{
     subt=`${fechaTxt} · ${diasTxt}`;
     cuerpo=`<div style="font-size:13px;color:#374151;">${subt}</div>`;
