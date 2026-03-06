@@ -460,22 +460,29 @@ function openNuevaClase(){
   `);
 }
 async function doCrearClase(){
-  const fecha=document.getElementById('nc-fecha').value;
+  const fechaEl=document.getElementById('nc-fecha');
+  const temaEl=document.getElementById('nc-tema');
+  const grupoEl=document.getElementById('nc-grupo');
+  const fecha=window._ncForce&&window._ncFormData?window._ncFormData.fecha:(fechaEl?fechaEl.value:'');
   if(!fecha){toast('Selecciona la fecha','err');return;}
   const dup=DB.clases.find(c=>c.fecha===fecha);
   if(dup&&!window._ncForce){
+    window._ncFormData={fecha,tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones',grupo:grupoEl?grupoEl.value:''};
     openSheet('⚠️','Clase ya existente','',`
       <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Ya hay una clase el <strong>${fmtDate(fecha)}</strong>.</p>
       <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Si continúas, se añadirá otra clase para la misma fecha.</p>
       <div class="btn-row">
         <button class="btn boutline" onclick="closeModal()">Cancelar</button>
-        <button class="btn bteal" onclick="window._ncForce=true;doCrearClase();window._ncForce=false;">Continuar</button>
+        <button class="btn bteal" onclick="closeModal();window._ncForce=true;doCrearClase();window._ncForce=false;">Continuar</button>
       </div>
     `);
     return;
   }
+  const tema=window._ncForce&&window._ncFormData?window._ncFormData.tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones';
+  const grupoResp=window._ncForce&&window._ncFormData?window._ncFormData.grupo:(grupoEl?grupoEl.value:'');
   const id='cl'+Date.now();
-  DB.clases.push({id,fecha,tema:document.getElementById('nc-tema').value.trim()||'Estudio de las Dispensaciones',grupoResp:document.getElementById('nc-grupo').value,cal:{}});
+  DB.clases.push({id,fecha,tema,grupoResp,cal:{}});
+  window._ncFormData=null;window._ncForce=false;
   await saveDB();closeModal();openGrade(id);
 }
 
@@ -1537,18 +1544,27 @@ function importData(e){
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.caballeros||!data.clases)throw new Error('Formato incorrecto');
+      window._importData=data;
       openSheet('📥','Importar datos','',`
-        <p style="font-size:14px;color:var(--text);margin-bottom:10px;">¿Importar estos datos?</p>
-        <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Se reemplazará todo lo actual (caballeros, clases, eventos, finanzas...). Te recomendamos tener una copia exportada antes de continuar.</p>
+        <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Se reemplazarán todos los datos actuales (caballeros, clases, eventos, finanzas, etc.).</p>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Te recomendamos tener una copia exportada antes de continuar.</p>
         <div class="btn-row">
-          <button class="btn boutline" onclick="closeModal()">Cancelar</button>
-          <button class="btn bteal" onclick="(async ()=>{DB=${'data'};closeModal();initAdmin();buildSel();toast('💾 Guardando en la nube...','info');await saveDB();toast('✅ Datos importados correctamente','ok');})();">Importar</button>
+          <button class="btn boutline" onclick="closeModal();window._importData=null">Cancelar</button>
+          <button class="btn bteal" onclick="doConfirmImport()">Importar</button>
         </div>
       `);
     }catch(err){toast('⚠️ Archivo inválido','err');}
   };
   reader.readAsText(file);
   e.target.value='';
+}
+async function doConfirmImport(){
+  const data=window._importData;if(!data)return;
+  DB=data;window._importData=null;
+  closeModal();initAdmin();buildSel();
+  toast('💾 Guardando en la nube...','info');
+  await saveDB();
+  toast('✅ Datos importados correctamente','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════

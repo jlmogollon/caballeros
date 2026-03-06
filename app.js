@@ -105,10 +105,22 @@ async function recuperarDesdeBackup(){
   let legacy;
   try{legacy=JSON.parse(ta.value.trim());}catch(e){toast('JSON inválido. Revisa que sea una copia completa de la base.','err');return;}
   if(!legacy.caballeros||!Array.isArray(legacy.caballeros)){toast('El JSON no tiene lista de caballeros.','err');return;}
-  mergeLegacyIntoDB(legacy,true);
-  toast('💾 Guardando...','info');
+  // Reemplazar por completo caballeros y clases desde el backup
+  DB.caballeros=JSON.parse(JSON.stringify(legacy.caballeros||[]));
+  DB.clases=JSON.parse(JSON.stringify(legacy.clases||[]));
+  if(Array.isArray(legacy.peticiones))DB.peticiones=JSON.parse(JSON.stringify(legacy.peticiones));
+  ensureDbShape();
+  toast('💾 Guardando base restaurada...','info');
   const ok=await saveDB();
-  if(ok){toast('✅ Fotos, claves y peticiones recuperadas y guardadas en Firebase.','ok');ta.value='';renderPeticiones();invalidateCache();renderDash();}
+  if(ok){
+    toast('✅ Caballeros y clases restaurados y guardados en Firebase.','ok');
+    ta.value='';
+    renderPeticiones();
+    invalidateCache();
+    if(typeof renderClases==='function')renderClases();
+    if(typeof buildSel==='function')buildSel();
+    renderDash();
+  }
   else toast('Error al guardar. Comprueba conexión.','err');
 }
 
