@@ -207,6 +207,14 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .dtable-perfil td{padding:12px 10px;vertical-align:top;}
 .dtable-perfil td:nth-child(2){max-width:160px;line-height:1.4;white-space:normal;word-wrap:break-word;}
 .dtable-perfil td:first-child{font-size:10px;}
+/* Tabla calificaciones individuales compacta para móvil — columnas ajustadas sin deslizar */
+#pv-hist .dtable-perfil-compact{font-size:8px;table-layout:fixed;width:100%;}
+#pv-hist .dtable-perfil-compact th,#pv-hist .dtable-perfil-compact td{padding:3px 1px;font-size:8px;}
+#pv-hist .dtable-perfil-compact th{font-size:7px;letter-spacing:0.3px;}
+#pv-hist .dtable-perfil-compact td:nth-child(1){width:9%;}
+#pv-hist .dtable-perfil-compact td:nth-child(2){max-width:22%;font-size:7px;word-break:break-word;}
+#pv-hist .dtable-perfil-compact th:nth-child(n+3),#pv-hist .dtable-perfil-compact td:nth-child(n+3){width:7%;text-align:center;}
+#pv-hist .pv-hist-details summary{font-size:11px;}
 .sc{font-family:'Montserrat',sans-serif;font-weight:800;}
 .sc-hi{color:#15803d;}.sc-mid{color:var(--gold2);}.sc-lo{color:var(--text3);}
 

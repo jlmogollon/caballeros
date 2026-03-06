@@ -202,7 +202,7 @@ function openListaGruposPV(){
     const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
     const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
     const col=(typeof GCOL!=='undefined'&&GCOL[g])||'var(--teal)';
-    h+=`<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:13px;color:${col};margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ${col}33;">${g}</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;">${ms.length} caballeros · Promedio: ${avg}</div><div style="display:flex;flex-direction:column;gap:4px;">${ms.map(c=>`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;"><span style="font-weight:600;color:var(--dark);">${nombreCorto(c)||c.nombre}</span><span style="font-weight:800;color:var(--teal);">${calcCab(c.id).total.toFixed(1)}</span></div>`).join('')}</div></div>`;
+    h+=`<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:13px;color:${col};margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid ${col}33;">${g}</div><div style="font-size:11px;color:var(--text3);margin-bottom:8px;">${ms.length} caballeros · Promedio: ${avg}</div><div style="display:flex;flex-direction:column;gap:4px;">${ms.map(c=>{const av=c.photo?`<img src="${c.photo}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;flex-shrink:0">`:`<div style="width:32px;height:32px;border-radius:50%;background:${col}22;display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:10px;font-weight:900;color:${col};flex-shrink:0">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`;return`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;"><div>${av}</div><span style="font-weight:600;color:var(--dark);flex:1;min-width:0;">${nombreCorto(c)||c.nombre}</span><span style="font-weight:800;color:var(--teal);">${calcCab(c.id).total.toFixed(1)}</span></div>`}).join('')}</div></div>`;
   });
   openSheet('📊','Grupos',`${(GRUPOS||[]).length} grupos · integrantes por puntaje`,'<div style="max-height:70vh;overflow-y:auto">'+(h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>')+'</div>');
 }
@@ -211,11 +211,11 @@ function openGrupoIntegrantes(nombreGrupo){
   const ms=(map[nombreGrupo]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
   const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
   const col=GCOL[nombreGrupo]||'var(--teal)';
-  const h=ms.length?ms.map((c,i)=>`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;transition:background .15s;">
-    <div style="width:36px;height:36px;border-radius:50%;background:${col}22;display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:11px;font-weight:900;color:${col};">${i+1}</div>
+  const h=ms.length?ms.map((c,i)=>{const av=c.photo?`<img src="${c.photo}" style="width:36px;height:36px;object-fit:cover;border-radius:50%;flex-shrink:0">`:`<div style="width:36px;height:36px;border-radius:50%;background:${col}22;display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:11px;font-weight:900;color:${col};flex-shrink:0">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`;return`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;transition:background .15s;">
+    ${av}
     <div style="flex:1;min-width:0;"><div style="font-weight:700;color:var(--dark);">${nombreCorto(c)||c.nombre}</div><div style="font-size:11px;color:var(--text3);">${c.dist||''}</div></div>
     <span style="font-weight:800;color:var(--teal);font-size:15px;">${calcCab(c.id).total.toFixed(1)}</span>
-  </div>`).join(''):'<p style="color:var(--text3);font-size:13px">No hay integrantes en este grupo.</p>';
+  </div>`}).join(''):'<p style="color:var(--text3);font-size:13px">No hay integrantes en este grupo.</p>';
   openSheet('👥',nombreGrupo,`${ms.length} integrantes · Prom: ${avg}`,'<div style="max-height:70vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">'+h+'</div>');
 }
 function confirmDelCab(id){
@@ -390,8 +390,10 @@ function renderGrupos(){
     const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
     const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
     const col=GCOL[g]||'var(--teal)';
+    const avatars=ms.slice(0,5).map((c,i)=>c.photo?`<img src="${c.photo}" style="width:28px;height:28px;object-fit:cover;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-left:${i===0?0:'-8px'}" title="${escAttr(nombreCorto(c)||c.nombre)}">`:`<div style="width:28px;height:28px;border-radius:50%;background:${col};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-left:${i===0?0:'-8px'};display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:9px;font-weight:900;color:white" title="${escAttr(nombreCorto(c)||c.nombre)}">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`).join('');
     h+=`<div class="gr-card" onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="cursor:pointer;">
       <div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} integrantes · Prom: ${avg} · Toca para ver</div></div>
+      ${avatars?`<div style="display:flex;align-items:center;padding-top:8px;margin-left:2px">${avatars}</div>`:''}
     </div>`;
   });
   document.getElementById('grupos-pg').innerHTML=h;
@@ -684,8 +686,9 @@ function renderCalGr(targetId){
       const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
       const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
       const col=GCOL[g]||'var(--teal)';
+      const avatars=ms.slice(0,3).map((c,i)=>c.photo?`<img src="${c.photo}" style="width:24px;height:24px;object-fit:cover;border-radius:50%;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.1);margin-left:${i===0?0:'-10px'}" title="${escAttr(nombreCorto(c)||c.nombre)}">`:`<div style="width:24px;height:24px;border-radius:50%;background:${col};border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.1);margin-left:${i===0?0:'-10px'};display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:8px;font-weight:900;color:white" title="${escAttr(nombreCorto(c)||c.nombre)}">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`).join('');
       h+=`<div onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.04);cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;" onmouseover="this.style.borderColor='${col}';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'" onmouseout="this.style.borderColor='#e9edf2';this.style.boxShadow='0 2px 10px rgba(0,0,0,0.04)'">
-        <div style="width:44px;height:44px;border-radius:12px;background:${col}22;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👥</div>
+        <div style="width:44px;height:44px;border-radius:12px;background:${col}22;display:flex;align-items:center;justify-content:flex-start;flex-shrink:0;overflow:visible;padding-left:2px;">${avatars||'<span style="font-size:20px">👥</span>'}</div>
         <div style="flex:1;min-width:0;"><div style="font-family:Montserrat,sans-serif;font-size:14px;font-weight:800;color:${col};">${g}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${ms.length} integrantes · Prom: ${avg}</div></div>
         <div style="font-size:18px;color:var(--text3);flex-shrink:0;">→</div>
       </div>`;
@@ -822,7 +825,7 @@ function renderPersonal(cabId){
   if(evalEl)evalEl.innerHTML='';
   const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
-  document.getElementById('pv-hist').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTableCompact(cabId);
+  document.getElementById('pv-hist').innerHTML='<div class="pv-hist-ttl" style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTableCompact(cabId);
   renderFbautCard(c);
   renderFsellCard(c);
   renderDevotoCard(c);
@@ -1010,7 +1013,7 @@ function renderDevotoCard(c){
   </div>`;
 }
 function confirmarMarcarDevoto(){
-  openSheet('🕊️','Confirmar distinción Devoto','',`
+  openSheet('★','Confirmar distinción Devoto','',`
     <p style="font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6;">Un Devoto es aquel que ha nacido de nuevo y tiene una vida espiritual, dando frutos visibles y buen testimonio en su vida pública, en su hogar, su trabajo y la Iglesia.</p>
     <p style="font-size:13px;color:var(--text2);margin-bottom:14px;">¿Deseas marcarte como Devoto? Añadirá una estrella a tus distinciones.</p>
     <div class="btn-row">

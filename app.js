@@ -882,10 +882,10 @@ function mkHistoryTableCompact(cabId){
       <td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td>
       <td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td>
     </tr>`).join('');
-    out+=`<details ${idx===0?'open':''} style="margin-bottom:8px;">
+    out+=`<details ${idx===0?'open':''} class="pv-hist-details" style="margin-bottom:8px;">
       <summary style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;cursor:pointer;outline:none;">📅 ${y} (${byYear[y].length} clases)</summary>
-      <div style="margin-top:6px;">
-        <table class="dtable dtable-perfil">
+      <div class="pv-hist-table-wrap" style="margin-top:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table class="dtable dtable-perfil dtable-perfil-compact">
           <thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
