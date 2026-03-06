@@ -366,15 +366,33 @@ let _rankCache=null;
 function invalidateCache(){_calcCache={};_rankCache=null;}
 
 function rowTotal(q){return+((q.i*0.3)+(q.p*0.3)+(q.d*0.2)+(q.pa*0.2)).toFixed(2);}
+// Puntuación 0-10 de la evaluación vinculada a una clase (null = no hay evaluación; 0 = no respondió)
+function getEvalScoreForClassAndCab(claseId,cabId){
+  if(!claseId||!cabId)return null;
+  const ev=(DB.evaluaciones||[]).find(e=>e.claseId===claseId);
+  if(!ev)return null;
+  const r=(DB.evaluacionRespuestas||[]).find(x=>x.evaluacionId===ev.id&&x.cabId===cabId);
+  if(!r||!(r.totalPreguntas>0))return 0;
+  return+(r.puntuacion/r.totalPreguntas*10).toFixed(2);
+}
+// Calificación final de una clase para un caballero: 70% nota (i,p,d,pa) + 30% evaluación si existe
+function classScoreForCab(cl,cabId){
+  const q=cl.cal&&cl.cal[cabId];
+  if(!q||!q.a)return 0;
+  const base=rowTotal(q);
+  const evScore=getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId);
+  if(evScore==null)return base;
+  return+(0.7*base+0.3*evScore).toFixed(2);
+}
 function calcCab(id){
   if(_calcCache[id])return _calcCache[id];
   let si=0,sp=0,sd=0,spa=0,n=0,tot=0;
-  DB.clases.forEach(cl=>{const q=cl.cal[id];if(q){tot+=(q.a?rowTotal(q):0);if(q.a){si+=q.i;sp+=q.p;sd+=q.d;spa+=q.pa;n++;}}});
+  DB.clases.forEach(cl=>{const q=cl.cal[id];if(q){tot+=(q.a?classScoreForCab(cl,id):0);if(q.a){si+=q.i;sp+=q.p;sd+=q.d;spa+=q.pa;n++;}}});
   const result={i:n?+(si/n).toFixed(1):0,p:n?+(sp/n).toFixed(1):0,d:n?+(sd/n).toFixed(1):0,pa:n?+(spa/n).toFixed(1):0,asist:n,totalClases:DB.clases.length,total:+tot.toFixed(1)};
   _calcCache[id]=result;
   return result;
 }
-function claseAvg(cl){const vs=Object.values(cl.cal).filter(q=>q.a);return vs.length?+(vs.reduce((s,q)=>s+rowTotal(q),0)/vs.length).toFixed(2):0;}
+function claseAvg(cl){const vs=Object.keys(cl.cal||{}).filter(cabId=>cl.cal[cabId]&&cl.cal[cabId].a);return vs.length?+(vs.reduce((s,cabId)=>s+classScoreForCab(cl,cabId),0)/vs.length).toFixed(2):0;}
 function ranking(){
   if(_rankCache)return _rankCache;
   _rankCache=[...DB.caballeros].sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
@@ -415,7 +433,7 @@ function abrevTema(t){
 }
 // Tabla de historial de clases reutilizable (evita duplicación entre openCabDetail y renderPersonal)
 function mkHistoryTable(cabId,forPdf){
-  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:classScoreForCab(cl,cabId)})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
   const temaStyle=forPdf?'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;':'font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.4;';
   const headers=forPdf?'<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Total</th></tr>':'<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Tot</th></tr>';
@@ -426,7 +444,7 @@ function mkHistoryTable(cabId,forPdf){
 
 // Versión compacta para vista personal: agrupa por año y permite plegar
 function mkHistoryTableCompact(cabId){
-  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:rowTotal(cl.cal[cabId])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],t:classScoreForCab(cl,cabId)})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
   const byYear={};
   hist.forEach(r=>{

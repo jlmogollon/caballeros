@@ -11,12 +11,15 @@ function renderEvaluacionesAdmin(){
   const html=list.length?list.map(ev=>{
     const nPreg=(ev.preguntas||[]).length;
     const nResp=(DB.evaluacionRespuestas||[]).filter(r=>r.evaluacionId===ev.id).length;
+    const cl=ev.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===ev.claseId):null;
+    const claseLbl=cl?(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' — '+(cl.tema||'').substring(0,25):'';
     return`<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:800;color:var(--dark);margin-bottom:4px;">${escAttr(ev.titulo)}</div>
-        <div style="font-size:12px;color:var(--text3);">${nPreg} preguntas · ${nResp} respuestas</div>
+        <div style="font-size:12px;color:var(--text3);">${nPreg} preguntas · ${nResp} respuestas${claseLbl?' · Clase: '+claseLbl:''}</div>
       </div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="openRespuestasEvaluacionAdmin('${ev.id}')">📋 Ver respuestas</button>
         <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="openFormEvaluacion('${ev.id}')">✏️ Editar</button>
         <button class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="confirmarDelEvaluacion('${ev.id}')">🗑</button>
       </div>
@@ -29,6 +32,7 @@ function openFormEvaluacion(id){
   const ev=id?(DB.evaluaciones||[]).find(e=>e.id===id):null;
   const titulo=ev?(ev.titulo||''):'';
   const descripcion=ev?(ev.descripcion||''):'';
+  const claseId=ev&&ev.claseId?ev.claseId:'';
   const preguntas=(ev&&ev.preguntas)?ev.preguntas:[];
   const pregHtml=preguntas.map((p,i)=>{
     const opciones=(p.opciones||[]).map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="radio" name="evq-p-${i}" value="${j}" ${o.correcta?'checked':''}><input type="text" data-preg="${i}" data-op="${j}" value="${escAttr(o.texto)}" placeholder="Opción ${j+1}" style="flex:1;padding:6px 10px;"></label>`).join('');
@@ -42,9 +46,12 @@ function openFormEvaluacion(id){
       <button type="button" class="btn boutline" style="font-size:11px;margin-top:6px;" onclick="añadirOpcionEvq(${i})">+ Añadir opción</button>
     </div>`;
   }).join('');
+  const sortedClases=(DB.clases||[]).slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).reverse();
+  const claseOpts=['<option value="">Sin vincular a clase</option>',...sortedClases.map(cl=>`<option value="${escAttr(cl.id||cl.fecha)}" ${(cl.id||cl.fecha)===claseId?'selected':''}>${(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)} — ${escAttr((cl.tema||'Clase').substring(0,40))}</option>`)].join('');
   openSheet('📋',id?'Editar cuestionario':'Nuevo cuestionario','',`
     <div class="fr"><label>Título</label><input type="text" id="evq-titulo" value="${escAttr(titulo)}" placeholder="Ej. Evidencias de un Caballero"></div>
     <div class="fr"><label>Descripción (opcional)</label><input type="text" id="evq-desc" value="${escAttr(descripcion)}" placeholder="Breve descripción del cuestionario"></div>
+    <div class="fr"><label>Vincular a clase (30% de la calificación)</label><select id="evq-clase">${claseOpts}</select></div>
     <div style="margin-top:14px;"><strong>Preguntas</strong></div>
     <div id="evq-preguntas-wrap">${pregHtml}</div>
     <button type="button" class="btn boutline bfull" style="margin-top:10px;" onclick="añadirPreguntaEvq()">+ Añadir pregunta</button>
@@ -122,9 +129,10 @@ function guardarEvaluacion(){
     const conTexto=opciones.some(o=>o.texto!=='');
     if(texto||conTexto)preguntas.push({id:pid,texto,opciones});
   });
+  const evClaseId=(document.getElementById('evq-clase')?.value||'').trim();
   const evId=id||'evq'+Date.now();
   const existing=(DB.evaluaciones||[]).find(e=>e.id===evId);
-  const ev={id:evId,titulo,descripcion,activo:true,preguntas:existing&&existing.preguntas?preguntas.length?preguntas:existing.preguntas:preguntas};
+  const ev={id:evId,titulo,descripcion,activo:true,claseId:evClaseId||undefined,preguntas:existing&&existing.preguntas?preguntas.length?preguntas:existing.preguntas:preguntas};
   if(existing)Object.assign(existing,ev);else (DB.evaluaciones=DB.evaluaciones||[]).push(ev);
   closeModal();
   toast('Cuestionario guardado','ok');
@@ -150,6 +158,27 @@ function doDelEvaluacion(id){
   saveDB().then(()=>renderEvaluacionesAdmin());
 }
 
+function openRespuestasEvaluacionAdmin(evId){
+  const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  if(!ev){toast('Cuestionario no encontrado','err');return;}
+  const list=(DB.evaluacionRespuestas||[]).filter(r=>r.evaluacionId===evId);
+  const rows=list.map(r=>{
+    const c=(DB.caballeros||[]).find(x=>x.id===r.cabId);
+    const nom=nombreCorto?nombreCorto(c):(c?c.nombre:r.cabId);
+    const puedeRepetir=!!r.puedeRepetir;
+    const fecha=r.fecha?(r.fecha.split('T')[0]):'—';
+    return`<tr><td>${escAttr(nom||'—')}</td><td>${escAttr(fecha)}</td><td>${r.puntuacion}/${r.totalPreguntas||0}</td><td><button type="button" class="btn boutline" style="font-size:11px;padding:4px 10px;" onclick="permiterRepetirEvaluacion('${evId}','${r.cabId}')">${puedeRepetir?'✓ Permitido repetir':'Permitir repetir'}</button></td></tr>`;
+  }).join('');
+  const tbl=list.length?`<table class="dtable" style="width:100%;"><thead><tr><th>Caballero</th><th>Fecha</th><th>Puntuación</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`:'<p style="color:var(--text3);font-size:13px;">Aún no hay respuestas.</p>';
+  openSheet('📋','Respuestas: '+ev.titulo,'Solo el admin puede permitir repetir el cuestionario.',tbl);
+}
+function permiterRepetirEvaluacion(evId,cabId){
+  const r=(DB.evaluacionRespuestas||[]).find(x=>x.evaluacionId===evId&&x.cabId===cabId);
+  if(!r)return;
+  r.puedeRepetir=!r.puedeRepetir;
+  saveDB().then(()=>{toast(r.puedeRepetir?'Puede repetir el cuestionario':'Ya no puede repetir','ok');openRespuestasEvaluacionAdmin(evId);});
+}
+
 // ─── Vista caballero: listar y responder
 function renderEvaluacionesPV(){
   const el=document.getElementById('evaluaciones-pv-lista');
@@ -161,23 +190,57 @@ function renderEvaluacionesPV(){
     const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
     const nPreg=(ev.preguntas||[]).length;
     const yaRespondido=!!miResp;
-    const pts=yaRespondido?miResp.puntuacion:0;
-    const total=yaRespondido?miResp.totalPreguntas:0;
+    const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
+    const puedeComenzar=!yaRespondido||puedeRepetir;
     return`<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:800;color:var(--dark);margin-bottom:4px;">${escAttr(ev.titulo)}</div>
-        <div style="font-size:12px;color:var(--text3);">${nPreg} preguntas${yaRespondido?' · Tu puntuación: '+pts+'/'+total:''}</div>
+        <div style="font-size:12px;color:var(--text3);">${nPreg} preguntas${yaRespondido?' · Respondido':''}</div>
       </div>
-      <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Ver de nuevo':'Comenzar'}</button>
+      <div style="display:flex;gap:8px;">
+        ${yaRespondido?`<button class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}
+        ${puedeComenzar?`<button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Responder de nuevo':'Comenzar'}</button>`:''}
+      </div>
     </div>`;
   }).join(''):'<p style="color:var(--text3);font-size:13px;">No hay cuestionarios disponibles.</p>';
   el.innerHTML=html;
+}
+
+function verResultadoEvaluacionPV(evId){
+  const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  if(!ev)return;
+  const cabId=currentCabId;
+  const r=(DB.evaluacionRespuestas||[]).find(x=>x.evaluacionId===evId&&x.cabId===cabId);
+  if(!r){toast('No tienes respuestas guardadas para este cuestionario','err');return;}
+  mostrarResultadoEvaluacionPV(ev,r);
+}
+
+function mostrarResultadoEvaluacionPV(ev,registro){
+  const preguntas=ev.preguntas||[];
+  let html='<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:16px;color:var(--dark);">'+escAttr(ev.titulo)+'</div><div style="font-size:13px;color:var(--text3);margin-top:6px;">Resultado: '+registro.puntuacion+' de '+registro.totalPreguntas+' correctas</div></div>';
+  preguntas.forEach((p,i)=>{
+    const correctIdx=(p.opciones||[]).findIndex(o=>o.correcta);
+    const correctaTxt=correctIdx>=0?(p.opciones||[])[correctIdx].texto:'—';
+    const miResp=registro.respuestas&&registro.respuestas.find(x=>x.preguntaId===p.id);
+    const valor=miResp&&miResp.valor>=0?miResp.valor:-1;
+    const miTxt=valor>=0&&(p.opciones||[])[valor]?(p.opciones||[])[valor].texto:'—';
+    const acerto=valor===correctIdx;
+    html+=`<div style="margin-bottom:16px;padding:12px;border-radius:10px;border:1.5px solid ${acerto?'#dcfce7':'#fee2e2'};background:${acerto?'#f0fdf4':'#fef2f2'};">
+      <div style="font-weight:700;color:var(--dark);margin-bottom:6px;">${i+1}. ${escAttr(p.texto)||'Pregunta '+(i+1)}</div>
+      <div style="font-size:12px;color:var(--text3);">Tu respuesta: ${escAttr(miTxt)} ${acerto?'<span style="color:#15803d;font-weight:700;">✓ Correcta</span>':'<span style="color:#b91c1c;font-weight:700;">✗ Incorrecta</span>'}</div>
+      <div style="font-size:12px;color:#15803d;margin-top:4px;">Respuesta correcta: ${escAttr(correctaTxt)}</div>
+    </div>`;
+  });
+  html+='<button type="button" class="btn bteal bfull" onclick="closeModal();">Cerrar</button>';
+  openSheet('📋','Resultado: '+ev.titulo,'',html);
 }
 
 function iniciarCuestionarioPV(evId){
   const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
   if(!ev||!(ev.preguntas||[]).length){toast('Cuestionario no disponible','err');return;}
   const cabId=currentCabId;
+  const prev=(DB.evaluacionRespuestas||[]).find(r=>r.evaluacionId===evId&&r.cabId===cabId);
+  if(prev&&!prev.puedeRepetir){verResultadoEvaluacionPV(evId);return;}
   const preguntas=ev.preguntas;
   let html='<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:16px;color:var(--dark);">'+escAttr(ev.titulo)+'</div>';
   if(ev.descripcion)html+='<div style="font-size:13px;color:var(--text3);margin-top:4px;">'+escAttr(ev.descripcion)+'</div></div>';
@@ -215,9 +278,13 @@ function enviarRespuestasPV(evId){
   const puntuacion=correctas;
   DB.evaluacionRespuestas=DB.evaluacionRespuestas||[];
   const prev=DB.evaluacionRespuestas.find(r=>r.evaluacionId===evId&&r.cabId===cabId);
-  const registro={evaluacionId:evId,cabId,fecha:new Date().toISOString(),respuestas,puntuacion,totalPreguntas};
+  const registro={evaluacionId:evId,cabId,fecha:new Date().toISOString(),respuestas,puntuacion,totalPreguntas,puedeRepetir:false};
   if(prev){const idx=DB.evaluacionRespuestas.indexOf(prev);DB.evaluacionRespuestas[idx]=registro;}else DB.evaluacionRespuestas.push(registro);
+  if(typeof invalidateCache==='function')invalidateCache();
   closeModal();
-  toast('Respuestas guardadas: '+puntuacion+'/'+totalPreguntas,'ok');
-  saveDB().then(()=>{if(typeof renderEvaluacionesPV==='function')renderEvaluacionesPV();});
+  toast('Respuestas guardadas','ok');
+  saveDB().then(()=>{
+    if(typeof renderEvaluacionesPV==='function')renderEvaluacionesPV();
+    mostrarResultadoEvaluacionPV(ev,registro);
+  });
 }

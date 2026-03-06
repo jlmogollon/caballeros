@@ -126,7 +126,7 @@ function openCabDetail(id){
   const starH=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const barK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
   const bars=barK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
-  const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:typeof classScoreForCab==='function'?classScoreForCab(cl,id):rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const histH=mkHistoryTable(id);
   const esAdmin=document.getElementById('screen-admin')&&document.getElementById('screen-admin').classList.contains('active');
   const btnRow=esAdmin?`<div class="btn-row">
@@ -405,7 +405,7 @@ function getClaseByKey(key){
 }
 function openClaseDetail(key){
   const cl=getClaseByKey(key);if(!cl)return;
-  const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
+  const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>({nom:c.nombre,...cl.cal[c.id],t:typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(cl.cal[c.id])})).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')}</tbody></table>`;
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -643,7 +643,7 @@ function renderCalGr(targetId){
         DB.caballeros.forEach(c2=>{
           if(c2.grupo!==cab.grupo)return;
           const qv=(cl.cal||{})[c2.id];
-          if(qv&&qv.a){sumQ+=rowTotal(qv);nQ++;}
+          if(qv&&qv.a){sumQ+=(typeof classScoreForCab==='function'?classScoreForCab(cl,c2.id):rowTotal(qv));nQ++;}
         });
       });
       const grupoQuarterAvg=nQ? (sumQ/nQ).toFixed(1):null;
@@ -664,7 +664,7 @@ function renderCalGr(targetId){
   anos.forEach(y=>{
     h+=`<div class="cl-year-ttl" style="margin-top:${h.includes('cl-year-ttl')?16:0}px">${y}</div>`;
     porAnio[y].forEach(cl=>{
-      const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=rowTotal(q);gs[c.grupo].n++;}});
+      const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=(typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(q));gs[c.grupo].n++;}});
       h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Estudio de las Dispensaciones'}</div>
         ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
         const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
@@ -1281,7 +1281,7 @@ function renderGrupoSection(c){
     <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${col};font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid ${col}33;">Clases de Mi Grupo</div>
     ${clasesGrupo.map(cl=>{
       const presentes=misMiembros.filter(m=>cl.cal[m.id]&&cl.cal[m.id].a);
-      const avgCl=presentes.length?+(presentes.reduce((s,m)=>s+rowTotal(cl.cal[m.id]),0)/presentes.length).toFixed(1):0;
+      const avgCl=presentes.length?+(presentes.reduce((s,m)=>s+(typeof classScoreForCab==='function'?classScoreForCab(cl,m.id):rowTotal(cl.cal[m.id])),0)/presentes.length).toFixed(1):0;
       const sc=avgCl>=7?'#15803d':avgCl>=4?'var(--gold2)':'var(--text3)';
       const{d,m}=fmtBox(cl.fecha);
       return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;">
