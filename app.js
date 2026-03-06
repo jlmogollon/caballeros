@@ -688,23 +688,18 @@ function ensureDbShape(){
   if(!DB.finanzasVotos)DB.finanzasVotos=[];
   if(!Array.isArray(DB.evaluaciones))DB.evaluaciones=[];
   if(!Array.isArray(DB.evaluacionRespuestas))DB.evaluacionRespuestas=[];
+  // Solo AÑADIR evaluaciones si no existen; NUNCA sobrescribir las que el admin ya editó (nombres, preguntas eliminadas, etc.)
   if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES){
     const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES.id);
-    const seedCopy=JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES));
-    if(idx>=0)DB.evaluaciones[idx]=seedCopy;
-    else{DB.evaluaciones.push(seedCopy);saveDB().then(()=>{}).catch(()=>{});}
+    if(idx<0){DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES)));saveDB().then(()=>{}).catch(()=>{});}
   }
   if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES_CUESTIONARIO){
     const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES_CUESTIONARIO.id);
-    const seedCopy=JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES_CUESTIONARIO));
-    if(idx>=0)DB.evaluaciones[idx]=seedCopy;
-    else{DB.evaluaciones.push(seedCopy);saveDB().then(()=>{}).catch(()=>{});}
+    if(idx<0){DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES_CUESTIONARIO)));saveDB().then(()=>{}).catch(()=>{});}
   }
   if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES_TEXTO){
     const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES_TEXTO.id);
-    const seedCopy=JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES_TEXTO));
-    if(idx>=0)DB.evaluaciones[idx]=seedCopy;
-    else{DB.evaluaciones.push(seedCopy);saveDB().then(()=>{}).catch(()=>{});}
+    if(idx<0){DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES_TEXTO)));saveDB().then(()=>{}).catch(()=>{});}
   }
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
