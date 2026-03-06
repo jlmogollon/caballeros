@@ -855,10 +855,15 @@ function renderCumpleBanners(cabId){
   if(losQueCumplen.length===0&&!proximoMasCercano){wrap.innerHTML='';wrap.style.display='none';return;}
   const yoCumple=losQueCumplen.some(c=>c.id===cabId);
   const verso=getVersoCumple();
-  // Día exacto del cumpleaños → banner especial actual
+  // Día exacto del cumpleaños → banner con verso + botones WhatsApp y llamada
   if(yoCumple||losQueCumplen.length>0){
     wrap.style.display='block';
-    wrap.innerHTML='<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 50%,#a7f3d0 100%);border-radius:14px;padding:16px 18px;border:2px solid #10b981;box-shadow:0 4px 20px rgba(16,185,129,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:18px;font-weight:900;color:#065f46;margin-bottom:10px;">🎂 ¡Feliz cumpleaños!</div><div style="font-size:13px;color:#047857;line-height:1.5;margin-bottom:8px;">'+verso.text+'</div><span style="font-size:12px;font-weight:700;color:#059669;">'+verso.ref+'</span></div>';
+    const cumple=losQueCumplen[0];
+    const waUrl=telParaWa(cumple.telefono||'');
+    const telUrl=(cumple.telefono&&cumple.telefono.trim())?('tel:+'+numeroParaEnlace(cumple.telefono)):'';
+    const nomCumple=escAttr(nombreCorto(cumple)||cumple.nombre||'');
+    const btnsHtml=(waUrl||telUrl)?'<div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;"><p style="font-size:12px;color:#047857;width:100%;margin:0 0 6px 0;">Envía un saludo por WhatsApp o llámale para felicitarlo.</p>'+(waUrl?'<a href="'+waUrl+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">📱 WhatsApp</a>':'')+(telUrl?'<a href="'+telUrl+'" style="display:inline-flex;align-items:center;gap:6px;background:#059669;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">📞 Llamar</a>':'')+'</div>':'';
+    wrap.innerHTML='<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 50%,#a7f3d0 100%);border-radius:14px;padding:16px 18px;border:2px solid #10b981;box-shadow:0 4px 20px rgba(16,185,129,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:18px;font-weight:900;color:#065f46;margin-bottom:8px;">🎂 ¡Feliz cumpleaños!</div><div style="font-size:12px;color:#047857;font-weight:700;margin-bottom:6px;">'+nomCumple+'</div><div style="font-size:13px;color:#047857;line-height:1.5;margin-bottom:6px;">'+verso.text+'</div><span style="font-size:12px;font-weight:700;color:#059669;">'+verso.ref+'</span>'+btnsHtml+'</div>';
     return;
   }
   // Si hoy no hay cumple, mostrar banner del cumpleaños más cercano
@@ -871,8 +876,7 @@ function renderCumpleBanners(cabId){
   const edad=proximoMasCercano.edad;
   const edadTxt=edad&&Number.isFinite(edad)?' · Cumple '+edad+' años':'';
   const grupo=escAttr(proximoMasCercano.grupo||'');
-  const grupoHtml=grupo?'<div style="font-size:12px;color:#b45309;margin-top:2px;">👥 Grupo: '+grupo+'</div>':'';
-  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:4px;">🎂 Próximo cumpleaños</div><div style="font-size:13px;color:#92400e;font-weight:700;margin-bottom:2px;">'+nom+'</div><div style="font-size:12px;color:#b45309;">'+fechaStr+' · '+diasTxt+edadTxt+'</div>'+grupoHtml+'<div style="font-size:11px;color:#92400e;margin-top:6px;">💌 Ora por este caballero y aprovecha para enviarle un saludo especial.</div></div>';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;align-items:start;"><div><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:4px;">🎂 Próximo cumpleaños</div><div style="font-size:13px;color:#92400e;font-weight:700;">'+nom+'</div>'+(grupo?'<div style="font-size:12px;color:#b45309;margin-top:4px;">👥 '+grupo+'</div>':'')+'</div><div><div style="font-size:12px;color:#92400e;font-weight:700;">📅 '+fechaStr+'</div><div style="font-size:12px;color:#b45309;margin-top:2px;">'+diasTxt+edadTxt+'</div></div></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
