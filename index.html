@@ -654,7 +654,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     <div class="pv-ntab active" id="pvtab-perfil-btn"    onclick="showPvTab('perfil')">🏠 Inicio</div>
     <div class="pv-ntab"        id="pvtab-oracion-btn"   onclick="showPvTab('oracion')">🙏 Oración</div>
     <div class="pv-ntab"        id="pvtab-eventos-btn"   onclick="showPvTab('eventos')">🗓 Eventos</div>
-    <div class="pv-ntab pv-ntab-cumple" id="pvtab-cumple-btn" onclick="showPvTab('cumple')">🎂 CUMPLE</div>
     <div class="pv-ntab"        id="pvtab-calgr-btn"     onclick="showPvTab('calgr')">📊 Grupos</div>
   </nav>
 
@@ -792,11 +791,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div id="pv-eventos-pasados" style="display:flex;flex-direction:column;gap:8px;"></div>
       </div>
     </div>
-  </div>
-
-  <!-- ── TAB: CUMPLEAÑOS ── -->
-  <div class="pv-tab" id="pvtab-cumple">
-    <div class="pv-body"><div id="pv-cumple-pg"></div></div>
   </div>
 
   <!-- ── TAB: CALIFICACIÓN POR GRUPOS (PV) ── -->
@@ -1690,7 +1684,7 @@ function openVersoEnBiblia(){
 }
 
 function showPvTab(tab){
-  ['perfil','oracion','eventos','calgr','cumple','finanzas'].forEach(t=>{
+  ['perfil','oracion','eventos','calgr','finanzas'].forEach(t=>{
     const el=document.getElementById('pvtab-'+t);
     const btn=document.getElementById('pvtab-'+t+'-btn');
     if(el)el.classList.toggle('active',t===tab);
@@ -1698,7 +1692,6 @@ function showPvTab(tab){
   });
   if(tab==='eventos')  renderEventosPV();
   if(tab==='calgr')    renderCalGr('pv-calgr-pg');
-  if(tab==='cumple')   renderCumplePV();
   if(tab==='oracion')  cargarPeticiones();
   if(tab==='finanzas') renderFinanzas();
 }

@@ -607,10 +607,10 @@ function renderCumple(){
 }
 
 function renderCumplePV(){
-  const el=document.getElementById('pv-cumple-pg');if(!el)return;
+  const el=document.getElementById('pv-fnac-card');if(!el)return;
   const c=DB.caballeros.find(x=>x.id===currentCabId);
   const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  let h='<div class="sec-ttl">🎂 Cumpleaños</div>';
+  let h='';
   // Aniversario bautizado / sellado del usuario actual
   if(c){
     if(c.fechaBautizado&&c.fechaBautizado.length>=10){
@@ -636,29 +636,24 @@ function renderCumplePV(){
       }
     }
   }
-  const items=DB.caballeros.filter(c=>c.fnac&&c.fnac.length>=10).map(c=>{
+  // Cumpleaños personal (fecha de nacimiento)
+  if(c&&c.fnac&&c.fnac.length>=10){
     const r=getProximoCumple(c.fnac);
-    if(!r)return null;
-    return{...c,...r};
-  }).filter(Boolean);
-  if(!items.length){el.innerHTML=h+'<p style="color:var(--text3);font-size:13px">Aún no hay fechas de nacimiento. Añade la tuya en tu perfil.</p>';return;}
-  const proximos=items.filter(x=>!x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
-  const yaCumplidos=items.filter(x=>x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
-  function row(x,isCurrent){
-    const fechaStr=`${x.dia} ${M[x.mes-1]}`;
-    const diasTxt=x.yaPaso?(`Ya pasó · Próximo en ${x.diasRest} días`):(x.diasRest===0?'¡Hoy cumple!':x.diasRest===1?'Mañana':`En ${x.diasRest} días`);
-    const editBtn=isCurrent?'<button onclick="event.stopPropagation();openFnacEditFromCumple()" style="background:transparent;border:none;padding:6px;cursor:pointer;flex-shrink:0;" title="Editar fecha">✏️</button>':'';
-    return `<div class="cl-card" style="display:flex;align-items:center;gap:10px;cursor:${isCurrent?'default':'pointer'};" ${!isCurrent?'onclick="openCabDetail(\''+x.id+'\')"':''}>
-      <div class="cl-date" style="min-width:50px"><div class="cl-day">${x.dia}</div><div class="cl-mon">${M[x.mes-1]}</div></div>
-      <div class="cl-inf" style="flex:1;min-width:0"><div class="cl-nm">${x.nombre}</div><div class="cl-mt">${fechaStr} · Cumple ${x.edad} años · ${diasTxt}</div></div>${editBtn}</div>`;
-  }
-  if(proximos.length){
-    h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:10px 0 6px;letter-spacing:0.5px;">Próximos cumpleaños</div>';
-    proximos.forEach(x=>{h+=row(x,x.id===currentCabId);});
-  }
-  if(yaCumplidos.length){
-    h+='<div style="font-size:11px;font-weight:700;color:#6b7280;margin:16px 0 6px;letter-spacing:0.5px;">Ya cumplidos</div>';
-    yaCumplidos.forEach(x=>{h+=row(x,x.id===currentCabId);});
+    if(r){
+      const fechaStr=`${r.dia} ${M[r.mes-1]}`;
+      const diasTxt=r.diasRest===0?'¡Hoy es tu cumpleaños! 🎉':r.diasRest===1?'Mañana':'En '+r.diasRest+' días';
+      h+=`<div class="panel panel-soft-gold" style="margin-bottom:10px;">
+        <div class="panel-title">🎂 Tu cumpleaños</div>
+        <div class="panel-desc">${fechaStr} · Cumples ${r.edad} años · ${diasTxt}</div>
+        <button type="button" class="btn boutline" style="margin-top:4px;font-size:11px;padding:6px 10px;" onclick="openFnacEditFromCumple()">✏️ Editar fecha</button>
+      </div>`;
+    }
+  }else{
+    h+=`<div class="panel" style="margin-bottom:10px;">
+      <div class="panel-title">🎂 Tu cumpleaños</div>
+      <div class="panel-desc">Añade tu fecha de nacimiento para que podamos recordarte y celebrar contigo.</div>
+      <button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;" onclick="openFnacEditFromCumple()">➕ Añadir fecha</button>
+    </div>`;
   }
   el.innerHTML=h;
 }
@@ -785,26 +780,29 @@ function renderCumpleBanners(cabId){
   const wrap=document.getElementById('pv-cumple-banner-wrap');
   if(!wrap)return;
   const losQueCumplen=cumpleHoy();
-  if(losQueCumplen.length===0){wrap.innerHTML='';wrap.style.display='none';return;}
+  const items=(DB.caballeros||[]).filter(c=>c.fnac&&c.fnac.length>=10).map(c=>{
+    const r=getProximoCumple(c.fnac);
+    return r?{...c,...r}:null;
+  }).filter(Boolean);
+  const proximos=items.filter(x=>!x.yaPaso).sort((a,b)=>a.diasRest-b.diasRest);
+  const proximoMasCercano=proximos[0]||null;
+  if(losQueCumplen.length===0&&!proximoMasCercano){wrap.innerHTML='';wrap.style.display='none';return;}
   const yoCumple=losQueCumplen.some(c=>c.id===cabId);
   const verso=getVersoCumple();
-  if(yoCumple){
+  // Día exacto del cumpleaños → banner especial actual
+  if(yoCumple||losQueCumplen.length>0){
     wrap.style.display='block';
     wrap.innerHTML='<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 50%,#a7f3d0 100%);border-radius:14px;padding:16px 18px;border:2px solid #10b981;box-shadow:0 4px 20px rgba(16,185,129,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:18px;font-weight:900;color:#065f46;margin-bottom:10px;">🎂 ¡Feliz cumpleaños!</div><div style="font-size:13px;color:#047857;line-height:1.5;margin-bottom:8px;">'+verso.text+'</div><span style="font-size:12px;font-weight:700;color:#059669;">'+verso.ref+'</span></div>';
     return;
   }
-  const nombres=losQueCumplen.map(c=>{
-    const nom=escAttr(nombreCorto(c)||c.nombre||'');
-    const tel=(c.telefono&&String(c.telefono).trim())||'';
-    const wa=tel?telParaWa(tel):'';
-    const telNum=numeroParaEnlace(tel);const telHref=telNum?'tel:+'+telNum:'';
-    const iconos=tel?(' '+(wa?'<a href="'+escAttr(wa)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#25d366;color:white;text-decoration:none;margin-left:4px;" title="Enviar WhatsApp">📱</a>':'')+' <a href="'+escAttr(telHref)+'" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--teal);color:white;text-decoration:none;margin-left:4px;" title="Llamar">📞</a>'):'';
-    return '<span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;">'+nom+iconos+'</span>';
-  }).join(', ');
+  // Si hoy no hay cumple, mostrar banner del cumpleaños más cercano
+  if(!proximoMasCercano){wrap.innerHTML='';wrap.style.display='none';return;}
+  const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const nom=escAttr(nombreCorto(proximoMasCercano)||proximoMasCercano.nombre||'');
+  const fechaStr=`${proximoMasCercano.dia} ${M[proximoMasCercano.mes-1]}`;
+  const diasTxt=proximoMasCercano.diasRest===1?'Mañana':`En ${proximoMasCercano.diasRest} días`;
   wrap.style.display='block';
-  const titulo=losQueCumplen.length===1?'Hoy cumple':'Hoy cumplen';
-  const sub=losQueCumplen.length===1?'Felicítalo por WhatsApp o con una llamada':'Felicítalos por WhatsApp o con una llamada';
-  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:8px;">🎂 '+titulo+' '+nombres+'</div><div style="font-size:12px;color:#b45309;">'+sub+'</div></div>';
+  wrap.innerHTML='<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 16px rgba(245,158,11,0.2);"><div style="font-family:\'Montserrat\',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:4px;">🎂 Próximo cumpleaños</div><div style="font-size:13px;color:#92400e;font-weight:700;margin-bottom:2px;">'+nom+'</div><div style="font-size:12px;color:#b45309;">'+fechaStr+' · '+diasTxt+'</div></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
