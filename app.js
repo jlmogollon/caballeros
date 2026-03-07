@@ -1790,13 +1790,18 @@ function saveMaterialFromCode(){
 function confirmDelMaterial(id){
   const m=(DB.materialEstudio||[]).find(x=>x.id===id);
   if(!m)return;
-  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdelmat"><p>¿Eliminar el módulo <strong>${(m.titulo||'').replace(/</g,'&lt;')}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdelmat').remove()">Cancelar</button><button class="btn bred" onclick="doDelMaterial('${id}')">Eliminar</button></div></div>`;
+  const tituloEsc=(m.titulo||'Sin título').replace(/</g,'&lt;');
+  if(typeof openSheet==='function')openSheet('🗑','Eliminar módulo','',`
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Eliminar el módulo <strong>${tituloEsc}</strong>? El contenido se perderá.</p>
+    <div class="btn-row">
+      <button class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button class="btn bred" onclick="closeModal();doDelMaterial('${id}')">Eliminar</button>
+    </div>`);
 }
 function doDelMaterial(id){
   if(!Array.isArray(DB.materialEstudio))return;
   DB.materialEstudio=DB.materialEstudio.filter(x=>x.id!==id);
-  document.getElementById('cdelmat').remove();
-  saveDB().then(()=>{toast('Módulo eliminado','ok');renderMaterialAdmin();}).catch(()=>{});
+  saveDB().then(()=>{toast('Módulo eliminado','ok');if(typeof renderMaterialAdmin==='function')renderMaterialAdmin();}).catch(()=>{});
 }
 
 async function generarInformeEconomico(){

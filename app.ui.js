@@ -922,7 +922,7 @@ function showPvTab(tab){
   });
   const btnGrupos=document.getElementById('pv-btn-grupos');
   if(btnGrupos)btnGrupos.classList.toggle('pv-hdr-active',tab==='calgr');
-  const btnPerfil=document.querySelector('.pv-hdr-perfil');
+  const btnPerfil=document.querySelector('.pv-hdr-btn-perfil');
   if(btnPerfil)btnPerfil.classList.toggle('pv-hdr-active',tab==='perfil');
   if(tab==='eventos')  renderEventosPV();
   if(tab==='calgr')    renderCalGr('pv-calgr-pg');
@@ -1557,16 +1557,20 @@ function openChangeCabPw(){
   const ocultar=Array.isArray(c.ocultarAOtros)?c.ocultarAOtros:[];
   const oc=(key)=>ocultar.includes(key)?'checked':'';
   openSheet('👤','Mi Perfil',nombreCorto(c)||c.nombre,`
-    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-        <div id="cpw-photo-preview" style="width:56px;height:56px;border-radius:50%;overflow:hidden;background:#e5e7eb;border:2px solid #d1d5db;flex-shrink:0;">${tieneFoto?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>'}</div>
-        <div style="flex:1;min-width:0;">
-          <label style="font-size:12px;color:#6b7280;display:block;margin-bottom:4px;">Foto de perfil</label>
-          <input type="file" id="cpw-photo-inp" accept="image/*" style="font-size:11px;">
-          <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Usa una foto clara de tu rostro.</div>
+    <div class="perfil-panel">
+      <div class="perfil-hero">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div id="cpw-photo-preview" class="perfil-photo-wrap">${tieneFoto?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;">`:'<div>👤</div>'}</div>
+          <div style="flex:1;min-width:0;position:relative;z-index:1;">
+            <div class="perfil-hero-txt">Cuenta y foto</div>
+            <div class="perfil-hero-sub">Así te verán los demás caballeros</div>
+            <input type="file" id="cpw-photo-inp" accept="image/*" style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.9);max-width:100%;">
+          </div>
         </div>
       </div>
-      <div class="fr" style="margin-bottom:10px;"><label>Nombre completo</label><input type="text" id="cpw-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
+      <div class="perfil-block">
+        <div class="perfil-block-title">Datos personales</div>
+      <div class="fr"><label>Nombre completo</label><input type="text" id="cpw-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Nombre a mostrar</label><input type="text" id="cpw-nombreMostrar" value="${nombreMostrarEsc}" placeholder="Ej. Juan García"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Teléfono</label><input type="tel" id="cpw-telefono" value="${telefonoEsc}" placeholder="Ej. 600 000 000"></div>
       <div class="fr" style="margin-bottom:10px;"><label>Fecha de nacimiento</label><input type="date" id="cpw-fnac" value="${fnacEsc}"></div>
@@ -1630,7 +1634,8 @@ function openChangeCabPw(){
           <option value="aun_no_se" ${campResp==='aun_no_se'?'selected':''}>Aún no lo sé</option>
         </select>
       </div>
-      <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="doSaveCabPerfilPV();">💾 Guardar perfil</button>
+      <button class="btn bteal" onclick="doSaveCabPerfilPV();">💾 Guardar perfil</button>
+      </div>
     </div>
     ${tienePass?`<div class="fr"><label>Contraseña actual</label><input type="password" id="cpw-curr" placeholder="Tu contraseña actual"></div>`:'<div style="background:var(--teal-bg);border:1px solid var(--border);border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:var(--teal2)">🔑 Todavía no tienes contraseña personal. Crea una para proteger tu perfil.</div>'}
     <div class="fr"><label>${tienePass?'Nueva contraseña':'Crear contraseña'}</label><input type="password" id="cpw-new" placeholder="Mínimo 4 caracteres"></div>
