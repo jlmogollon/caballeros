@@ -931,77 +931,108 @@ function showPvTab(tab){
   if(tab==='estudio') renderEstudioPV();
 }
 
-// Estudio (vista caballero: material + evaluación vinculada + calificación del estudio)
+// Estudio (vista caballero): lista de estudios desde DB.clases; al tocar se abre el detalle (material + cuestionario + calificación).
 function renderEstudioPV(){
   const el=document.getElementById('pv-estudio-lista');
   if(!el)return;
-  const arr=(Array.isArray(DB.materialEstudio)?DB.materialEstudio:[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0)).filter(m=>!!getMaterialUrl(m));
-  const cabId=currentCabId;
-  const respuestas=DB.evaluacionRespuestas||[];
-  const evaluaciones=DB.evaluaciones||[];
-  if(arr.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay material publicado.</p>';return;}
+  const clases=(Array.isArray(DB.clases)?DB.clases:[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  if(clases.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay estudios (clases) registrados.</p>';return;}
   let html='';
+  clases.forEach(cl=>{
+    const claseId=cl.id||cl.fecha;
+    const tema=(cl.tema||'Estudio').replace(/</g,'&lt;');
+    const fechaLbl=typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha;
+    html+=`<div onclick="openEstudioDetallePV('${claseId}')" style="margin-bottom:12px;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;cursor:pointer;background:linear-gradient(145deg,#fff 0%,#f8fafc 100%);border:1.5px solid #e5e7eb;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#1a1f2e;line-height:1.3;">${tema}</div>
+        <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fechaLbl}</div>
+        ${cl.grupoResp?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 ${(cl.grupoResp||'').replace(/</g,'&lt;')}</div>`:''}
+      </div>
+      <div style="font-size:18px;color:#9ca3af;flex-shrink:0;">→</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+// Construye el HTML del detalle de un estudio (material + cuestionario sin título + calificación con colores por grupo). Usado por openEstudioDetallePV y por la vista Estudio.
+function getEstudioDetalleHTML(claseId,cabId){
+  const cl=(DB.clases||[]).find(c=>(c.id||c.fecha)===claseId);
+  if(!cl)return'<p style="color:var(--text3);font-size:13px;">Estudio no encontrado.</p>';
+  const evaluaciones=DB.evaluaciones||[];
+  const respuestas=DB.evaluacionRespuestas||[];
+  const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.claseId===claseId);
+  const m=ev&&ev.materialId?(DB.materialEstudio||[]).find(x=>x.id===ev.materialId):null;
   const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
   const grupoCaballero=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
-  arr.forEach((m,i)=>{
-    html+=`<div style="margin-bottom:20px;">`;
-    html+=`<div onclick="openMaterialViewer('${m.id}')" style="background:linear-gradient(145deg,#f0f9ff 0%,#e0f2fe 50%,#bae6fd 100%);border:1.5px solid rgba(14,165,233,0.35);border-radius:14px;padding:18px 20px;cursor:pointer;box-shadow:0 4px 16px rgba(14,165,233,0.12);transition:border-color .2s,box-shadow .2s;">
+  const gcol=g=>{if(typeof GCOL==='undefined')return 'var(--teal)';const key=Object.keys(GCOL||{}).find(k=>String(k).toUpperCase()===(String(g||'')).toUpperCase());return key?GCOL[key]:'var(--teal)';};
+  let html='';
+  if(m&&getMaterialUrl(m)){
+    html+=`<div onclick="openMaterialViewer('${m.id}');" style="background:linear-gradient(145deg,#f0f9ff 0%,#e0f2fe 50%,#bae6fd 100%);border:1.5px solid rgba(14,165,233,0.35);border-radius:14px;padding:18px 20px;cursor:pointer;box-shadow:0 4px 16px rgba(14,165,233,0.12);margin-bottom:12px;">
       <div style="font-size:10px;font-weight:800;color:#0369a1;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Material de estudio</div>
       <div style="font-weight:800;color:var(--dark);font-size:15px;">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
       <div style="font-size:12px;color:#0c4a6e;margin-top:6px;opacity:0.9;">Toca para abrir la página</div>
     </div>`;
-    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.materialId===m.id);
-    if(ev){
-      const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
-      const yaRespondido=!!miResp;
-      const media10=yaRespondido&&miResp&&(miResp.totalPreguntas||0)>0?+(miResp.puntuacion/miResp.totalPreguntas*10).toFixed(2):null;
-      const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
-      const puedeComenzar=!yaRespondido||puedeRepetir;
-      const col=yaRespondido?'#fefce8':'#fef9c3';
-      const borde=yaRespondido?'rgba(212,168,0,0.5)':'rgba(245,197,24,0.5)';
-      const icono=yaRespondido?'✅':'📝';
-      const subtituloEval=yaRespondido?('Cuestionario completado'+(media10!=null?' · '+media10+'/10':'')):'Cuestionario de evaluación';
-      html+=`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="margin-top:10px;background:linear-gradient(145deg,${col} 0%,${yaRespondido?'#fef08a':'#fef3c7'} 100%);border:1.5px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 20px rgba(245,197,24,0.15);">
-        <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
-          <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,197,24,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;">${icono}</div>
-          <div><div style="font-weight:800;font-size:13px;">${(ev.titulo||'Cuestionario').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:#4b5563;">${subtituloEval}</div></div>
-        </div>
-        <div style="display:flex;gap:8px;">${yaRespondido?`<button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="event.stopPropagation();verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}${puedeComenzar?`<button type="button" class="btn bteal" style="font-size:11px;padding:6px 14px;" onclick="event.stopPropagation();iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Repetir':'Comenzar'}</button>`:''}</div>
+  }
+  if(ev){
+    const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
+    const yaRespondido=!!miResp;
+    const media10=yaRespondido&&miResp&&(miResp.totalPreguntas||0)>0?+(miResp.puntuacion/miResp.totalPreguntas*10).toFixed(2):null;
+    const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
+    const puedeComenzar=!yaRespondido||puedeRepetir;
+    const col=yaRespondido?'#fefce8':'#fef9c3';
+    const borde=yaRespondido?'rgba(212,168,0,0.5)':'rgba(245,197,24,0.5)';
+    const icono=yaRespondido?'✅':'📝';
+    const subtituloEval=yaRespondido?('Cuestionario completado'+(media10!=null?' · '+media10+'/10':'')):'Cuestionario de evaluación';
+    html+=`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="margin-bottom:12px;background:linear-gradient(145deg,${col} 0%,${yaRespondido?'#fef08a':'#fef3c7'} 100%);border:1.5px solid ${borde};border-radius:16px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 20px rgba(245,197,24,0.15);">
+      <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(245,197,24,0.2);display:flex;align-items:center;justify-content:center;font-size:20px;">${icono}</div>
+        <div><div style="font-size:11px;color:#4b5563;">${subtituloEval}</div></div>
+      </div>
+      <div style="display:flex;gap:8px;">${yaRespondido?`<button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="event.stopPropagation();verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}${puedeComenzar?`<button type="button" class="btn bteal" style="font-size:11px;padding:6px 14px;" onclick="event.stopPropagation();iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Repetir':'Comenzar'}</button>`:''}</div>
+    </div>`;
+  }
+  if(cl.cal&&Object.keys(cl.cal).length){
+    const caballerosConCal=DB.caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
+    const grupos={};
+    caballerosConCal.forEach(c=>{
+      const g=c.grupo||'Sin grupo';
+      if(!grupos[g])grupos[g]={s:0,n:0};
+      const q=cl.cal[c.id];
+      const t=typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):(typeof rowTotal==='function'?rowTotal(q):0);
+      grupos[g].s+=t;grupos[g].n++;
+    });
+    const miCal=typeof classScoreForCab==='function'?classScoreForCab(cl,cabId):null;
+    const miCalTxt=miCal!=null?(typeof fmtScore==='function'?fmtScore(miCal):miCal):'—';
+    html+=`<div style="margin-top:4px;padding:0;"><div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:8px;">📊 Calificación de este estudio</div>
+      <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:10px;padding:8px 12px;background:white;border-radius:8px;border:1px solid #e2e8f0;">Tu calificación: <span style="color:var(--teal2);">${miCalTxt}</span></div>
+      <div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">Comparación por grupo</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">`;
+    const gNames=Object.keys(grupos).sort();
+    const maxAvg=Math.max(...gNames.map(g=>grupos[g].n?grupos[g].s/grupos[g].n:0),0.01);
+    gNames.forEach(g=>{
+      const avg=grupos[g].n?+(grupos[g].s/grupos[g].n).toFixed(1):'—';
+      const avgNum=grupos[g].n?grupos[g].s/grupos[g].n:0;
+      const pct=maxAvg>0?Math.min(100,(avgNum/10)*100):0;
+      const esMiGrupo=(g||'Sin grupo')===grupoCaballero;
+      const colorGrupo=gcol(g||'Sin grupo');
+      html+=`<div style="border-radius:10px;overflow:hidden;border:2px solid ${esMiGrupo?colorGrupo:'#e2e8f0'};background:${esMiGrupo?colorGrupo+'18':'#f8fafc'};padding:10px 12px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:600;"><span style="color:${colorGrupo};">${(g||'Sin grupo').replace(/</g,'&lt;')}${esMiGrupo?' <span style="font-size:10px;opacity:0.9;">(tu grupo)</span>':''}</span><span style="color:var(--teal2);">${avg}/10</span></div>
+        <div style="height:10px;background:rgba(0,0,0,0.06);border-radius:999px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${colorGrupo};border-radius:999px;transition:width .6s ease;"></div></div>
       </div>`;
-      const cl=ev.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===ev.claseId):null;
-      if(cl&&(cl.cal||{})){
-        const caballerosConCal=DB.caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
-        const grupos={};
-        caballerosConCal.forEach(c=>{
-          const g=c.grupo||'Sin grupo';
-          if(!grupos[g])grupos[g]={s:0,n:0};
-          const q=cl.cal[c.id];
-          const t=typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):(typeof rowTotal==='function'?rowTotal(q):0);
-          grupos[g].s+=t;grupos[g].n++;
-        });
-        const claseLbl=(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' — '+(cl.tema||'Clase').substring(0,40);
-        const miCal=typeof classScoreForCab==='function'?classScoreForCab(cl,cabId):null;
-        const miCalTxt=miCal!=null?(typeof fmtScore==='function'?fmtScore(miCal):miCal):'—';
-        html+=`<div style="margin-top:10px;padding:14px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
-          <div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:10px;">📊 Calificación de este estudio</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${claseLbl.replace(/</g,'&lt;')}</div>
-          <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:12px;padding:8px 10px;background:white;border-radius:8px;border:1px solid #e2e8f0;">Tu calificación: <span style="color:var(--teal2);">${miCalTxt}</span></div>
-          <div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">Comparación por grupo</div>`;
-        const gNames=Object.keys(grupos).sort();
-        const maxAvg=Math.max(...gNames.map(g=>grupos[g].n?grupos[g].s/grupos[g].n:0),0.01);
-        gNames.forEach(g=>{
-          const avg=grupos[g].n?+(grupos[g].s/grupos[g].n).toFixed(1):'—';
-          const avgNum=grupos[g].n?grupos[g].s/grupos[g].n:0;
-          const pct=maxAvg>0?Math.min(100,(avgNum/10)*100):0;
-          const esMiGrupo=(g||'Sin grupo')===grupoCaballero;
-          html+=`<div class="bw" style="margin-bottom:8px;"><div class="bl" style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:600;"><span style="color:var(--text2);">${(g||'Sin grupo').replace(/</g,'&lt;')}${esMiGrupo?' <span style="color:var(--teal2);font-size:10px;">(tu grupo)</span>':''}</span><span style="color:var(--teal2);">${avg}/10</span></div><div class="bt" style="height:8px;background:#f0f2f5;border-radius:4px;overflow:hidden;${esMiGrupo?'border:2px solid var(--teal2);box-sizing:border-box;':''}"><div class="bf" style="width:${pct}%;height:100%;background:${esMiGrupo?'linear-gradient(90deg,var(--teal),var(--teal2))':'rgba(58,171,186,0.4)'};border-radius:4px;transition:width .6s ease;"></div></div></div>`;
-        });
-        html+=`</div>`;
-      }
-    }
-    html+=`</div>`;
-  });
-  el.innerHTML=html;
+    });
+    html+=`</div></div>`;
+  }
+  return html||'<p style="color:var(--text3);font-size:13px;">Sin material ni evaluación para este estudio.</p>';
+}
+function openEstudioDetallePV(claseId){
+  const cl=(DB.clases||[]).find(c=>(c.id||c.fecha)===claseId);
+  if(!cl){toast('Estudio no encontrado.','err');return;}
+  const titulo=(cl.tema||'Estudio').replace(/</g,'&lt;');
+  const subt=(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' · '+(cl.grupoResp?'Expone: '+cl.grupoResp:'');
+  const body=getEstudioDetalleHTML(claseId,typeof currentCabId!=='undefined'?currentCabId:'');
+  if(typeof openSheet==='function')openSheet('📚',titulo,subt,body);
 }
 function getMaterialUrl(m){
   if(m.url)return m.url.startsWith('http')?m.url:'https://'+m.url;
