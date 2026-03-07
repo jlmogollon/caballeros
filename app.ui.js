@@ -100,17 +100,18 @@ function setFB(b){fBadge=b;_lastFBadge=null;renderCabs();}
 // Debounce para el campo de búsqueda (estado definido en app.js)
 function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCabs,220);}
 
-function mkCabCard(c,rank){
+function mkCabCard(c,rank,hideGrupo){
   const cal=calcCab(c.id);
   const evalAvg=typeof avgEvalScoreForCab==='function'?avgEvalScoreForCab(c.id):null;
   const bd=mkBadges(c);
   const nm=nombreCorto(c);
   const evalTxt=evalAvg!=null?`<div class="cab-eval" title="Calificación complementaria (evaluaciones)">Eval. ${evalAvg}</div>`:'';
+  const subtitulo=hideGrupo?(c.dist||''):(`${c.dist||''} · ${c.grupo||''}`).replace(/^ · | · $/g,'').trim()||'';
   return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
     <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(nm||c.nombre)}</span>`)}</div>
     <div class="cab-inf">
       <div class="cab-nm">${nm||c.nombre}</div>
-      <div class="cab-mt">${c.dist} · ${c.grupo}</div>
+      ${subtitulo?`<div class="cab-mt">${subtitulo}</div>`:''}
       ${bd?`<div class="badges">${bd}</div>`:''}
     </div>
     <div class="cab-scores"><div class="cab-sc">${cal.total.toFixed(1)}</div>${evalTxt}</div>
@@ -210,13 +211,8 @@ function openGrupoIntegrantes(nombreGrupo){
   const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
   const ms=(map[nombreGrupo]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
   const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
-  const col=GCOL[nombreGrupo]||'var(--teal)';
-  const h=ms.length?ms.map((c,i)=>{const av=c.photo?`<img src="${c.photo}" style="width:36px;height:36px;object-fit:cover;border-radius:50%;flex-shrink:0">`:`<div style="width:36px;height:36px;border-radius:50%;background:${col}22;display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:11px;font-weight:900;color:${col};flex-shrink:0">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`;return`<div onclick="closeModal();openCabDetail('${c.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border-radius:10px;cursor:pointer;border:1px solid #e2e8f0;transition:background .15s;">
-    ${av}
-    <div style="flex:1;min-width:0;"><div style="font-weight:700;color:var(--dark);">${nombreCorto(c)||c.nombre}</div><div style="font-size:11px;color:var(--text3);">${c.dist||''}</div></div>
-    <span style="font-weight:800;color:var(--teal);font-size:15px;">${calcCab(c.id).total.toFixed(1)}</span>
-  </div>`}).join(''):'<p style="color:var(--text3);font-size:13px">No hay integrantes en este grupo.</p>';
-  openSheet('👥',nombreGrupo,`${ms.length} integrantes · Prom: ${avg}`,'<div style="max-height:70vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">'+h+'</div>');
+  const html=ms.length?ms.map((c,i)=>mkCabCard(c,i+1,true)).join(''):'<p style="color:var(--text3);font-size:13px">No hay integrantes en este grupo.</p>';
+  openSheet('👥',nombreGrupo,`${ms.length} integrantes · Prom: ${avg}`,'<div class="card-list" style="max-height:70vh;overflow-y:auto">'+html+'</div>');
 }
 function confirmDelCab(id){
   const c=DB.caballeros.find(x=>x.id===id);
@@ -1475,7 +1471,7 @@ function openChangeCabPw(){
       <div class="fr" style="margin-bottom:10px;">
         <label>Estado civil</label>
         <select id="cpw-estadoCivil" style="width:100%;padding:10px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
-          <option value="" ${estadoCivilEsc===''?'selected':''}>Prefiero no decir</option>
+          <option value="" ${estadoCivilEsc===''?'selected':''}>—</option>
           <option value="soltero" ${estadoCivilEsc==='soltero'?'selected':''}>Soltero</option>
           <option value="casado" ${estadoCivilEsc==='casado'?'selected':''}>Casado</option>
           <option value="noviazgo" ${estadoCivilEsc==='noviazgo'?'selected':''}>En noviazgo</option>

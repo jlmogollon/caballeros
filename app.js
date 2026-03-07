@@ -849,7 +849,7 @@ function mkHistoryTable(cabId,forPdf){
   const temaStyle='font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;';
   const headers='<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr>';
   const tableHtml=`<table class="dtable dtable-perfil dtable-perfil-compact"><thead>${headers}</thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
   }</tbody></table>`;
   return`<div class="historial-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;">${tableHtml}</div>`;
 }
@@ -873,7 +873,7 @@ function mkHistoryTableCompact(cabId){
   years.forEach((y,idx)=>{
     const rows=byYear[y].map(r=>`<tr>
       <td>${fmtDate(r.fecha)}</td>
-      <td style="${temaStyle}">${abrevTema(r.tema).replace(/</g,'&lt;')}</td>
+      <td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td>
       <td>${r.a?'✅':'❌'}</td>
       <td>${r.a?r.p:'—'}</td>
       <td>${r.a?r.i:'—'}</td>
@@ -1060,17 +1060,18 @@ function setFB(b){fBadge=b;_lastFBadge=null;renderCabs();}
 let _searchTimer=null;
 function onSearch(){clearTimeout(_searchTimer);_searchTimer=setTimeout(renderCabs,220);}
 
-function mkCabCard(c,rank){
+function mkCabCard(c,rank,hideGrupo){
   const cal=calcCab(c.id);
   const evalAvg=typeof avgEvalScoreForCab==='function'?avgEvalScoreForCab(c.id):null;
   const bd=mkBadges(c);
   const nm=nombreCorto(c);
   const evalTxt=evalAvg!=null?`<div class="cab-eval" title="Calificación complementaria (evaluaciones)">Eval. ${evalAvg}</div>`:'';
+  const subtitulo=hideGrupo?(c.dist||''):(`${c.dist||''} · ${c.grupo||''}`).replace(/^ · | · $/g,'').trim()||'';
   return`<div class="cab-card" onclick="openCabDetail('${c.id}')">
     <div class="av">${rank&&!c.photo?`<span style="font-family:Montserrat;font-size:12px;font-weight:900">#${rank}</span>`:(c.photo?`<img src="${c.photo}" style="width:42px;height:42px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:13px;font-weight:800;color:white">${ini(nm||c.nombre)}</span>`)}</div>
     <div class="cab-inf">
       <div class="cab-nm">${nm||c.nombre}</div>
-      <div class="cab-mt">${c.dist} · ${c.grupo}</div>
+      ${subtitulo?`<div class="cab-mt">${subtitulo}</div>`:''}
       ${bd?`<div class="badges">${bd}</div>`:''}
     </div>
     <div class="cab-scores"><div class="cab-sc">${cal.total.toFixed(1)}</div>${evalTxt}</div>
