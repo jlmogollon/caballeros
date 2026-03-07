@@ -75,7 +75,12 @@ function renderCabs(){
   if(fGrupo!==_lastFGrupo){
     _lastFGrupo=fGrupo;
     document.getElementById('chips-grupo').innerHTML=
-      ['TODOS',...GRUPOS].map(g=>`<div class="chip ${g===fGrupo?'active':''}" onclick="setFG('${g}')">${g==='TODOS'?'Todos':g}</div>`).join('');
+      ['TODOS',...GRUPOS].map(g=>{
+        const col=g==='TODOS'?null:(typeof GCOL!=='undefined'&&GCOL[g])?GCOL[g]:'#3aabba';
+        const isActive=g===fGrupo;
+        if(g==='TODOS')return`<div class="chip chip-todos ${isActive?'active':''}" onclick="setFG('${g}')">Todos</div>`;
+        return`<div class="chip chip-grupo ${isActive?'active':''}" style="border-width:2px;border-color:${col};color:${col};background:${isActive?col+'28':col+'12'};font-weight:800;letter-spacing:0.5px;padding:7px 14px;${isActive?'box-shadow:0 3px 12px '+col+'40;':''}" onclick="setFG('${g}')">${g}</div>`;
+      }).join('');
   }
   if(fBadge!==_lastFBadge){
     _lastFBadge=fBadge;
@@ -251,7 +256,7 @@ function openFormCab(id){
     <div class="fr"><label>Nombre completo</label><input id="fc-nombre" value="${nombreEsc}" placeholder="Nombre y apellido"></div>
     <div class="fr"><label>Nombre a mostrar</label><input id="fc-nombreMostrar" value="${nombreMostrarEsc}" placeholder="Ej. Juan Carlos García (primer nombre + primer apellido)"></div>
     <div class="fr"><label>Teléfono</label><input type="tel" id="fc-telefono" value="${telefonoEsc}" placeholder="Ej. 600 000 000"></div>
-    <div class="fr"><label>Grupo</label><select id="fc-grupo">${gOpts}</select></div>
+    <div class="fr"><label>Grupo</label><select id="fc-grupo" class="select-grupo">${gOpts}</select></div>
     <div class="fr"><label>Distintivo</label><select id="fc-dist"><option value="Hermano"${c.dist==='Hermano'?' selected':''}>Hermano</option><option value="Amigo"${c.dist==='Amigo'?' selected':''}>Amigo</option></select></div>
     <div class="fr"><label>Fecha de nacimiento</label><input type="date" id="fc-fnac" value="${fnacEsc}" placeholder="Para cumpleaños"></div>
     <div class="fr"><label>Fecha de bautizado</label><input type="date" id="fc-fechaBautizado" value="${fbautEsc}" placeholder="Para aniversario"></div>
@@ -387,9 +392,9 @@ function renderGrupos(){
     const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
     const col=GCOL[g]||'var(--teal)';
     const avatars=ms.slice(0,5).map((c,i)=>c.photo?`<img src="${c.photo}" style="width:28px;height:28px;object-fit:cover;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-left:${i===0?0:'-8px'}" title="${escAttr(nombreCorto(c)||c.nombre)}">`:`<div style="width:28px;height:28px;border-radius:50%;background:${col};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-left:${i===0?0:'-8px'};display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:9px;font-weight:900;color:white" title="${escAttr(nombreCorto(c)||c.nombre)}">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`).join('');
-    h+=`<div class="gr-card" onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="cursor:pointer;">
-      <div class="gr-hdr"><div class="gr-nm" style="color:${col}">${g}</div><div style="font-size:11px;color:var(--text3)">${ms.length} integrantes · Prom: ${avg} · Toca para ver</div></div>
-      ${avatars?`<div style="display:flex;align-items:center;padding-top:8px;margin-left:2px">${avatars}</div>`:''}
+    h+=`<div class="gr-card gr-card-pro" onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="cursor:pointer;border-left:4px solid ${col};box-shadow:0 4px 16px rgba(0,0,0,0.06);transition:transform .2s,box-shadow .2s;">
+      <div class="gr-hdr"><div class="gr-nm" style="color:${col};font-size:14px;letter-spacing:0.3px;">${g}</div><div style="font-size:11px;color:var(--text3);font-weight:600;">${ms.length} integrantes · Prom: ${avg}</div></div>
+      ${avatars?`<div style="display:flex;align-items:center;padding-top:10px;margin-left:2px">${avatars}</div><div style="font-size:10px;color:var(--text3);margin-top:6px;font-weight:600;">Toca para ver integrantes</div>`:''}
     </div>`;
   });
   document.getElementById('grupos-pg').innerHTML=h;
@@ -459,7 +464,7 @@ function openClaseDetail(key){
     <div class="dsec"><div class="dhead">Editar datos de la clase</div>
       <div class="fr"><label>Nombre / Tema de la clase</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
       <div class="fr"><label>Fecha</label><input type="date" id="edcl-fecha" value="${cl.fecha}"></div>
-      <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo">${gOpts}</select></div>
+      <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo" class="select-grupo">${gOpts}</select></div>
       <button class="btn bteal" onclick="doSaveClaseInfo('${clave}')" style="margin-top:6px">💾 Guardar cambios</button>
     </div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
@@ -501,7 +506,7 @@ function openNuevaClase(){
   openSheet('📅','Nueva Clase','Registrar sesión de estudios',`
     <div class="fr"><label>Fecha de la clase</label><input type="date" id="nc-fecha" value="${today}"></div>
     <div class="fr"><label>Tema del estudio</label><input id="nc-tema" value="Estudio de las Dispensaciones" placeholder="Ej: Estudio de las Dispensaciones"></div>
-    <div class="fr"><label>Grupo Responsable</label><select id="nc-grupo">${gOpts}</select></div>
+    <div class="fr"><label>Grupo Responsable</label><select id="nc-grupo" class="select-grupo">${gOpts}</select></div>
     <div class="info-box">💡 Después podrás marcar asistencia y calificar a cada caballero del 0 al 10.</div>
     <button class="btn bteal bfull" onclick="doCrearClase()">📋 Ir a Calificar →</button>
   `);
@@ -683,10 +688,10 @@ function renderCalGr(targetId){
       const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
       const col=GCOL[g]||'var(--teal)';
       const avatars=ms.slice(0,3).map((c,i)=>c.photo?`<img src="${c.photo}" style="width:24px;height:24px;object-fit:cover;border-radius:50%;border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.1);margin-left:${i===0?0:'-10px'}" title="${escAttr(nombreCorto(c)||c.nombre)}">`:`<div style="width:24px;height:24px;border-radius:50%;background:${col};border:2px solid white;box-shadow:0 1px 2px rgba(0,0,0,0.1);margin-left:${i===0?0:'-10px'};display:flex;align-items:center;justify-content:center;font-family:Montserrat;font-size:8px;font-weight:900;color:white" title="${escAttr(nombreCorto(c)||c.nombre)}">${typeof ini==='function'?ini(c.nombre):(c.nombre||'').split(' ').map(w=>w[0]||'').join('').substring(0,2).toUpperCase()}</div>`).join('');
-      h+=`<div onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:16px 18px;margin-bottom:10px;box-shadow:0 2px 10px rgba(0,0,0,0.04);cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;" onmouseover="this.style.borderColor='${col}';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'" onmouseout="this.style.borderColor='#e9edf2';this.style.boxShadow='0 2px 10px rgba(0,0,0,0.04)'">
-        <div style="width:44px;height:44px;border-radius:12px;background:${col}22;display:flex;align-items:center;justify-content:flex-start;flex-shrink:0;overflow:visible;padding-left:2px;">${avatars||'<span style="font-size:20px">👥</span>'}</div>
-        <div style="flex:1;min-width:0;"><div style="font-family:Montserrat,sans-serif;font-size:14px;font-weight:800;color:${col};">${g}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${ms.length} integrantes · Prom: ${avg}</div></div>
-        <div style="font-size:18px;color:var(--text3);flex-shrink:0;">→</div>
+      h+=`<div class="gr-card-pv" onclick="openGrupoIntegrantes('${g.replace(/'/g,"\\'")}')" style="background:linear-gradient(135deg,#fff 0%,#fafbfc 100%);border:2px solid #e9edf2;border-left:5px solid ${col};border-radius:16px;padding:18px 20px;margin-bottom:12px;box-shadow:0 4px 20px rgba(0,0,0,0.06);cursor:pointer;display:flex;align-items:center;gap:16px;transition:all .25s;">
+        <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(145deg,${col}28,${col}18);border:2px solid ${col}44;display:flex;align-items:center;justify-content:flex-start;flex-shrink:0;overflow:visible;padding-left:2px;">${avatars||'<span style="font-size:24px">👥</span>'}</div>
+        <div style="flex:1;min-width:0;"><div style="font-family:Montserrat,sans-serif;font-size:15px;font-weight:800;color:${col};letter-spacing:0.3px;">${g}</div><div style="font-size:12px;color:var(--text3);margin-top:4px;font-weight:600;">${ms.length} integrantes · Prom: ${avg}</div></div>
+        <div style="width:36px;height:36px;border-radius:10px;background:${col}18;color:${col};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;">→</div>
       </div>`;
     });
     el.innerHTML=h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>';
@@ -757,10 +762,10 @@ function renderPersonal(cabId){
     if(pct>=100){
       completionEl.innerHTML=`<div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #22c55e;border-radius:14px;padding:14px 18px;text-align:center;"><span style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;color:#166534;">Perfil completo ✅</span></div>`;
     }else{
-      if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Entra en tu perfil (👤) para completarlo.';
-      else subt='Entra en tu perfil (botón 👤 arriba) y completa los datos que te hacen falta.';
+      if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Toca aquí para completar.';
+      else subt='Toca aquí para abrir tu perfil y rellenar lo que falte.';
       completionEl.innerHTML=`
-      <div class="panel panel-soft-teal">
+      <div class="panel panel-soft-teal" onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()" style="cursor:pointer;">
         <div class="panel-title">${msg}</div>
         <div class="panel-desc">${subt}</div>
         <div class="bt" style="background:#e5e7eb;">
@@ -787,40 +792,12 @@ function renderPersonal(cabId){
     }
   }
   const achEl=document.getElementById('pv-achievements');
-  if(achEl){
-    const sortedAll=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-    let longest=0,current=0,totalAsist=0;
-    sortedAll.forEach(cl=>{
-      const q=(cl.cal||{})[cabId];
-      if(q&&q.a){
-        totalAsist++;
-        current++;
-        if(current>longest)longest=current;
-      }else{
-        current=0;
-      }
-    });
-    const achievements=[];
-    if(longest>=3)achievements.push('Asistencia fiel: 3 o más clases seguidas asistiendo.');
-    if(totalAsist>=10)achievements.push('Discípulo constante: 10 o más clases asistidas.');
-    if(cal.total>=7)achievements.push('Media general alta: puntuación acumulada ≥ 7.0.');
-    if(achievements.length){
-      achEl.innerHTML=`
-        <div class="panel panel-soft-gold">
-          <div class="panel-title">Logros recientes</div>
-          <ul style="margin:0;padding-left:18px;font-size:12px;color:#92400e;">
-            ${achievements.map(a=>`<li>${a}</li>`).join('')}
-          </ul>
-        </div>
-      `;
-    }else{
-      achEl.innerHTML='';
-    }
-  }
+  if(achEl)achEl.innerHTML='';
   const evalEl=document.getElementById('pv-eval-summary');
   if(evalEl)evalEl.innerHTML='';
-  const bK=[{k:'i',l:'Interés'},{k:'p',l:'Puntualidad'},{k:'d',l:'Dominio'},{k:'pa',l:'Participación'}];
-  document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l})=>{const pct=Math.min(100,(cal[k]/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${cal[k].toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
+  const evalScore=typeof getEvalDisplayScoreForCab==='function'?getEvalDisplayScoreForCab(cabId):0;
+  const bK=[{k:'i',l:'Interés',v:cal.i},{k:'p',l:'Puntualidad',v:cal.p},{k:'d',l:'Dominio',v:cal.d},{k:'pa',l:'Participación',v:cal.pa},{k:'ev',l:'Evaluación (cuestionarios)',v:evalScore}];
+  document.getElementById('pv-bars').innerHTML='<div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Media acumulada</div>'+bK.map(({k,l,v})=>{const val=typeof v==='number'?v:0;const pct=Math.min(100,(val/10)*100);return`<div class="bw"><div class="bl"><span>${l}</span><span>${val.toFixed(1)}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   document.getElementById('pv-hist').innerHTML='<div class="pv-hist-ttl" style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px">Calificaciones individuales por clase</div>'+mkHistoryTableCompact(cabId);
   renderFbautCard(c);
   renderFsellCard(c);
