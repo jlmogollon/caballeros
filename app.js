@@ -855,45 +855,31 @@ function mkHistoryTable(cabId,forPdf){
   return`<div class="historial-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;">${tableHtml}</div>`;
 }
 
-// Versión compacta para vista personal: agrupa por año y permite plegar
+// Versión compacta para vista personal: muestra las 3 últimas clases
 function mkHistoryTableCompact(cabId){
   const hist=DB.clases.filter(cl=>cl.cal[cabId]).map(cl=>{
     const ev=getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId);
     return{fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],ev,t:classScoreForCab(cl,cabId)};
-  }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  }).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,3);
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
-  const byYear={};
-  hist.forEach(r=>{
-    const y=r.fecha.substring(0,4);
-    if(!byYear[y])byYear[y]=[];
-    byYear[y].push(r);
-  });
-  const years=Object.keys(byYear).sort((a,b)=>b.localeCompare(a));
   const temaStyle='font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.4;';
-  let out='';
-  years.forEach((y,idx)=>{
-    const rows=byYear[y].map(r=>`<tr>
-      <td>${fmtDate(r.fecha)}</td>
-      <td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td>
-      <td>${r.a?'✅':'❌'}</td>
-      <td>${r.a?r.p:'—'}</td>
-      <td>${r.a?r.i:'—'}</td>
-      <td>${r.a?r.d:'—'}</td>
-      <td>${r.a?r.pa:'—'}</td>
-      <td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td>
-      <td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td>
-    </tr>`).join('');
-    out+=`<details ${idx===0?'open':''} class="pv-hist-details" style="margin-bottom:8px;">
-      <summary style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;cursor:pointer;outline:none;">📅 ${y} (${byYear[y].length} clases)</summary>
-      <div class="pv-hist-table-wrap" style="margin-top:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;">
-        <table class="dtable dtable-perfil dtable-perfil-compact">
-          <thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    </details>`;
-  });
-  return out;
+  const rows=hist.map(r=>`<tr>
+    <td>${fmtDate(r.fecha)}</td>
+    <td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td>
+    <td>${r.a?'✅':'❌'}</td>
+    <td>${r.a?r.p:'—'}</td>
+    <td>${r.a?r.i:'—'}</td>
+    <td>${r.a?r.d:'—'}</td>
+    <td>${r.a?r.pa:'—'}</td>
+    <td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td>
+    <td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td>
+  </tr>`).join('');
+  return`<div class="pv-hist-table-wrap" style="margin-top:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;">
+    <table class="dtable dtable-perfil dtable-perfil-compact">
+      <thead><tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════

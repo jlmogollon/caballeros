@@ -848,11 +848,19 @@ function renderEvalPendienteBanner(cabId){
   if(!pendientes.length){wrap.innerHTML='';wrap.style.display='none';return;}
   wrap.style.display='block';
   const n=pendientes.length;
-  wrap.innerHTML=`<div onclick="showPvTab('estudio')" style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.25);cursor:pointer;display:flex;align-items:center;gap:14px;">
+  const sortedPendientes=[...pendientes].sort((a,b)=>{
+    const clA=a.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===a.claseId):null;
+    const clB=b.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===b.claseId):null;
+    const fa=clA?clA.fecha||'':''; const fb=clB?clB.fecha||'':'';
+    return fa.localeCompare(fb);
+  });
+  const evMasAntigua=sortedPendientes[0];
+  const evId=evMasAntigua?evMasAntigua.id:'';
+  wrap.innerHTML=`<div onclick="showPvTab('estudio');setTimeout(function(){if(typeof iniciarCuestionarioPV==='function'&&'${evId}')iniciarCuestionarioPV('${evId}');},120);" style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.25);cursor:pointer;display:flex;align-items:center;gap:14px;">
     <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📝</div>
     <div style="flex:1;min-width:0;">
       <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#92400e;">Tienes cuestionarios de evaluación por completar</div>
-      <div style="font-size:12px;color:#b45309;margin-top:2px;">${n} ${n===1?'cuestionario pendiente':'cuestionarios pendientes'} · Toca para ir</div>
+      <div style="font-size:12px;color:#b45309;margin-top:2px;">${n} ${n===1?'cuestionario pendiente':'cuestionarios pendientes'} · Toca para ir al más antiguo</div>
     </div>
     <div style="font-size:20px;color:#d97706;flex-shrink:0;">→</div>
   </div>`;
@@ -931,28 +939,55 @@ function showPvTab(tab){
   if(tab==='estudio') renderEstudioPV();
 }
 
-// Estudio (vista caballero): lista de estudios desde DB.clases; al tocar se abre el detalle (material + cuestionario + calificación).
+// Tarjeta de clase/estudio para vista personal: mismo aspecto que Admin (bloque fecha, tema, grupo·asistentes, badges, nota). La nota mostrada es la del grupo del caballero.
+function mkClaseCardPV(cl,cabId){
+  const{d,m}=typeof fmtBox==='function'?fmtBox(cl.fecha):{d:'',m:''};
+  const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
+  const today=new Date().toISOString().split('T')[0];
+  const realizada=cl.fecha<=today;
+  const calificada=typeof claseAvg==='function'&&claseAvg(cl)>0;
+  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':'<span class="cl-badge cl-proxima">Próxima</span>';
+  const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
+  let avgGrupo=0;
+  const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
+  const grupoCab=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
+  const caballerosConCal=DB.caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
+  const enMiGrupo=caballerosConCal.filter(c=>(c.grupo||'Sin grupo')===grupoCab);
+  if(enMiGrupo.length){
+    let s=0;
+    enMiGrupo.forEach(c=>{ const t=typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):(typeof rowTotal==='function'?rowTotal(cl.cal[c.id]):0); s+=t; });
+    avgGrupo=s/enMiGrupo.length;
+  }
+  const sc=avgGrupo>=7?'#15803d':avgGrupo>=4?'var(--gold2)':'var(--text3)';
+  const claseId=cl.id||cl.fecha;
+  return`<div class="cl-card" onclick="openEstudioDetallePV('${claseId}')">
+    <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
+    <div class="cl-inf">
+      <div class="cl-nm">${(cl.tema||'Estudio de las Dispensaciones').replace(/</g,'&lt;')}</div>
+      <div class="cl-mt">${(cl.grupoResp||'Sin asignar').replace(/</g,'&lt;')} · ${asist} asistentes</div>
+      <div class="cl-badges">${estadoRealizada} ${estadoCalif}</div>
+    </div>
+    <div class="cl-avg" style="color:${sc}">${avgGrupo>0?avgGrupo.toFixed(1):'—'}</div>
+  </div>`;
+}
+// Estudio (vista caballero): lista de estudios desde DB.clases ordenada por año; banner como en Admin (captura).
 function renderEstudioPV(){
   const el=document.getElementById('pv-estudio-lista');
   if(!el)return;
+  const cabId=typeof currentCabId!=='undefined'?currentCabId:'';
   const clases=(Array.isArray(DB.clases)?DB.clases:[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
   if(clases.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay estudios (clases) registrados.</p>';return;}
-  let html='';
+  const byYear={};
   clases.forEach(cl=>{
-    const claseId=cl.id||cl.fecha;
-    const tema=(cl.tema||'Estudio').replace(/</g,'&lt;');
-    const fechaLbl=typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha;
-    html+=`<div onclick="openEstudioDetallePV('${claseId}')" style="margin-bottom:12px;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;cursor:pointer;background:linear-gradient(145deg,#fff 0%,#f8fafc 100%);border:1.5px solid #e5e7eb;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
-      <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
-      <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#1a1f2e;line-height:1.3;">${tema}</div>
-        <div style="font-size:11px;color:#4b5563;margin-top:3px;">📅 ${fechaLbl}</div>
-        ${cl.grupoResp?`<div style="display:inline-flex;align-items:center;gap:5px;background:#ede9fe;color:#6d28d9;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 ${(cl.grupoResp||'').replace(/</g,'&lt;')}</div>`:''}
-      </div>
-      <div style="font-size:18px;color:#9ca3af;flex-shrink:0;">→</div>
-    </div>`;
+    const y=(cl.fecha||'').substring(0,4)||'Sin año';
+    if(!byYear[y])byYear[y]=[];
+    byYear[y].push(cl);
+  });
+  const years=Object.keys(byYear).sort((a,b)=>a.localeCompare(b));
+  let html='';
+  years.forEach(y=>{
+    html+=`<div class="cl-year-ttl">${y}</div>`;
+    byYear[y].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(cl=>{ html+=typeof mkClaseCardPV==='function'?mkClaseCardPV(cl,cabId):''; });
   });
   el.innerHTML=html;
 }
@@ -1005,7 +1040,8 @@ function getEstudioDetalleHTML(claseId,cabId){
     });
     const miCal=typeof classScoreForCab==='function'?classScoreForCab(cl,cabId):null;
     const miCalTxt=miCal!=null?(typeof fmtScore==='function'?fmtScore(miCal):miCal):'—';
-    html+=`<div style="margin-top:4px;padding:0;"><div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:8px;">📊 Calificación de este estudio</div>
+    html+=`<div style="margin-top:4px;padding:0;"><div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:6px;">📊 Calificación de este estudio</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:8px;">Se muestra la calificación del grupo al que perteneces.</div>
       <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:10px;padding:8px 12px;background:white;border-radius:8px;border:1px solid #e2e8f0;">Tu calificación: <span style="color:var(--teal2);">${miCalTxt}</span></div>
       <div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">Comparación por grupo</div>
       <div style="display:flex;flex-direction:column;gap:10px;">`;
