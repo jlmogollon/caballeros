@@ -693,10 +693,7 @@ function ensureDbShape(){
     const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES.id);
     if(idx<0){DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES)));saveDB().then(()=>{}).catch(()=>{});}
   }
-  if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES_CUESTIONARIO){
-    const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES_CUESTIONARIO.id);
-    if(idx<0){DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES_CUESTIONARIO)));saveDB().then(()=>{}).catch(()=>{});}
-  }
+  // Solo los dos cuestionarios vinculados a clases (cl1 y cl2); no auto-crear el tercero (CUESTIONARIO sin clase)
   if(Array.isArray(DB.evaluaciones)&&SEED_EVAL_DISPENSACIONES_TEXTO){
     const idx=DB.evaluaciones.findIndex(e=>e.id===SEED_EVAL_DISPENSACIONES_TEXTO.id);
     if(idx<0){DB.evaluaciones.push(JSON.parse(JSON.stringify(SEED_EVAL_DISPENSACIONES_TEXTO)));saveDB().then(()=>{}).catch(()=>{});}
@@ -842,11 +839,19 @@ function mkHistoryTable(cabId,forPdf){
     return{fecha:cl.fecha,tema:cl.tema,...cl.cal[cabId],ev,t:classScoreForCab(cl,cabId)};
   }).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   if(!hist.length)return'<p style="color:var(--text3);font-size:13px">Sin clases.</p>';
-  const temaStyle=forPdf?'font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;':'font-size:11px;white-space:normal;word-wrap:break-word;line-height:1.4;';
-  const headers=forPdf?'<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Evaluación</th><th>Total</th></tr>':'<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr>';
-  return`<table class="dtable ${forPdf?'dtable-pdf':'dtable-perfil'}"><thead>${headers}</thead><tbody>${
-    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${forPdf?(r.tema||'—').replace(/</g,'&lt;'):abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
+  if(forPdf){
+    const temaStyle='font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;';
+    const headers='<tr><th>Fecha</th><th>Tema</th><th>Asistencia</th><th>Puntualidad</th><th>Interés</th><th>Dominio</th><th>Participación</th><th>Evaluación</th><th>Total</th></tr>';
+    return`<table class="dtable dtable-pdf"><thead>${headers}</thead><tbody>${
+      hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${(r.tema||'—').replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
+    }</tbody></table>`;
+  }
+  const temaStyle='font-size:10px;white-space:normal;word-wrap:break-word;line-height:1.35;';
+  const headers='<tr><th>Fecha</th><th>Tema</th><th>A</th><th>Pun</th><th>Int</th><th>Dom</th><th>Par</th><th>Eval</th><th>Tot</th></tr>';
+  const tableHtml=`<table class="dtable dtable-perfil dtable-perfil-compact"><thead>${headers}</thead><tbody>${
+    hist.map(r=>`<tr><td>${fmtDate(r.fecha)}</td><td style="${temaStyle}">${abrevTema(r.tema).replace(/</g,'&lt;')}</td><td>${r.a?'✅':'❌'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')
   }</tbody></table>`;
+  return`<div class="historial-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;">${tableHtml}</div>`;
 }
 
 // Versión compacta para vista personal: agrupa por año y permite plegar
@@ -948,10 +953,12 @@ function doLogin(){
       // Verificar: contraseña propia O contraseña maestra (admin)
       if(pw!==c.pw&&pw!==DB.adminPw){err.textContent='Contraseña incorrecta.';err.style.display='block';return;}
     }
-    currentCabId=v;showSc('screen-personal');renderPersonal(v);
+    currentCabId=v;
+    try{sessionStorage.setItem('caballeros_miembro',v);}catch(e){}
+    showSc('screen-personal');renderPersonal(v);
   }
 }
-function logout(){document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
+function logout(){try{sessionStorage.removeItem('caballeros_miembro');}catch(e){}document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
@@ -1801,6 +1808,12 @@ function togglePrayerTimer(){
 async function initApp(){
   await loadDB();
   buildSel();
+  const savedCab=typeof sessionStorage!=='undefined'?sessionStorage.getItem('caballeros_miembro'):null;
+  if(savedCab&&DB.caballeros&&DB.caballeros.some(c=>c.id===savedCab)){
+    currentCabId=savedCab;
+    showSc('screen-personal');
+    if(typeof renderPersonal==='function')renderPersonal(savedCab);
+  }
   setInterval(function(){if(document.hidden)location.reload();},3600000);
   window._reportLogos={favicon:'',ev:(document.querySelector('#screen-admin .ev-banner img')||document.querySelector('.ev-banner img'))?.src||''};
   fetch('favicon.png').then(r=>r.blob()).then(blob=>new Promise((res,rej)=>{const rd=new FileReader();rd.onload=()=>res(rd.result);rd.onerror=rej;rd.readAsDataURL(blob);})).then(dataUrl=>{window._reportLogos.favicon=dataUrl;}).catch(()=>{});

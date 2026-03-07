@@ -911,6 +911,7 @@ function renderVersoDelDia(){
   wrap.innerHTML='<div style="background:linear-gradient(135deg,#1a1f2e 0%,#2d3748 50%,#1a365d 100%);border-radius:14px;padding:14px 18px;border:1px solid rgba(58,171,186,0.25);box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden;"><div style="position:absolute;right:0;top:0;width:80px;height:80px;background:radial-gradient(circle,rgba(58,171,186,0.12) 0%,transparent 70%);pointer-events:none;"></div><div style="position:relative;z-index:1;"><span style="font-family:\'Montserrat\',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.45;">'+v.text+'</span><span style="font-size:12px;font-weight:600;color:#3aabba;margin-left:8px;">'+v.ref+'</span></div></div>';
 }
 function openVersoEnBiblia(){
+  if(typeof currentCabId!=='undefined'&&currentCabId){try{sessionStorage.setItem('caballeros_miembro',currentCabId);}catch(e){}}
   const ref=window._versoDiaRefCode||'GEN.1.1';
   const url='https://www.bible.com/bible/149/'+ref.replace(/-/g,'.');
   window.open(url,'_blank', 'noopener,noreferrer');
