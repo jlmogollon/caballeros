@@ -209,12 +209,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .dtable-perfil td:first-child{font-size:10px;}
 /* Tabla calificaciones individuales compacta (móvil y sheet) — sin deslizar; prioridad ancho para Tema */
 .historial-table-wrap,.pv-hist-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.dtable-perfil-compact{font-size:9px;table-layout:fixed;width:100%;max-width:100%;}
-.dtable-perfil-compact th,.dtable-perfil-compact td{padding:4px 2px;font-size:9px;}
-.dtable-perfil-compact th{font-size:8px;letter-spacing:0.3px;}
+.dtable-perfil-compact{font-size:10px;table-layout:fixed;width:100%;max-width:100%;}
+.dtable-perfil-compact th,.dtable-perfil-compact td{padding:4px 3px;font-size:10px;}
+.dtable-perfil-compact th{font-size:9px;letter-spacing:0.3px;}
 .dtable-perfil-compact td:nth-child(1),.dtable-perfil-compact th:nth-child(1){width:10%;min-width:0;}
-.dtable-perfil-compact td:nth-child(2),.dtable-perfil-compact th:nth-child(2){width:48%;min-width:0;word-break:break-word;}
-.dtable-perfil-compact th:nth-child(n+3),.dtable-perfil-compact td:nth-child(n+3){width:6%;min-width:0;text-align:center;}
+.dtable-perfil-compact td:nth-child(2),.dtable-perfil-compact th:nth-child(2){width:36%;min-width:0;word-break:break-word;}
+.dtable-perfil-compact th:nth-child(n+3),.dtable-perfil-compact td:nth-child(n+3){width:7.7%;min-width:0;text-align:center;}
 #pv-hist .pv-hist-details summary{font-size:11px;}
 .sc{font-family:'Montserrat',sans-serif;font-weight:800;}
 .sc-hi{color:#15803d;}.sc-mid{color:var(--gold2);}.sc-lo{color:var(--text3);}
@@ -433,13 +433,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
   <div class="app-nav">
     <div class="ntab active" onclick="showTab('t-dash',this)">Dashboard</div>
-    <div class="ntab" onclick="showTab('t-cabs',this)">👥 Caballeros y Grupos</div>
+    <div class="ntab" onclick="showTab('t-cabs',this)">👥 Caballeros</div>
     <div class="ntab" onclick="showTab('t-clases',this)">📚 Clases</div>
-    <div class="ntab" onclick="showTab('t-cumple',this)">🎂 Cumpleaños</div>
+    <div class="ntab" onclick="showTab('t-evaluaciones-admin',this)">📝 Evaluación</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
     <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
-    <div class="ntab" onclick="showTab('t-evaluaciones-admin',this)">📝 Evaluaciones</div>
     <div class="ntab" onclick="showTab('t-informes',this)">📊 Informes</div>
   </div>
 
@@ -506,11 +505,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <div class="sec-ttl" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">Calificación por grupos</div>
       <div id="calgr-pg" class="pg" style="padding-left:0;padding-right:0;"></div>
     </div>
-  </div>
-
-  <!-- CUMPLEAÑOS -->
-  <div id="t-cumple" class="tab">
-    <div class="pg" id="cumple-pg"></div>
   </div>
 
   <!-- PETICIONES -->
@@ -620,7 +614,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <!-- EVALUACIONES (cuestionarios interactivos) -->
   <div id="t-evaluaciones-admin" class="tab">
     <div class="pg" style="max-width:800px;">
-      <div class="sec-ttl">📝 Evaluaciones</div>
+      <div class="sec-ttl">📝 Evaluación</div>
       <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Crea cuestionarios para que los caballeros respondan. Cada pregunta puede tener varias opciones y una respuesta correcta; al enviar se calcula la puntuación.</p>
       <div id="evaluaciones-admin-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
       <button type="button" class="btn bteal" style="margin-top:12px;" onclick="openFormEvaluacion(null)">+ Nuevo cuestionario</button>
