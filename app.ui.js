@@ -460,11 +460,21 @@ function openClaseDetail(key){
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   const clave=cl.fecha;
+  const claseIdRef=cl.id||cl.fecha;
+  const materialIdClase=cl.materialId||'';
+  const sortedMaterial=(DB.materialEstudio||[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const materialOpts=['<option value="">Ninguno</option>',...sortedMaterial.map(m=>`<option value="${(m.id||'').replace(/"/g,'&quot;')}" ${(m.id||'')===materialIdClase?'selected':''}>${(m.titulo||'Sin título').substring(0,50).replace(/</g,'&lt;')}</option>`)].join('');
+  const evVinculada=(DB.evaluaciones||[]).find(e=>e.claseId===claseIdRef);
+  const evaluacionIdClase=evVinculada?(evVinculada.id||''):'';
+  const sortedEv=(DB.evaluaciones||[]).filter(e=>!!(e.titulo||'').trim()).slice();
+  const evaluacionOpts=['<option value="">Ninguno</option>',...sortedEv.map(ev=>`<option value="${(ev.id||'').replace(/"/g,'&quot;')}" ${(ev.id||'')===evaluacionIdClase?'selected':''}>${(ev.titulo||'Cuestionario').substring(0,45).replace(/</g,'&lt;')}</option>`)].join('');
   openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
     <div class="dsec"><div class="dhead">Editar datos de la clase</div>
       <div class="fr"><label>Nombre / Tema de la clase</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
       <div class="fr"><label>Fecha</label><input type="date" id="edcl-fecha" value="${cl.fecha}"></div>
       <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo" class="select-grupo">${gOpts}</select></div>
+      <div class="fr"><label>📚 Material de estudio</label><select id="edcl-material">${materialOpts}</select></div>
+      <div class="fr"><label>📝 Cuestionario (evaluación)</label><select id="edcl-evaluacion">${evaluacionOpts}</select></div>
       <button class="btn bteal" onclick="doSaveClaseInfo('${clave}')" style="margin-top:6px">💾 Guardar cambios</button>
     </div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
@@ -479,12 +489,26 @@ async function doSaveClaseInfo(key){
   const tema=document.getElementById('edcl-tema').value.trim()||'Estudio de las Dispensaciones';
   const fecha=document.getElementById('edcl-fecha').value;
   const grupoResp=document.getElementById('edcl-grupo').value;
+  const materialIdEl=document.getElementById('edcl-material');
+  const evaluacionIdEl=document.getElementById('edcl-evaluacion');
+  const materialId=materialIdEl?materialIdEl.value.trim():'';
+  const evaluacionId=evaluacionIdEl?evaluacionIdEl.value.trim():'';
   if(!fecha){toast('La fecha es obligatoria','err');return;}
   cl.tema=tema;cl.fecha=fecha;cl.grupoResp=grupoResp;
+  if(materialId){cl.materialId=materialId;}else{delete cl.materialId;}
+  const claseIdRef=cl.id||cl.fecha;
+  (DB.evaluaciones||[]).forEach(ev=>{
+    if(ev.claseId===claseIdRef)ev.claseId=undefined;
+  });
+  if(evaluacionId){
+    const ev=(DB.evaluaciones||[]).find(e=>e.id===evaluacionId);
+    if(ev)ev.claseId=claseIdRef;
+  }
   closeModal();toast('💾 Guardando...','info');
   const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
   toast('✅ Clase actualizada','ok');
   renderClases();renderDash();renderCalGr();
+  if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();
 }
 function confirmDelClase(key){
   const cl=getClaseByKey(key);if(!cl)return;
@@ -976,7 +1000,10 @@ function renderEstudioPV(){
   const evaluaciones=DB.evaluaciones||[];
   const materialEstudio=DB.materialEstudio||[];
   const tieneMaterial=(cl)=>{
-    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&(e.claseId===(cl.id||cl.fecha)));
+    const claseId=cl.id||cl.fecha;
+    const mFromClase=cl.materialId?materialEstudio.find(x=>x.id===cl.materialId):null;
+    if(mFromClase&&typeof getMaterialUrl==='function'&&!!getMaterialUrl(mFromClase))return true;
+    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&(e.claseId===claseId));
     if(!ev||!ev.materialId)return false;
     const m=materialEstudio.find(x=>x.id===ev.materialId);
     return m&&typeof getMaterialUrl==='function'&&!!getMaterialUrl(m);
@@ -1000,7 +1027,8 @@ function getEstudioDetalleHTML(claseId,cabId){
   const evaluaciones=DB.evaluaciones||[];
   const respuestas=DB.evaluacionRespuestas||[];
   const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.claseId===claseId);
-  const m=ev&&ev.materialId?(DB.materialEstudio||[]).find(x=>x.id===ev.materialId):null;
+  const materialEstudioArr=DB.materialEstudio||[];
+  const m=(cl.materialId?materialEstudioArr.find(x=>x.id===cl.materialId):null)||(ev&&ev.materialId?materialEstudioArr.find(x=>x.id===ev.materialId):null);
   const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
   const grupoCaballero=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
   const gcol=g=>{if(typeof GCOL==='undefined')return 'var(--teal)';const key=Object.keys(GCOL||{}).find(k=>String(k).toUpperCase()===(String(g||'')).toUpperCase());return key?GCOL[key]:'var(--teal)';};
