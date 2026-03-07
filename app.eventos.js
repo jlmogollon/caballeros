@@ -119,6 +119,66 @@ function getEventosCompletos(){
   return{proximos:futuros,pasados,today};
 }
 
+function getProximosEventosHTMLParaDashboard(limit){
+  limit=limit||5;
+  const {proximos:items,today}=getEventosCompletos();
+  if(!items||!items.length)return'<p style="color:var(--text3);font-size:13px;">No hay eventos próximos.</p>';
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const ovCulto=DB.eventosCultosOverride||{};
+  const ovEstudio=DB.eventosEstudiosOverride||{};
+  const slice=items.slice(0,limit);
+  const html=slice.map((item,idx)=>{
+    const n=diffDaysEv(item.fecha,today);
+    const esProximo=idx===0;
+    const estiloProximo=esProximo?'background:linear-gradient(145deg,#0f172a 0%,#1e293b 40%,#334155 100%);border:1.5px solid rgba(245,197,24,0.35);box-shadow:0 8px 28px rgba(15,23,42,0.4);':'background:white;border:1.5px solid #e9edf2;box-shadow:0 2px 12px rgba(0,0,0,0.06);';
+    const badgeProximo=esProximo?'<span style="background:linear-gradient(135deg,#f5c518,#d4a800);color:#1a1f2e;font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(245,197,24,0.4);">PRÓXIMO</span>':'';
+    if(item.tipo==='culto'){
+      const nomCulto=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nomCulto.replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};">📅 ${fmtEvDate(item.fecha)}</div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="showTab('t-eventos-admin',document.querySelector('.ntab[onclick*=\'t-eventos-admin\']'))">Ver eventos</button></div>
+      </div>`;
+    }
+    if(item.tipo==='estudio'){
+      const nomEstudio=(ovEstudio[item.fechaStr]?.nombre)||(item.tema||'Estudio');
+      const claseId=(item.clase&&(item.clase.id||item.clase.fecha))||'';
+      const escClaseId=(claseId+'').replace(/'/g,"\\'");
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:${esProximo?'#fff':'#1a1f2e'};line-height:1.3;">${(nomEstudio||'').replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+          ${item.grupo?`<div style="display:inline-flex;align-items:center;gap:5px;background:${esProximo?'rgba(245,197,24,0.25)':'#ede9fe'};color:${esProximo?'#f5c518':'#6d28d9'};font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;white-space:nowrap;">👥 Expone: ${(item.grupo||'').replace(/</g,'&lt;')}</div>`:''}
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="showTab('t-estudio-admin',document.querySelector('.ntab[onclick*=\'t-estudio-admin\']'));setTimeout(function(){if(typeof openClaseDetail==='function')openClaseDetail('${escClaseId}');},220);">Ver clase</button></div>
+      </div>`;
+    }
+    if(item.tipo==='evento'){
+      const {ev}=item;
+      const fechaRango=ev.fechaFin?' – '+new Date(ev.fechaFin+'T00:00:00').getDate()+' de '+meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]:'';
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:${esProximo?'linear-gradient(180deg,#f5c518,#d4a800)':(ev.color||'#6b7280')};border-radius:4px 0 0 4px;opacity:0.9;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:${esProximo?'#fff':'#1a1f2e'};line-height:1.3;">${(ev.nombre||'').replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="showTab('t-eventos-admin',document.querySelector('.ntab[onclick*=\'t-eventos-admin\']'))">Ver eventos</button></div>
+      </div>`;
+    }
+    return'';
+  }).join('');
+  return html||'<p style="color:var(--text3);font-size:13px;">No hay eventos próximos.</p>';
+}
+
 function renderEventosPV(){
   const el=document.getElementById('pv-eventos');
   if(!el)return;
@@ -164,7 +224,7 @@ function renderEventosPV(){
           <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:${esProximo?'rgba(255,255,255,0.6)':'#9ca3af'};letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
           <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:${esProximo?'#fff':'#1a1f2e'};line-height:1.3;">${(nomEstudio||'').replace(/</g,'&lt;')}</div>
           <div style="font-size:11px;color:${esProximo?'rgba(255,255,255,0.85)':'#4b5563'};margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
-          ${item.grupo?`<div style="display:inline-flex;align-items:center;gap:5px;background:${esProximo?'rgba(245,197,24,0.25)':'#ede9fe'};color:${esProximo?'#f5c518':'#6d28d9'};font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;">👥 Expone: ${(item.grupo||'').replace(/</g,'&lt;')}</div>`:''}
+          ${item.grupo?`<div style="display:inline-flex;align-items:center;gap:5px;background:${esProximo?'rgba(245,197,24,0.25)':'#ede9fe'};color:${esProximo?'#f5c518':'#6d28d9'};font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;white-space:nowrap;">👥 Expone: ${(item.grupo||'').replace(/</g,'&lt;')}</div>`:''}
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<button type="button" class="btn bteal" style="font-size:11px;padding:6px 10px;white-space:nowrap;" onclick="event.stopPropagation();openEstudioDetallePV('${claseId}')">Ver detalles</button></div>
       </div>`;
@@ -335,9 +395,60 @@ function renderEventosAdmin(){
   renderCampamentoAdmin();
 
   const {proximos,pasados,today}=getEventosCompletos();
-
   const ovCulto=DB.eventosCultosOverride||{};
   const ovEstudio=DB.eventosEstudiosOverride||{};
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  function cardPrimeroConAdmin(item){
+    const n=diffDaysEv(item.fecha,today);
+    const estiloProximo='background:linear-gradient(145deg,#0f172a 0%,#1e293b 40%,#334155 100%);border:1.5px solid rgba(245,197,24,0.35);box-shadow:0 8px 28px rgba(15,23,42,0.4);';
+    const badgeProximo='<span style="background:linear-gradient(135deg,#f5c518,#d4a800);color:#1a1f2e;font-size:10px;font-weight:800;padding:3px 12px;border-radius:20px;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(245,197,24,0.4);">PRÓXIMO</span>';
+    if(item.tipo==='culto'){
+      const nom=(ovCulto[item.fechaStr]?.nombre)||(item.tema?'Culto de Caballeros · '+item.tema.titulo:'Culto de Caballeros');
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">⚔️</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">${nom.replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.85);">📅 ${fmtEvDate(item.fecha)}</div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<div style="display:flex;gap:5px;margin-top:4px;"><button onclick="openFormCulto('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button><button onclick="confirmarDelCulto('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button></div></div>
+      </div>`;
+    }
+    if(item.tipo==='estudio'){
+      const nom=(ovEstudio[item.fechaStr]?.nombre)||(item.tema||'Estudio');
+      const claseId=(item.clase&&(item.clase.id||item.clase.fecha))||'';
+      const escClaseId=(claseId+'').replace(/'/g,"\\'");
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#f5c518,#d4a800);border-radius:4px 0 0 4px;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">📚</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Estudio</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.3;">${(nom||'').replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:3px;">📅 ${fmtEvDate(item.fecha)}</div>
+          ${item.grupo?`<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(245,197,24,0.25);color:#f5c518;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;margin-top:6px;letter-spacing:0.5px;white-space:nowrap;">👥 Expone: ${(item.grupo||'').replace(/</g,'&lt;')}</div>`:''}
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<div style="display:flex;gap:5px;margin-top:4px;"><button onclick="showTab('t-estudio-admin',document.querySelector('.ntab[onclick*=\'t-estudio-admin\']'));setTimeout(function(){if(typeof openClaseDetail==='function')openClaseDetail('${escClaseId}');},220);" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️ Editar</button></div></div>
+      </div>`;
+    }
+    if(item.tipo==='evento'){
+      const {ev}=item;
+      const fechaRango=ev.fechaFin?' – '+new Date(ev.fechaFin+'T00:00:00').getDate()+' de '+meses[new Date(ev.fechaFin+'T00:00:00').getMonth()]:'';
+      const evIdEsc=(ev.id||'').replace(/'/g,"\\'");
+      return`<div style="${estiloProximo}border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:${(ev.color||'#6b7280')};border-radius:4px 0 0 4px;opacity:0.9;"></div>
+        <div style="font-size:28px;flex-shrink:0;margin-left:4px;margin-top:2px;">${ev.icono||'📅'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Evento</div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:#fff;line-height:1.3;">${(ev.nombre||'').replace(/</g,'&lt;')}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:4px;">📅 ${fmtEvDate(item.fecha)}${fechaRango}</div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">${badgeProximo}${badgeEv(n)}<div style="display:flex;gap:5px;margin-top:4px;"><button onclick="openFormEvento('${evIdEsc}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button><button onclick="confirmarDelEvento('${evIdEsc}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button></div></div>
+      </div>`;
+    }
+    return cardProximo(item);
+  }
+
   function cardProximo(item){
     const n=diffDaysEv(item.fecha,today);
     const diasStr=n===0?'¡HOY!':n===1?'Mañana':'En '+n+' días';
@@ -360,6 +471,8 @@ function renderEventosAdmin(){
     }
     if(item.tipo==='estudio'){
       const nom=(ovEstudio[item.fechaStr]?.nombre)||(item.tema||'Estudio');
+      const claseId=(item.clase&&(item.clase.id||item.clase.fecha))||'';
+      const escClaseId=(claseId+'').replace(/'/g,"\\'");
       return`<div style="background:white;border:1.5px solid #e9edf2;border-radius:12px;padding:12px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
         <div style="width:40px;height:40px;border-radius:10px;background:#f5c51818;border:1.5px solid #f5c51844;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📚</div>
         <div style="flex:1;min-width:0;">
@@ -369,8 +482,7 @@ function renderEventosAdmin(){
         <div style="text-align:right;flex-shrink:0;">
           <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:800;color:#f5c518;">${diasStr}</div>
           <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
-            <button onclick="openFormEstudio('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
-            <button onclick="confirmarDelEstudio('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button>
+            <button onclick="showTab('t-estudio-admin',document.querySelector('.ntab[onclick*=\'t-estudio-admin\']'));setTimeout(function(){if(typeof openClaseDetail==='function')openClaseDetail('${escClaseId}');},220);" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
           </div>
         </div>
       </div>`;
@@ -414,6 +526,8 @@ function renderEventosAdmin(){
     }
     if(item.tipo==='estudio'){
       const nom=(ovEstudio[item.fechaStr]?.nombre)||(item.tema||'Estudio');
+      const claseId=(item.clase&&(item.clase.id||item.clase.fecha))||'';
+      const escClaseId=(claseId+'').replace(/'/g,"\\'");
       return`<div style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 14px;opacity:0.9;display:flex;align-items:center;gap:12px;">
         <div style="width:40px;height:40px;border-radius:10px;background:#9ca3af18;border:1.5px solid #9ca3af44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;opacity:0.8;">📚</div>
         <div style="flex:1;min-width:0;">
@@ -423,8 +537,7 @@ function renderEventosAdmin(){
         <div style="text-align:right;flex-shrink:0;">
           <span style="font-size:10px;font-weight:700;color:#9ca3af;background:#f3f4f6;padding:2px 10px;border-radius:20px;">✓ Pasó</span>
           <div style="display:flex;gap:5px;margin-top:5px;justify-content:flex-end;">
-            <button onclick="openFormEstudio('${item.fechaStr}')" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
-            <button onclick="confirmarDelEstudio('${item.fechaStr}')" style="background:var(--red-bg);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">🗑</button>
+            <button onclick="showTab('t-estudio-admin',document.querySelector('.ntab[onclick*=\'t-estudio-admin\']'));setTimeout(function(){if(typeof openClaseDetail==='function')openClaseDetail('${escClaseId}');},220);" style="background:var(--teal-bg);border:1px solid var(--border);color:var(--teal2);border-radius:7px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;">✏️</button>
           </div>
         </div>
       </div>`;
@@ -448,7 +561,7 @@ function renderEventosAdmin(){
     </div>`;
   }
 
-  el.innerHTML=proximos.length?proximos.map(cardProximo).join(''):`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>`;
+  el.innerHTML=proximos.length?proximos.map((item,idx)=>idx===0?cardPrimeroConAdmin(item):cardProximo(item)).join(''):`<div style="text-align:center;padding:24px;color:#9ca3af;font-size:13px;">No hay eventos próximos.</div>`;
 
   if(elPasados){
     elPasados.innerHTML=pasados.length?pasados.map(cardPasado).join(''):`<div style="text-align:center;padding:16px;color:#9ca3af;font-size:12px;">No hay eventos pasados.</div>`;

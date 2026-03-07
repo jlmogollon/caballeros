@@ -714,6 +714,7 @@ function ensureDbShape(){
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
   if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
+  if(!Array.isArray(DB.appHistorial))DB.appHistorial=[];
   addClasesFaltantes();
   // Anexar material al primer estudio (13 feb / cl1) si no tiene
   const cl1=Array.isArray(DB.clases)?DB.clases.find(c=>c.id==='cl1'||c.fecha==='2026-02-13'):null;
@@ -1088,7 +1089,7 @@ function mkCabCard(c,rank,hideGrupo){
       ${subtitulo?`<div class="cab-mt">${subtitulo}</div>`:''}
       ${bd?`<div class="badges">${bd}</div>`:''}
     </div>
-    <div class="cab-scores"><div class="cab-sc">${cal.total.toFixed(1)}</div>${evalTxt}</div>
+    <div class="cab-scores"><div class="cab-sc">${cal.total===10?'10':cal.total.toFixed(1)}</div>${evalTxt}</div>
   </div>`;
 }
 
@@ -1336,7 +1337,7 @@ function renderCumpleBanners(cabId,wrapId){
   const grupo=escAttr(proximoMasCercano.grupo||'');
   const siguienteCumple=proximos[1]||null;
   const recordatorioSiguiente=siguienteCumple?'<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.2);font-size:10px;color:rgba(255,255,255,0.7);">Después: <strong style="color:rgba(255,255,255,0.9);">'+escAttr(nombreCorto(siguienteCumple)||siguienteCumple.nombre||'')+'</strong> · '+siguienteCumple.dia+' '+M[siguienteCumple.mes-1]+' (en '+siguienteCumple.diasRest+' días)</div>':'';
-  wrap.innerHTML='<div style="background:linear-gradient(160deg,#1e3a5f 0%,#1e4976 50%,#2563eb 100%);border-radius:18px;padding:18px 20px;box-shadow:0 8px 24px rgba(30,58,95,0.3);overflow:hidden;position:relative;"><div style="position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.08);border-radius:50%;"></div><div style="display:flex;align-items:center;gap:16px;position:relative;"><div style="width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">🎂</div><div style="flex:1;min-width:0;"><div style="font-family:\'Montserrat\',sans-serif;font-size:11px;font-weight:800;color:rgba(255,255,255,0.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Próximo cumpleaños</div><div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:2px;">'+nom+'</div>'+(grupo?'<div style="font-size:12px;color:rgba(255,255,255,0.75);">👥 '+grupo+'</div>':'')+recordatorioSiguiente+'</div><div style="text-align:right;flex-shrink:0;"><div style="font-size:13px;font-weight:800;color:#93c5fd;">📅 '+fechaStr+'</div><div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">'+diasTxt+edadTxt+'</div></div></div></div>';
+  wrap.innerHTML='<div onclick="typeof openCabDetail===\'function\'&&openCabDetail(\''+proximoMasCercano.id+'\')" style="cursor:pointer;background:linear-gradient(160deg,#1e3a5f 0%,#1e4976 50%,#2563eb 100%);border-radius:18px;padding:18px 20px;box-shadow:0 8px 24px rgba(30,58,95,0.3);overflow:hidden;position:relative;"><div style="position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.08);border-radius:50%;"></div><div style="display:flex;align-items:center;gap:16px;position:relative;"><div style="width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">🎂</div><div style="flex:1;min-width:0;"><div style="font-family:\'Montserrat\',sans-serif;font-size:11px;font-weight:800;color:rgba(255,255,255,0.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Próximo cumpleaños</div><div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:2px;">'+nom+'</div>'+(grupo?'<div style="font-size:12px;color:rgba(255,255,255,0.75);">👥 '+grupo+'</div>':'')+recordatorioSiguiente+'</div><div style="text-align:right;flex-shrink:0;"><div style="font-size:13px;font-weight:800;color:#93c5fd;">📅 '+fechaStr+'</div><div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">'+diasTxt+edadTxt+'</div></div></div></div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1613,21 +1614,21 @@ function generarPDF(titulo,htmlContent){
   const logoLeftHtml=faviconDataUrl?'<div class="header-logo-hdv"><img src="'+faviconDataUrl+'" alt="Hombres de Verdad" class="header-logo-hdv-img"/></div>':'';
   const logoEvHtml=evLogoUrl?'<div class="header-logo-ev"><img src="'+evLogoUrl+'" alt="Evidencias" class="header-logo-ev-img"/></div>':'';
   const estilos=`<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'Inter',sans-serif;background:#fff;color:#1a1f2e;font-size:13px;line-height:1.5;}
-    .header{background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
-    .header h1{font-size:18px;font-weight:900;}
-    .header .sub{font-size:12px;opacity:0.85;margin-top:2px;color:rgba(255,255,255,0.9);}
-    .header-logo-hdv{flex-shrink:0;padding:6px 10px;border-radius:12px;background:#fff;}
-    .header-logo-hdv-img{height:48px;width:auto;object-fit:contain;display:block;}
-    .header-logo-ev{flex-shrink:0;margin-left:48px;margin-right:16px;}
-    .header-logo-ev-img{height:80px;width:auto;object-fit:contain;display:block;}
-    .section{margin:0 20px 20px;background:#fff;border-radius:12px;border:1.5px solid rgba(58,171,186,0.25);overflow:hidden;}
-    .section-title{background:linear-gradient(135deg,rgba(58,171,186,0.12),rgba(58,171,186,0.2));padding:10px 16px;font-weight:800;font-size:14px;color:#2d8f9c;border-bottom:1.5px solid rgba(58,171,186,0.22);}
+    body{font-family:'Inter',sans-serif;background:#fff;color:#1a1f2e;font-size:12px;line-height:1.45;}
+    .header{background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+    .header h1{font-size:15px;font-weight:700;}
+    .header .sub{font-size:11px;opacity:0.85;margin-top:2px;color:rgba(255,255,255,0.9);}
+    .header-logo-hdv{flex-shrink:0;padding:5px 8px;border-radius:10px;background:#fff;}
+    .header-logo-hdv-img{height:40px;width:auto;object-fit:contain;display:block;}
+    .header-logo-ev{flex-shrink:0;margin-left:40px;margin-right:12px;}
+    .header-logo-ev-img{height:64px;width:auto;object-fit:contain;display:block;}
+    .section{margin:0 16px 16px;background:#fff;border-radius:10px;border:1.5px solid rgba(58,171,186,0.25);overflow:hidden;}
+    .section-title{background:linear-gradient(135deg,rgba(58,171,186,0.12),rgba(58,171,186,0.2));padding:8px 14px;font-weight:700;font-size:12px;color:#2d8f9c;border-bottom:1.5px solid rgba(58,171,186,0.22);}
     table{width:100%;border-collapse:collapse;}
-    th{background:rgba(58,171,186,0.08);padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:#2d8f9c;letter-spacing:0.5px;text-transform:uppercase;}
-    td{padding:9px 12px;border-bottom:1px solid rgba(58,171,186,0.12);font-size:12px;}
+    th{background:rgba(58,171,186,0.08);padding:6px 10px;text-align:left;font-size:10px;font-weight:600;color:#2d8f9c;letter-spacing:0.3px;text-transform:uppercase;}
+    td{padding:7px 10px;border-bottom:1px solid rgba(58,171,186,0.12);font-size:11px;}
     tr:last-child td{border-bottom:none;}
     tr:nth-child(even) td{background:#fafbfc;}
     table.dtable{width:100%;}
@@ -1635,27 +1636,28 @@ function generarPDF(titulo,htmlContent){
     table.dtable th:nth-child(2),table.dtable td:nth-child(2){white-space:normal;word-wrap:break-word;max-width:100px;}
     table.dtable th:nth-child(n+3),table.dtable td:nth-child(n+3){width:48px;max-width:52px;text-align:center;}
     table.dtable-pdf{table-layout:fixed;width:100%;}
-    table.dtable-pdf th:nth-child(1),table.dtable-pdf td:nth-child(1){width:82px;}
-    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){width:320px;min-width:320px;white-space:normal;word-wrap:break-word;font-size:14px;}
-    table.dtable-pdf th:nth-child(n+3),table.dtable-pdf td:nth-child(n+3){width:calc((100% - 402px) / 6);text-align:center;}
-    .star-pdf{display:inline-block;font-size:22px;color:rgba(255,255,255,0.4);}
-    .star-pdf.lit{color:#eab308;filter:drop-shadow(0 0 6px rgba(234,179,8,0.6));}
-    .distinciones-pdf{background:linear-gradient(145deg,#1a1f2e 0%,#242b3d 60%);border-radius:12px;padding:14px 18px;margin:0 20px 16px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 16px rgba(0,0,0,0.2);}
-    .distinciones-pdf-title{font-size:10px;color:rgba(255,255,255,0.85);font-weight:700;letter-spacing:0.5px;margin-bottom:12px;text-transform:uppercase;}
-    .distinciones-pdf-stars{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:flex-start;justify-content:flex-start;}
-    .distinciones-pdf-item{display:inline-flex;flex-direction:column;align-items:center;width:72px;flex-shrink:0;}
-    .distinciones-pdf-starwrap{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:12px;border:1px solid rgba(255,255,255,0.15);}
-    .distinciones-pdf-lbl{font-size:7px;color:rgba(255,255,255,0.75);margin-top:6px;text-align:center;line-height:1.2;}
-    .stat{background:rgba(58,171,186,0.08);border-radius:8px;padding:8px 10px;}
-    .stat-val{font-size:20px;font-weight:900;color:#3aabba;}
-    .stat-lbl{font-size:10px;color:#4b5563;}
-    .neg{color:#ef4444;font-weight:700;}
-    .pos{color:#16a34a;font-weight:700;}
-    .bar-wrap{height:8px;background:rgba(58,171,186,0.12);border-radius:999px;overflow:hidden;margin-top:4px;}
+    table.dtable-pdf th:nth-child(1),table.dtable-pdf td:nth-child(1){width:72px;}
+    table.dtable-pdf th:nth-child(2),table.dtable-pdf td:nth-child(2){width:280px;min-width:280px;white-space:normal;word-wrap:break-word;font-size:11px;}
+    table.dtable-pdf th:nth-child(n+3),table.dtable-pdf td:nth-child(n+3){width:calc((100% - 352px) / 6);text-align:center;}
+    .star-pdf{display:inline-block;font-size:18px;color:rgba(255,255,255,0.4);}
+    .star-pdf.lit{color:#eab308;filter:drop-shadow(0 0 4px rgba(234,179,8,0.5));}
+    .distinciones-pdf{background:linear-gradient(145deg,#1a1f2e 0%,#242b3d 60%);border-radius:10px;padding:12px 14px;margin:0 16px 14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 3px 12px rgba(0,0,0,0.15);}
+    .distinciones-pdf-title{font-size:9px;color:rgba(255,255,255,0.85);font-weight:600;letter-spacing:0.4px;margin-bottom:8px;text-transform:uppercase;}
+    .distinciones-pdf-roles{font-size:10px;color:rgba(255,255,255,0.9);margin-bottom:10px;line-height:1.4;}
+    .distinciones-pdf-stars{display:flex;flex-wrap:wrap;gap:3px 5px;align-items:flex-start;justify-content:flex-start;}
+    .distinciones-pdf-item{display:inline-flex;flex-direction:column;align-items:center;width:60px;flex-shrink:0;}
+    .distinciones-pdf-starwrap{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border-radius:10px;border:1px solid rgba(255,255,255,0.15);}
+    .distinciones-pdf-lbl{font-size:6px;color:rgba(255,255,255,0.75);margin-top:4px;text-align:center;line-height:1.2;}
+    .stat{background:rgba(58,171,186,0.08);border-radius:6px;padding:6px 8px;}
+    .stat-val{font-size:14px;font-weight:700;color:#3aabba;}
+    .stat-lbl{font-size:9px;color:#4b5563;}
+    .neg{color:#ef4444;font-weight:600;}
+    .pos{color:#16a34a;font-weight:600;}
+    .bar-wrap{height:6px;background:rgba(58,171,186,0.12);border-radius:999px;overflow:hidden;margin-top:3px;}
     .bar-fill{height:100%;border-radius:999px;}
-    .badge-mini{display:inline-block;padding:2px 6px;border-radius:12px;font-size:9px;font-weight:700;margin:1px;}
-    .footer{text-align:center;padding:16px;font-size:10px;color:#9ca3af;border-top:1px solid rgba(58,171,186,0.15);margin:0 20px;}
-    .print-btn{display:block;margin:20px auto;padding:12px 30px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(58,171,186,0.35);}
+    .badge-mini{display:inline-block;padding:2px 5px;border-radius:10px;font-size:8px;font-weight:600;margin:1px;}
+    .footer{text-align:center;padding:12px;font-size:9px;color:#9ca3af;border-top:1px solid rgba(58,171,186,0.15);margin:0 16px;}
+    .print-btn{display:block;margin:16px auto;padding:10px 24px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(58,171,186,0.3);}
     @media print{.print-btn{display:none!important;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
   </style>`;
   const fecha=new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
@@ -1680,6 +1682,44 @@ function renderInformes(){
     const opts=ordenados.map(c=>`<option value="${c.id}">${nombreMostrar(c)}</option>`).join('');
     sel.innerHTML='<option value="">Seleccionar caballero</option>'+opts;
   }
+}
+
+function renderHistorialApp(){
+  const el=document.getElementById('historial-app-list');
+  if(!el)return;
+  const list=Array.isArray(DB.appHistorial)?DB.appHistorial:[];
+  const hace3d=Date.now()-3*24*60*60*1000;
+  const filtrado=list.filter(e=>e.ts>=hace3d).sort((a,b)=>b.ts-a.ts);
+  const nombreCab=id=>{const c=(DB.caballeros||[]).find(x=>x.id===id);return c?(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre):('ID '+id);};
+  const accionLbl=acc=>{const t={entrada_app:'Entrada a la app',material_estudio:'Material de estudio',cuestionario:'Cuestionario',perfil:'Perfil'};return t[acc]||acc;}
+  if(!filtrado.length){el.innerHTML='<p style="color:var(--text3);font-size:13px;padding:12px;">Sin registros en los últimos 3 días.</p>';return;}
+  const byCab={};
+  filtrado.forEach(e=>{if(!byCab[e.cabId])byCab[e.cabId]=[];byCab[e.cabId].push(e);});
+  const cabIds=Object.keys(byCab).sort((a,b)=>nombreCab(b).localeCompare(nombreCab(a)));
+  const html=cabIds.map(cabId=>{
+    const nom=nombreCab(cabId).replace(/</g,'&lt;');
+    const entradas=byCab[cabId];
+    const items=entradas.map(e=>{
+      const d=new Date(e.ts);
+      const fechaHora=d.toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      const acc=accionLbl(e.accion);
+      const det=(e.detalle||'').toString().replace(/</g,'&lt;').substring(0,80);
+      return`<div style="background:#f8fafc;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-left:3px solid var(--teal);">
+        <span style="font-size:11px;color:var(--text3);">${fechaHora}</span>
+        <span style="background:var(--teal-bg);color:var(--teal2);font-size:10px;font-weight:800;padding:2px 8px;border-radius:16px;">${acc}</span>
+        ${det?'<span style="font-size:12px;color:var(--text2);">'+det+'</span>':''}
+      </div>`;
+    }).join('');
+    return`<details style="background:white;border:1.5px solid #e9edf2;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.04);overflow:hidden;">
+      <summary style="padding:14px 16px;font-weight:800;color:var(--dark);cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">👤</span>
+        <span>${nom}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3);font-weight:600;">${entradas.length} actividad${entradas.length!==1?'es':''}</span>
+      </summary>
+      <div style="padding:0 16px 16px 16px;border-top:1px solid #f3f4f6;">${items}</div>
+    </details>`;
+  }).join('');
+  el.innerHTML=html;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1789,7 +1829,7 @@ async function generarInformeCaballeros(){
   const barras='<div style="padding:14px 20px 8px">'+barRow('Bautizados',totalBaut,cabs.length,'#16a34a')+barRow('Sellados',totalSell,cabs.length,'#3aabba')+barRow('Servidores',totalServ,cabs.length,'#2d8f9c')+barRow('Directivos',totalDir,cabs.length,'#f5c518')+barRow('Predicadores',totalPred,cabs.length,'#d4a800')+barRow('Evangelistas',totalEvang,cabs.length,'#1d6b77')+barRow('Devotos',totalDev,cabs.length,'#22c55e')+'</div>';
   const filasGrupos=grupos.map(g=>{const n=cabs.filter(c=>c.grupo===g).length;const pct=cabs.length>0?Math.round((n/cabs.length)*100):0;return '<tr><td><strong>'+g+'</strong></td><td>'+n+'</td><td><div class="bar-wrap"><div class="bar-fill" style="width:'+pct+'%;background:#3aabba"></div></div><small style="color:#6b7280">'+pct+'%</small></td></tr>';}).join('');
   const badges=(c)=>{return (CHECKS||[]).filter(k=>c[k]).map(k=>'<span class="badge-mini" style="background:'+(k==='bautizado'?'#dcfce7':k==='sellado'?'#ede9fe':k==='servidor'?'#dcfce7':k==='directivo'?'#fef3c7':k==='predicador'?'#fee2e2':k==='evangelista'?'#fff7ed':'#ecfdf5')+';color:'+(k==='bautizado'?'#15803d':k==='sellado'?'#6d28d9':k==='servidor'?'#15803d':k==='directivo'?'#b45309':k==='predicador'?'#b91c1c':k==='evangelista'?'#c2410c':'#065f46')+'">'+(CLBL||{})[k]||k+'</span>').join(' ');};
-  const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const pts=cal?cal.total.toFixed(1):(c.puntos||'—');const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+' pts</td></tr>';}).join('');
+  const filasCabs=cabs.map(c=>{const cal=typeof calcCab==='function'?calcCab(c.id):null;const ptsVal=cal?cal.total:(c.puntos!=null?Number(c.puntos):null);const pts=ptsVal==null?'—':(ptsVal===10?'10':ptsVal.toFixed(1));const asist=cal?(cal.asist+'/'+cal.totalClases):'—';const pctAsist=cal&&cal.totalClases>0?Math.round((cal.asist/cal.totalClases)*100):0;return '<tr><td><strong>'+c.nombre+'</strong></td><td>'+(c.grupo||'—')+'</td><td style="font-size:10px">'+badges(c)+'</td><td>'+(c.fnac?fmtDate(c.fnac):'—')+'</td><td>'+asist+(pctAsist>0?' <small style="color:#6b7280">('+pctAsist+'%)</small>':'')+'</td><td style="font-weight:800;color:#3aabba">'+pts+(pts!=='—'?' pts':'')+'</td></tr>';}).join('');
   const html='<div class="section"><div class="section-title">📊 Resumen General · '+cabs.length+' Caballeros</div>'+barras+'<table><thead><tr><th>Grupo</th><th>Caballeros</th><th>%</th></tr></thead><tbody>'+filasGrupos+'</tbody></table></div><div class="section"><div class="section-title">📋 Listado Completo de Caballeros</div><table><thead><tr><th>Nombre</th><th>Grupo</th><th>Distinciones</th><th>Cumpleaños</th><th>Asistencia</th><th>Puntuación</th></tr></thead><tbody>'+filasCabs+'</tbody></table></div>';
   generarPDF('Informe de Caballeros General',html);
 }
@@ -1797,13 +1837,15 @@ function generarInformeIndividualPorId(id){
   const cab=DB.caballeros.find(c=>c.id===id);
   if(!cab)return;
   const calCab=typeof calcCab==='function'?calcCab(cab.id):null;
-  const pts=calCab?calCab.total.toFixed(1):(cab.puntos||0);
+  const ptsNum=calCab?calCab.total:(cab.puntos!=null?Number(cab.puntos):0);
+  const pts=ptsNum===10?'10':(typeof ptsNum==='number'&&!isNaN(ptsNum)?ptsNum.toFixed(1):String(ptsNum));
   const pctAsist=calCab&&calCab.totalClases>0?Math.round((calCab.asist/calCab.totalClases)*100):0;
   const totalClases=calCab?calCab.totalClases:0;
   const ptsPosibles=totalClases*10;
   const rank=typeof getRank==='function'?getRank(id):'—';
   const valEstrellas=typeof autoVal==='function'?autoVal(cab):0;
-  const starsHtml='<div class="distinciones-pdf"><div class="distinciones-pdf-title">Distinciones</div><div class="distinciones-pdf-stars">'+(CHECKS||[]).map((k,i)=>'<div class="distinciones-pdf-item" title="'+(CLBL[k]||k)+'"><div class="distinciones-pdf-starwrap"><span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span></div><span class="distinciones-pdf-lbl">'+(CLBL[k]||k)+'</span></div>').join('')+'</div></div>';
+  const rolesTexto=(CHECKS||[]).filter(k=>cab[k]).map(k=>(CLBL||{})[k]||k).join(' / ');
+  const starsHtml='<div class="distinciones-pdf"><div class="distinciones-pdf-title">Distinciones</div>'+(rolesTexto?'<div class="distinciones-pdf-roles">'+escP(rolesTexto)+'</div>':'')+'<div class="distinciones-pdf-stars">'+(CHECKS||[]).map((k,i)=>'<div class="distinciones-pdf-item" title="'+(CLBL[k]||k)+'"><div class="distinciones-pdf-starwrap"><span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span></div><span class="distinciones-pdf-lbl">'+(CLBL[k]||k)+'</span></div>').join('')+'</div></div>';
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
   const act=(DB.finanzasActividades||[]).filter(x=>x.responsable===id);
   const don=(DB.finanzasDonativos||[]).filter(x=>x.responsable===id);
@@ -1812,9 +1854,16 @@ function generarInformeIndividualPorId(id){
   const totalDon=don.reduce((s,d)=>s+(Number(d.efectivo)||0)+(Number(d.tpv)||0),0);
   const totalVot=vot.reduce((s,v)=>s+(Number(v.efectivo)||0)+(Number(v.tpv)||0),0);
   const asistStr=(calCab?calCab.asist:0)+'/'+(totalClases||1);
-  const barrasInd='<div style="padding:10px 20px 14px"><div style="margin-bottom:10px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Asistencia a clases</div><div style="font-size:18px;font-weight:900;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:8px"><div style="font-size:11px;color:#4b5563;margin-bottom:4px">Puntuación acumulada vs puntuación posible</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:12px;font-weight:700;color:#3aabba;margin-top:4px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
+  const barrasInd='<div style="padding:8px 16px 12px"><div style="margin-bottom:8px"><div style="font-size:10px;color:#4b5563;margin-bottom:3px">Asistencia a clases</div><div style="font-size:14px;font-weight:700;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:6px"><div style="font-size:10px;color:#4b5563;margin-bottom:3px">Puntuación acumulada vs puntuación posible</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:11px;font-weight:600;color:#3aabba;margin-top:3px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
   const fotoCab=cab.photo?'<img src="'+cab.photo+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;border:2px solid rgba(58,171,186,0.3)">':'';
-  const datos='<div class="section"><div class="section-title">'+fotoCab+'Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Puntuación acumulada vs puntuación posible</div><div class="stat-val">'+pts+' / '+(ptsPosibles||0)+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 16px">'+starsHtml+'</div>'+barrasInd+'</div>';
+  const escP=s=>String(s||'').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const fbautVal=cab.bautizado&&cab.fechaBautizado?fmtDate(cab.fechaBautizado):'—';
+  const fsellVal=cab.sellado&&cab.fechaSellado?fmtDate(cab.fechaSellado):'—';
+  const perfStat=(lbl,val)=>val?('<div class="stat"><div class="stat-lbl">'+escP(lbl)+'</div><div class="stat-val">'+escP(val)+'</div></div>'):'';
+  const rolActualStr=String(cab.rolActual||'').trim().replace(/\r?\n+/g,' / ');
+  const secPerfil=[perfStat('Profesión u oficio',cab.profesionOficio),perfStat('Gustos / aficiones',cab.gustosAficiones),perfStat('Rol en la iglesia',rolActualStr),perfStat('Versículo o lema',cab.lema),perfStat('Estado civil',cab.estadoCivil==='soltero'?'Soltero':cab.estadoCivil==='casado'?'Casado':cab.estadoCivil==='noviazgo'?'En noviazgo':cab.estadoCivil),perfStat('Hijos',cab.tieneHijos==='si'?(cab.numHijos||'Sí'):cab.tieneHijos==='no'?'No':'—'),perfStat('Ciudad de nacimiento',cab.ciudadNacimiento),perfStat('País de nacimiento',cab.paisNacimiento),perfStat('Año de conversión',cab.anioConversion),perfStat('Iglesia de procedencia',cab.iglesiaProcedencia),perfStat('Teléfono',cab.telefono),perfStat('Info. hijos',cab.infoHijos)].filter(Boolean).join('');
+  const secPerfilH=secPerfil?'<div class="section"><div class="section-title">👤 Perfil y datos adicionales</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px">'+secPerfil+'</div></div>':'';
+  const datos='<div class="section"><div class="section-title">'+fotoCab+'Datos del Caballero</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Grupo</div><div class="stat-val">'+(cab.grupo||'—')+'</div></div><div class="stat"><div class="stat-lbl">Cumpleaños</div><div class="stat-val">'+(cab.fnac?fmtDate(cab.fnac):'—')+'</div></div><div class="stat"><div class="stat-lbl">Fecha bautizado</div><div class="stat-val">'+fbautVal+'</div></div><div class="stat"><div class="stat-lbl">Fecha sellado</div><div class="stat-val">'+fsellVal+'</div></div><div class="stat"><div class="stat-lbl">Puntuación acumulada vs puntuación posible</div><div class="stat-val">'+pts+' / '+(ptsPosibles||0)+' pts</div></div><div class="stat"><div class="stat-lbl">Puntos aportados al grupo</div><div class="stat-val">'+pts+' pts</div></div><div class="stat"><div class="stat-lbl">Rank</div><div class="stat-val">#'+rank+'</div></div></div><div style="padding:0 20px 16px">'+starsHtml+'</div>'+barrasInd+'</div>'+secPerfilH;
   const GRUPOS_ACT=GRUPOS||[];
   const grupoStats={};
   GRUPOS_ACT.forEach(g=>{
@@ -1832,9 +1881,12 @@ function generarInformeIndividualPorId(id){
   const col=GCOL[miGrupo]||'#3aabba';
   const miRank=ranking.indexOf(miGrupo)+1;
   const medal=miRank===1?'🥇':miRank===2?'🥈':miRank===3?'🥉':'';
-  const secEstadisticasGrupo='<div class="section"><div class="section-title">📊 Estadísticas gráficas del grupo</div><div style="padding:14px 20px"><div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%);border-radius:10px;padding:12px 16px;margin-bottom:12px;color:white;"><div style="font-size:11px;opacity:0.8;margin-bottom:4px">Mi grupo</div><div style="font-size:16px;font-weight:900">'+medal+' '+(miGrupo||'—')+'</div><div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap"><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.avgPts??'—')+'</div><div style="font-size:9px;opacity:0.8">Prom. pts</div></div><div><div style="font-size:18px;font-weight:900">'+(grupoStats[miGrupo]?.pctAsist??0)+'%</div><div style="font-size:9px;opacity:0.8">Asistencia</div></div><div><div style="font-size:18px;font-weight:900">#'+miRank+'</div><div style="font-size:9px;opacity:0.8">Ranking</div></div></div></div><div style="font-size:11px;font-weight:700;color:#4b5563;margin-bottom:8px">Comparación con el resto de grupos</div>'+ranking.map((g,i)=>{const st=grupoStats[g];const esMio=g===miGrupo;const pct=maxAvg>0?Math.round((st.avgPts/maxAvg)*100):0;return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:700;color:'+(esMio?col:'#374151')+'">'+(i+1)+'. '+g+'</span><span style="font-weight:800">'+st.avgPts+' pts · '+st.pctAsist+'% asist</span></div><div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+(esMio?col:'#9ca3af')+';border-radius:999px"></div></div></div>';}).join('')+'</div></div></div>';
+  const secEstadisticasGrupo='<div class="section"><div class="section-title">📊 Estadísticas gráficas del grupo</div><div style="padding:12px 16px"><div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%);border-radius:8px;padding:10px 14px;margin-bottom:10px;color:white;"><div style="font-size:10px;opacity:0.8;margin-bottom:3px">Mi grupo</div><div style="font-size:13px;font-weight:700">'+medal+' '+(miGrupo||'—')+'</div><div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap"><div><div style="font-size:14px;font-weight:700">'+(grupoStats[miGrupo]?.avgPts??'—')+'</div><div style="font-size:8px;opacity:0.8">Prom. pts</div></div><div><div style="font-size:14px;font-weight:700">'+(grupoStats[miGrupo]?.pctAsist??0)+'%</div><div style="font-size:8px;opacity:0.8">Asistencia</div></div><div><div style="font-size:14px;font-weight:700">#'+miRank+'</div><div style="font-size:8px;opacity:0.8">Ranking</div></div></div></div><div style="font-size:10px;font-weight:600;color:#4b5563;margin-bottom:6px">Comparación con el resto de grupos</div>'+ranking.map((g,i)=>{const st=grupoStats[g];const esMio=g===miGrupo;const pct=maxAvg>0?Math.round((st.avgPts/maxAvg)*100):0;return '<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-weight:600;color:'+(esMio?col:'#374151')+';font-size:11px">'+(i+1)+'. '+g+'</span><span style="font-weight:700;font-size:11px">'+st.avgPts+' pts · '+st.pctAsist+'% asist</span></div><div style="height:5px;background:#e5e7eb;border-radius:999px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+(esMio?col:'#9ca3af')+';border-radius:999px"></div></div></div>';}).join('')+'</div></div></div>';
   const secFinanzas='<div class="section"><div class="section-title">💰 Información financiera aportada al comité</div><div style="padding:16px 20px;display:flex;flex-wrap:wrap;gap:16px"><div class="stat"><div class="stat-lbl">Colaboraciones (actividades)</div><div class="stat-val">'+numAct+'</div></div><div class="stat"><div class="stat-lbl">Donativos</div><div class="stat-val">'+numDon+' ('+MONEDA.symbol+fmtMonto(totalDon)+')</div></div><div class="stat"><div class="stat-lbl">Votos</div><div class="stat-val">'+numVot+' ('+MONEDA.symbol+fmtMonto(totalVot)+')</div></div></div></div>';
   const histClases=typeof mkHistoryTable==='function'?mkHistoryTable(id,true):'<p style="color:#9ca3af;font-size:13px;padding:16px">Sin historial de clases.</p>';
+  const respuestasEval=(DB.evaluacionRespuestas||[]).filter(r=>r.cabId===id).sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const filasEval=respuestasEval.map(r=>{const ev=(DB.evaluaciones||[]).find(e=>e.id===r.evaluacionId);const titulo=ev&&ev.titulo?escP(ev.titulo):'—';const total=r.totalPreguntas||0;const nota10=total>0?+(r.puntuacion/total*10).toFixed(1):null;const notaStr=nota10!=null?(nota10===10?'10':nota10):'—';return '<tr><td>'+titulo+'</td><td>'+r.puntuacion+' / '+total+'</td><td class="stat-val">'+notaStr+'</td></tr>';}).join('');
+  const secHistorialEval=respuestasEval.length?'<div class="section"><div class="section-title">📝 Historial de evaluaciones</div><table><thead><tr><th>Evaluación</th><th>Correctas</th><th>Puntaje /10</th></tr></thead><tbody>'+filasEval+'</tbody></table></div>':'';
   const peticionesCab=(DB.peticiones||[]).filter(p=>p.cabId===id&&p.nombre!=='Anónimo').sort((a,b)=>(b.ts||0)-(a.ts||0));
   const filasPet=peticionesCab.map(p=>'<tr><td>'+(p.fecha||'—')+'</td><td>'+(p.texto||'').replace(/</g,'&lt;').substring(0,120)+(p.texto&&p.texto.length>120?'…':'')+'</td></tr>').join('');
   const secPeticiones=peticionesCab.length?'<div class="section"><div class="section-title">🙏 Historial de peticiones a su nombre</div><table><thead><tr><th>Fecha</th><th>Petición</th></tr></thead><tbody>'+filasPet+'</tbody></table></div>':'';
@@ -1842,7 +1894,7 @@ function generarInformeIndividualPorId(id){
   const filasA=act.map(a=>'<tr><td>'+(a.fecha||'—')+'</td><td><strong>'+(a.nombre||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(a.efectivo)||0)+(Number(a.tpv)||0))+'</td><td class="neg">'+MONEDA.symbol+fmtMonto(a.gastos)+'</td></tr>').join('');
   const filasD=don.map(d=>'<tr><td>'+(d.fecha||'—')+'</td><td><strong>'+(d.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(d.efectivo)||0)+(Number(d.tpv)||0))+'</td></tr>').join('');
   const filasV=vot.map(v=>'<tr><td>'+(v.fecha||'—')+'</td><td><strong>'+(v.concepto||'').replace(/</g,'&lt;')+'</strong></td><td class="pos">'+MONEDA.symbol+fmtMonto((Number(v.efectivo)||0)+(Number(v.tpv)||0))+'</td></tr>').join('');
-  const secciones=secEstadisticasGrupo+secFinanzas+'<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
+  const secciones=secEstadisticasGrupo+secFinanzas+'<div class="section"><div class="section-title">📚 Historial de Clases</div><div style="padding:12px 16px">'+histClases+'</div></div>'+secHistorialEval+secPeticiones+(gastos.length?'<div class="section"><div class="section-title">🐷 Gastos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody>'+filasG+'</tbody></table></div>':'')+(act.length?'<div class="section"><div class="section-title">💡 Actividades como responsable</div><table><thead><tr><th>Fecha</th><th>Actividad</th><th>Ingresos</th><th>Gastos</th></tr></thead><tbody>'+filasA+'</tbody></table></div>':'')+(don.length?'<div class="section"><div class="section-title">🤲 Donativos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasD+'</tbody></table></div>':'')+(vot.length?'<div class="section"><div class="section-title">📜 Votos como responsable</div><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Total</th></tr></thead><tbody>'+filasV+'</tbody></table></div>':'');
   generarPDF('Informe Individual: '+cab.nombre,datos+secciones);
 }
 function generarInformeIndividual(){
@@ -1896,6 +1948,16 @@ function togglePrayerTimer(){
   }
 }
 
+// Historial de uso de la app (caballeros): entradas, material, cuestionarios, perfil
+function logAppHistorial(cabId,accion,detalle){
+  if(!cabId||!DB||!Array.isArray(DB.appHistorial))return;
+  DB.appHistorial.push({cabId,accion,detalle:detalle||'',ts:Date.now()});
+  const hace7d=Date.now()-7*24*60*60*1000;
+  while(DB.appHistorial.length>0&&DB.appHistorial[0].ts<hace7d)DB.appHistorial.shift();
+  if(DB.appHistorial.length>800){DB.appHistorial=DB.appHistorial.slice(-600);}
+  saveDB().catch(()=>{});
+}
+
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
@@ -1905,6 +1967,7 @@ async function initApp(){
   const savedCab=typeof sessionStorage!=='undefined'?sessionStorage.getItem('caballeros_miembro'):null;
   if(savedCab&&DB.caballeros&&DB.caballeros.some(c=>c.id===savedCab)){
     currentCabId=savedCab;
+    logAppHistorial(savedCab,'entrada_app','Entró a la app');
     showSc('screen-personal');
     if(typeof renderPersonal==='function')renderPersonal(savedCab);
   }
@@ -1914,10 +1977,25 @@ async function initApp(){
   // Clonar banner de evidencias para que también lo vean los caballeros
   const adminBanner=document.querySelector('#screen-admin .ev-banner');
   const personalWrap=document.getElementById('ev-banner-personal-wrap');
-  if(adminBanner&&personalWrap)personalWrap.innerHTML=adminBanner.innerHTML;
+  if(adminBanner&&personalWrap){personalWrap.innerHTML=adminBanner.innerHTML;personalWrap.onclick=function(){if(typeof openModalEvidencias==='function')openModalEvidencias();};personalWrap.style.cursor='pointer';}
   if(adminBanner&&window._reportLogos)window._reportLogos.ev=adminBanner.querySelector('img')?.src||window._reportLogos.ev;
   renderVersoDelDia();
   const acts=document.querySelector('.hacts');
+}
+
+function openModalEvidencias(){
+  const body=`<div class="ev-modal-body" style="font-family:'Lato',sans-serif;font-size:14px;line-height:1.75;color:var(--text2);max-height:70vh;overflow-y:auto;">
+    <p style="margin-bottom:14px;">En años anteriores, nuestros planes de trabajo de Hombres de Verdad se han enfocado en identidad y propósito. En <strong>Raíces</strong> exploramos los fundamentos bíblicos que sostienen la vida del varón cristiano, fortaleciendo su fe y afirmando su pertenencia a Cristo.</p>
+    <p style="margin-bottom:14px;">En <strong>El Legado</strong>, llamamos a los hombres a proyectar su vida más allá de sí mismos, dejando huellas firmes en su familia, su comunidad y las generaciones venideras.</p>
+    <p style="margin-bottom:14px;">Para el 2026, la realidad espiritual y social que enfrentan los hombres demanda un paso más: la coherencia visible entre lo que creemos y lo que vivimos.</p>
+    <p style="margin-bottom:14px;">El contexto actual está marcado por la necesidad que plantea el apóstol Pablo en Romanos, 8:19: la manifestación gloriosa de los hijos de Dios. Ante ello, la escritura nos enseña que el fruto del Espíritu Santo es la prueba tangible de una vida transformada (Gálatas 5:22-23).</p>
+    <p style="margin-bottom:14px;">Por eso, el plan <strong>"Evidencias"</strong> surge como continuidad natural de nuestro proceso formativo:</p>
+    <p style="margin-bottom:14px;">Si Raíces respondió a la pregunta <em>"¿De dónde vengo?"</em><br>Y Legado a la pregunta <em>"¿Qué dejo?"</em><br>Evidencias responde a <em>"¿Qué demuestra que vivo para Dios?"</em></p>
+    <p style="margin-bottom:14px;">"Evidencias" además de transmitir conocimiento bíblico, busca formar carácter, desarrollar dominio propio, cultivar relaciones sanas y reflejar el amor de Cristo de manera práctica. Así, los Hombres de Verdad no solo hablan de fe, sino que la hacen visible en su hogar, en su trabajo y en su comunidad, convirtiéndose en testigos vivos del poder transformador del Espíritu Santo.</p>
+    <p style="margin-bottom:14px;">"Evidencias" promueve la coherencia entre la fe y la vida práctica de los hombres, de manera que cada área espiritual, familiar, laboral y social se convierta en evidencia clara del obrar de Dios.</p>
+    <p style="margin-top:20px;padding:14px;background:rgba(58,171,186,0.1);border-radius:12px;border-left:4px solid var(--teal);font-style:italic;color:var(--dark);">No me elegisteis vosotros a mí, sino que yo os elegí a vosotros, y os he puesto para que vayáis y llevéis fruto, y vuestro fruto permanezca; para que todo lo que pidiereis al Padre en mi nombre, él os lo dé. <strong>San Juan 15:16</strong></p>
+  </div>`;
+  if(typeof openSheet==='function')openSheet('🍇','Evidencias 2026','Plan de trabajo · Hombres de Verdad',body);
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

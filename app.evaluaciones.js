@@ -295,6 +295,7 @@ function enviarRespuestasPV(evId){
   const registro={evaluacionId:evId,cabId,fecha:new Date().toISOString(),respuestas,puntuacion,totalPreguntas,puedeRepetir:false};
   if(prev){const idx=DB.evaluacionRespuestas.indexOf(prev);DB.evaluacionRespuestas[idx]=registro;}else DB.evaluacionRespuestas.push(registro);
   if(typeof invalidateCache==='function')invalidateCache();
+  if(typeof logAppHistorial==='function')logAppHistorial(cabId,'cuestionario',(ev.titulo||evId||'').toString());
   closeModal();
   toast('Respuestas guardadas','ok');
   saveDB().then(()=>{
