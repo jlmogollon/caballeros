@@ -30,12 +30,12 @@ function renderEvaluacionesAdmin(){
   el.innerHTML=html;
 }
 
-function openFormEvaluacion(id){
+function openFormEvaluacion(id,preselectedClaseId){
   const ev=id?(DB.evaluaciones||[]).find(e=>e.id===id):null;
   const titulo=ev?(ev.titulo||''):'';
   const descripcion=ev?(ev.descripcion||''):'';
-  const claseId=ev&&ev.claseId?ev.claseId:'';
-  const materialId=ev&&ev.materialId?ev.materialId:'';
+  const claseId=preselectedClaseId!==undefined&&preselectedClaseId!==''?preselectedClaseId:(ev&&ev.claseId?ev.claseId:'');
+  if(preselectedClaseId!==undefined&&preselectedClaseId!=='')window._evqClasePreseleccionada=preselectedClaseId;
   const preguntas=(ev&&ev.preguntas)?ev.preguntas:[];
   const pregHtml=preguntas.map((p,i)=>{
     const opciones=(p.opciones||[]).map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="radio" name="evq-p-${i}" value="${j}" ${o.correcta?'checked':''}><input type="text" data-preg="${i}" data-op="${j}" value="${escAttr(o.texto)}" placeholder="Opción ${j+1}" style="flex:1;padding:6px 10px;"></label>`).join('');
@@ -49,15 +49,10 @@ function openFormEvaluacion(id){
       <button type="button" class="btn boutline" style="font-size:11px;margin-top:6px;" onclick="añadirOpcionEvq(${i})">+ Añadir opción</button>
     </div>`;
   }).join('');
-  const sortedClases=(DB.clases||[]).slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)).reverse();
-  const claseOpts=['<option value="">Sin vincular a clase</option>',...sortedClases.map(cl=>`<option value="${escAttr(cl.id||cl.fecha)}" ${(cl.id||cl.fecha)===claseId?'selected':''}>${(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)} — ${escAttr((cl.tema||'Clase').substring(0,40))}</option>`)].join('');
-  const sortedMaterial=(DB.materialEstudio||[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
-  const materialOpts=['<option value="">Sin vincular a material</option>',...sortedMaterial.map(m=>`<option value="${escAttr(m.id)}" ${m.id===materialId?'selected':''}>${escAttr((m.titulo||'Sin título').substring(0,50))}</option>`)].join('');
   openSheet('📋',id?'Editar cuestionario':'Nuevo cuestionario','',`
     <div class="fr"><label>Título</label><input type="text" id="evq-titulo" value="${escAttr(titulo)}" placeholder="Ej. Evidencias de un Caballero"></div>
     <div class="fr"><label>Descripción (opcional)</label><input type="text" id="evq-desc" value="${escAttr(descripcion)}" placeholder="Breve descripción del cuestionario"></div>
-    <div class="fr"><label>Vincular a clase (estudio)</label><select id="evq-clase">${claseOpts}</select></div>
-    <div class="fr"><label>Vincular a material de estudio</label><select id="evq-material">${materialOpts}</select></div>
+    <input type="hidden" id="evq-clase" value="${escAttr(claseId)}">
     <div style="margin-top:14px;"><strong>Preguntas</strong></div>
     <div id="evq-preguntas-wrap">${pregHtml}</div>
     <button type="button" class="btn boutline bfull" style="margin-top:10px;" onclick="añadirPreguntaEvq()">+ Añadir pregunta</button>
@@ -136,14 +131,15 @@ function guardarEvaluacion(){
     if(texto||conTexto)preguntas.push({id:pid,texto,opciones});
   });
   const evClaseId=(document.getElementById('evq-clase')?.value||'').trim();
-  const evMaterialId=(document.getElementById('evq-material')?.value||'').trim();
   const evId=id||'evq'+Date.now();
   const existing=(DB.evaluaciones||[]).find(e=>e.id===evId);
-  const ev={id:evId,titulo,descripcion,activo:true,claseId:evClaseId||undefined,materialId:evMaterialId||undefined,preguntas:existing&&existing.preguntas?preguntas.length?preguntas:existing.preguntas:preguntas};
+  const materialId=existing&&existing.materialId?existing.materialId:undefined;
+  const ev={id:evId,titulo,descripcion,activo:true,claseId:evClaseId||undefined,materialId,preguntas:existing&&existing.preguntas?preguntas.length?preguntas:existing.preguntas:preguntas};
   if(existing)Object.assign(existing,ev);else (DB.evaluaciones=DB.evaluaciones||[]).push(ev);
+  window._evqClasePreseleccionada=undefined;
   closeModal();
   toast('Cuestionario guardado','ok');
-  saveDB().then(()=>renderEvaluacionesAdmin());
+  saveDB().then(()=>{if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();if(typeof renderClases==='function')renderClases();});
 }
 
 function confirmarDelEvaluacion(id){

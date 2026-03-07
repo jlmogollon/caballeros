@@ -141,7 +141,7 @@ async function loadDB(){
     if(useCloud()){
       try{
         const data=await cloudLoad();
-        if(data&&data.caballeros&&Array.isArray(data.caballeros)&&data.caballeros.length>0){
+        if(data&&Array.isArray(data.caballeros)&&data.caballeros.length>0){
           DB=data;
           ensureDbShape();
           try{
@@ -161,10 +161,22 @@ async function loadDB(){
           }catch(e){console.warn('Legacy merge:',e);}
           return;
         }
-        showLoading('Cargando datos iniciales...');
+        // Nube vacía o sin caballeros: usar localStorage si tiene datos; NUNCA sobrescribir la nube con semilla ni con local
+        try{
+          const r=localStorage.getItem(SK);
+          if(r){
+            const local=JSON.parse(r);
+            if(local&&Array.isArray(local.caballeros)&&local.caballeros.length>0){
+              DB=local;
+              ensureDbShape();
+              toast('✅ Se cargaron datos desde este dispositivo (la nube no tenía datos válidos). Para guardar en la nube, haz un cambio y guarda.','ok');
+              return;
+            }
+          }
+        }catch(e){}
         DB=seedDB();
         ensureDbShape();
-        await cloudSave(DB);
+        toast('⚠️ No había datos válidos. Se cargaron datos iniciales. Restaura desde Peticiones → Copia de seguridad si tienes un backup.','err');
         return;
       }catch(e){
         console.warn('Nube falló:',e);
@@ -172,7 +184,7 @@ async function loadDB(){
       }
     }
     try{const r=localStorage.getItem(SK);if(r)DB=JSON.parse(r);}catch(e){}
-    if(!DB||!DB.caballeros)DB=seedDB();
+    if(!DB||!Array.isArray(DB.caballeros)||DB.caballeros.length===0)DB=seedDB();
     ensureDbShape();
   }finally{
     hideLoading();
@@ -656,6 +668,7 @@ const SEED_EVAL_DISPENSACIONES_TEXTO={
 function ensureDbShape(){
   if(!DB)DB={};
   if(!Array.isArray(DB.caballeros))DB.caballeros=[];
+  if(!Array.isArray(DB.clases))DB.clases=[];
   DB.caballeros.forEach(c=>{
     if(c.pw===undefined)c.pw='';
     if(c.fnac===undefined)c.fnac='';
@@ -702,6 +715,15 @@ function ensureDbShape(){
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
   if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
   addClasesFaltantes();
+  // Anexar material al primer estudio (13 feb / cl1) si no tiene
+  const cl1=Array.isArray(DB.clases)?DB.clases.find(c=>c.id==='cl1'||c.fecha==='2026-02-13'):null;
+  if(cl1&&!cl1.materialId){
+    const matId='mat_cl1';
+    if(!(DB.materialEstudio||[]).some(m=>m.id===matId)){
+      DB.materialEstudio.push({id:matId,titulo:'Estudio 13 feb',url:'',orden:(DB.materialEstudio||[]).length});
+    }
+    cl1.materialId=matId;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -958,17 +980,17 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   tabEl.classList.add('active');if(el)el.classList.add('active');
-  if(id==='t-dash'){renderCabs();renderGrupos();}
-  if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
+  if(id==='t-dash'){renderDash();}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
+  if(id==='t-caballeros'){renderCabs();}
+  if(id==='t-estudio-admin'){renderClases();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
   if(id==='t-informes'){renderInformes();}
-  if(id==='t-estudio-admin'){if(typeof renderMaterialAdmin==='function')renderMaterialAdmin();if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
 }
 function initAdmin(){
-  buildSel();renderDash();renderCabs();if(typeof renderGrupos==='function')renderGrupos();
+  buildSel();renderDash();renderCabs();
   const wrap=document.getElementById('admin-perfil-wrap');
   const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
   const tieneFoto=!!DB.adminPhoto;
@@ -992,11 +1014,15 @@ function initAdmin(){
 }
 
 function goToStatCard(tipo){
-  if(tipo==='clases'){showTab('t-clases',document.querySelector('.ntab[onclick*="t-clases"]'));return;}
-  fGrupo='TODOS';
-  if(tipo==='caballeros')fBadge='TODOS';
-  else if(tipo==='hermanos')fBadge='Hermano';
-  else if(tipo==='amigos')fBadge='Amigo';
+  if(tipo==='clases'){showTab('t-estudio-admin',document.querySelector('.ntab[onclick*="t-estudio-admin"]'));return;}
+  if(tipo==='caballeros'||tipo==='hermanos'||tipo==='amigos'){
+    fGrupo='TODOS';
+    fBadge=tipo==='caballeros'?'TODOS':tipo==='hermanos'?'Hermano':'Amigo';
+    _lastFGrupo=null;_lastFBadge=null;
+    showTab('t-caballeros',document.querySelector('.ntab[onclick*="t-caballeros"]'));
+    return;
+  }
+  fGrupo='TODOS';if(tipo==='caballeros')fBadge='TODOS';else if(tipo==='hermanos')fBadge='Hermano';else if(tipo==='amigos')fBadge='Amigo';
   _lastFGrupo=null;_lastFBadge=null;
   showTab('t-dash',document.querySelector('.ntab[onclick*="t-dash"]'));
 }
@@ -1274,8 +1300,8 @@ function getVersoCumple(){
   const dayOfYear=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
   return VERSOS_CUMPLE[dayOfYear % VERSOS_CUMPLE.length];
 }
-function renderCumpleBanners(cabId){
-  const wrap=document.getElementById('pv-cumple-banner-wrap');
+function renderCumpleBanners(cabId,wrapId){
+  const wrap=document.getElementById(wrapId||'pv-cumple-banner-wrap');
   if(!wrap)return;
   const losQueCumplen=cumpleHoy();
   const items=(DB.caballeros||[]).filter(c=>c.fnac&&c.fnac.length>=10).map(c=>{

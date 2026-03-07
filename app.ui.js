@@ -8,17 +8,17 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   tabEl.classList.add('active');if(el)el.classList.add('active');
-  if(id==='t-dash'){renderCabs();renderGrupos();}
-  if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
+  if(id==='t-dash'){renderDash();}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
+  if(id==='t-caballeros'){renderCabs();}
+  if(id==='t-estudio-admin'){renderClases();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
   if(id==='t-informes'){renderInformes();}
-  if(id==='t-estudio-admin'){if(typeof renderMaterialAdmin==='function')renderMaterialAdmin();if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
 }
 function initAdmin(){
-  buildSel();renderDash();renderCabs();if(typeof renderGrupos==='function')renderGrupos();
+  buildSel();renderDash();renderCabs();
   if(typeof renderEventosAdmin==='function')renderEventosAdmin();
   const wrap=document.getElementById('admin-perfil-wrap');
   const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
@@ -43,25 +43,36 @@ function initAdmin(){
 }
 
 function goToStatCard(tipo){
-  if(tipo==='clases'){showTab('t-clases',document.querySelector('.ntab[onclick*="t-clases"]'));return;}
-  fGrupo='TODOS';
-  if(tipo==='caballeros')fBadge='TODOS';
-  else if(tipo==='hermanos')fBadge='Hermano';
-  else if(tipo==='amigos')fBadge='Amigo';
+  if(tipo==='clases'){showTab('t-estudio-admin',document.querySelector('.ntab[onclick*="t-estudio-admin"]'));return;}
+  if(tipo==='caballeros'||tipo==='hermanos'||tipo==='amigos'){
+    fGrupo='TODOS';
+    fBadge=tipo==='caballeros'?'TODOS':tipo==='hermanos'?'Hermano':'Amigo';
+    _lastFGrupo=null;_lastFBadge=null;
+    showTab('t-caballeros',document.querySelector('.ntab[onclick*="t-caballeros"]'));
+    return;
+  }
+  fGrupo='TODOS';if(tipo==='caballeros')fBadge='TODOS';else if(tipo==='hermanos')fBadge='Hermano';else if(tipo==='amigos')fBadge='Amigo';
   _lastFGrupo=null;_lastFBadge=null;
   showTab('t-dash',document.querySelector('.ntab[onclick*="t-dash"]'));
 }
 function renderDash(){
-  document.getElementById('stats-grid').innerHTML=`
-    <div class="stat-card stat-click" onclick="goToStatCard('caballeros')"><div class="stat-num">${DB.caballeros.length}</div><div class="stat-lbl">Caballeros</div></div>
-    <div class="stat-card stat-click" onclick="goToStatCard('hermanos')"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div>
-    <div class="stat-card stat-click" onclick="goToStatCard('amigos')"><div class="stat-num">${DB.caballeros.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
-    <div class="stat-card stat-click gold" onclick="goToStatCard('clases')"><div class="stat-num">${DB.clases.filter(cl=>claseAvg(cl)>0).length}</div><div class="stat-lbl">Clases</div></div>
+  if(typeof renderCumpleBanners==='function')renderCumpleBanners(null,'dash-cumple-banner-wrap');
+  if(typeof renderVersoDelDia==='function')renderVersoDelDia('dash-verso-dia-wrap');
+  const cabs=Array.isArray(DB.caballeros)?DB.caballeros:[];
+  const clasesArr=Array.isArray(DB.clases)?DB.clases:[];
+  const statsEl=document.getElementById('stats-grid');
+  if(statsEl)statsEl.innerHTML=`
+    <div class="stat-card stat-click" onclick="goToStatCard('caballeros')"><div class="stat-num">${cabs.length}</div><div class="stat-lbl">Caballeros</div></div>
+    <div class="stat-card stat-click" onclick="goToStatCard('hermanos')"><div class="stat-num">${cabs.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div>
+    <div class="stat-card stat-click" onclick="goToStatCard('amigos')"><div class="stat-num">${cabs.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
+    <div class="stat-card stat-click gold" onclick="goToStatCard('clases')"><div class="stat-num">${clasesArr.filter(cl=>claseAvg(cl)>0).length}</div><div class="stat-lbl">Clases</div></div>
   `;
   const list=ranking();
-  document.getElementById('top5').innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
-  const calificadas=[...DB.clases].filter(cl=>claseAvg(cl)>0).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,2);
-  document.getElementById('recent-cl').innerHTML=calificadas.length?calificadas.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases calificadas aún.</p>';
+  const top5El=document.getElementById('top5');
+  if(top5El)top5El.innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
+  const calificadas=[...clasesArr].filter(cl=>claseAvg(cl)>0).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,2);
+  const recentEl=document.getElementById('recent-cl');
+  if(recentEl)recentEl.innerHTML=calificadas.length?calificadas.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases calificadas aún.</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -385,9 +396,11 @@ async function doSaveCab(id){
 // GRUPOS
 // ═══════════════════════════════════════════════════════════════
 function renderGrupos(){
-  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  const el=document.getElementById('grupos-pg');
+  if(!el)return;
+  const map={};(DB.caballeros||[]).forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
   let h='<div class="sec-ttl">Grupos</div>';
-  GRUPOS.forEach(g=>{
+  (GRUPOS||[]).forEach(g=>{
     const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
     const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
     const col=GCOL[g]||'var(--teal)';
@@ -397,7 +410,7 @@ function renderGrupos(){
       ${avatars?`<div style="display:flex;align-items:center;padding-top:10px;margin-left:2px">${avatars}</div><div style="font-size:10px;color:var(--text3);margin-top:6px;font-weight:600;">Toca para ver integrantes</div>`:''}
     </div>`;
   });
-  document.getElementById('grupos-pg').innerHTML=h;
+  el.innerHTML=h;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -424,11 +437,11 @@ function mkClaseCard(cl){
   </div>`;
 }
 function renderClases(){
-  const today=new Date().toISOString().split('T')[0];
-  const sorted=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const clases=Array.isArray(DB.clases)?DB.clases:[];
+  const sorted=[...clases].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
   const porAnio={};
   sorted.forEach(cl=>{
-    const y=cl.fecha.substring(0,4);
+    const y=(cl.fecha||'').substring(0,4);
     if(!porAnio[y])porAnio[y]=[];
     porAnio[y].push(cl);
   });
@@ -439,7 +452,7 @@ function renderClases(){
     html+=porAnio[y].map(mkClaseCard).join('');
   });
   const el=document.getElementById('clases-list');
-  el.innerHTML=sorted.length?html:'<p style="color:var(--text3);font-size:13px">Sin clases. ¡Crea la primera!</p>';
+  if(el)el.innerHTML=sorted.length?html:'<p style="color:var(--text3);font-size:13px">Sin clases. ¡Crea la primera!</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -447,40 +460,40 @@ function renderClases(){
 // ═══════════════════════════════════════════════════════════════
 function getClaseByKey(key){
   if(!key)return null;
-  const byFecha=/^\d{4}-\d{2}-\d{2}$/.test(key);
-  return DB.clases.find(x=>byFecha?x.fecha===key:x.id===key)||null;
+  const clases=Array.isArray(DB.clases)?DB.clases:[];
+  const byFecha=/^\d{4}-\d{2}-\d{2}$/.test(String(key));
+  return clases.find(x=>byFecha?x.fecha===key:x.id===key)||null;
 }
 function openClaseDetail(key){
   const cl=getClaseByKey(key);if(!cl)return;
-  const rows=DB.caballeros.filter(c=>cl.cal[c.id]).map(c=>{
+  const caballeros=Array.isArray(DB.caballeros)?DB.caballeros:[];
+  const rows=caballeros.filter(c=>cl.cal&&cl.cal[c.id]).map(c=>{
     const ev=typeof getEvalScoreForClassAndCab==='function'?getEvalScoreForClassAndCab(cl.id||cl.fecha,c.id):null;
     return{nom:c.nombre,...cl.cal[c.id],ev,t:typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(cl.cal[c.id])};
   }).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Eval</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')}</tbody></table>`;
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-  const clave=cl.fecha;
-  const claseIdRef=cl.id||cl.fecha;
-  const materialIdClase=cl.materialId||'';
-  const sortedMaterial=(DB.materialEstudio||[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
-  const materialOpts=['<option value="">Ninguno</option>',...sortedMaterial.map(m=>`<option value="${(m.id||'').replace(/"/g,'&quot;')}" ${(m.id||'')===materialIdClase?'selected':''}>${(m.titulo||'Sin título').substring(0,50).replace(/</g,'&lt;')}</option>`)].join('');
+  const clave=String(cl.fecha||'');
+  const claseIdRef=String(cl.id||cl.fecha||'');
+  const esc=(s)=>(String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"));
+  const mat=cl.materialId?(DB.materialEstudio||[]).find(m=>m.id===cl.materialId):null;
+  const materialBlock=mat?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(mat.titulo||'Sin título').replace(/</g,'&lt;')}</span><br><span style="font-size:11px;color:var(--text3);word-break:break-all;">${(mat.url||'').replace(/</g,'&lt;').substring(0,60)}…</span></div><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormMaterialUrlForClase('${esc(clave)}')">Editar URL</button>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin material.</p><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormMaterialUrlForClase(\''+esc(clave)+'\')">+ Añadir URL</button>';
   const evVinculada=(DB.evaluaciones||[]).find(e=>e.claseId===claseIdRef);
-  const evaluacionIdClase=evVinculada?(evVinculada.id||''):'';
-  const sortedEv=(DB.evaluaciones||[]).filter(e=>!!(e.titulo||'').trim()).slice();
-  const evaluacionOpts=['<option value="">Ninguno</option>',...sortedEv.map(ev=>`<option value="${(ev.id||'').replace(/"/g,'&quot;')}" ${(ev.id||'')===evaluacionIdClase?'selected':''}>${(ev.titulo||'Cuestionario').substring(0,45).replace(/</g,'&lt;')}</option>`)].join('');
+  const evaluacionBlock=evVinculada?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(evVinculada.titulo||'Cuestionario').replace(/</g,'&lt;')}</span> · ${(evVinculada.preguntas||[]).length} preguntas</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion('${esc(evVinculada.id)}')">Editar</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON('${esc(clave)}')">Importar .json (reemplazar)</button></div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario.</p><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion(null,\''+esc(claseIdRef)+'\')">Crear cuestionario</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON(\''+esc(clave)+'\')">Importar desde .json</button></div>';
   openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
-    <div class="dsec"><div class="dhead">Editar datos de la clase</div>
-      <div class="fr"><label>Nombre / Tema de la clase</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
+    <div class="dsec"><div class="dhead">Editar datos del estudio</div>
+      <div class="fr"><label>Nombre / Tema</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
       <div class="fr"><label>Fecha</label><input type="date" id="edcl-fecha" value="${cl.fecha}"></div>
       <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo" class="select-grupo">${gOpts}</select></div>
-      <div class="fr"><label>📚 Material de estudio</label><select id="edcl-material">${materialOpts}</select></div>
-      <div class="fr"><label>📝 Cuestionario (evaluación)</label><select id="edcl-evaluacion">${evaluacionOpts}</select></div>
-      <button class="btn bteal" onclick="doSaveClaseInfo('${clave}')" style="margin-top:6px">💾 Guardar cambios</button>
+      <button class="btn bteal" onclick="doSaveClaseInfo('${esc(clave)}')" style="margin-top:6px">💾 Guardar cambios</button>
     </div>
+    <div class="dsec"><div class="dhead">📚 Material de estudio</div>${materialBlock}</div>
+    <div class="dsec"><div class="dhead">📝 Cuestionario</div>${evaluacionBlock}</div>
     <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
     <div class="btn-row">
-      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${clave}')">✏️ Calificar / Editar notas</button>
-      <button class="btn bred" onclick="confirmDelClase('${clave}')">🗑 Eliminar</button>
+      <button class="btn bteal" style="flex:1" onclick="closeModal();openGrade('${esc(clave)}')">✏️ Calificar / Editar notas</button>
+      <button class="btn bred" onclick="confirmDelClase('${esc(clave)}')">🗑 Eliminar</button>
     </div>
   `);
 }
@@ -489,26 +502,87 @@ async function doSaveClaseInfo(key){
   const tema=document.getElementById('edcl-tema').value.trim()||'Estudio de las Dispensaciones';
   const fecha=document.getElementById('edcl-fecha').value;
   const grupoResp=document.getElementById('edcl-grupo').value;
-  const materialIdEl=document.getElementById('edcl-material');
-  const evaluacionIdEl=document.getElementById('edcl-evaluacion');
-  const materialId=materialIdEl?materialIdEl.value.trim():'';
-  const evaluacionId=evaluacionIdEl?evaluacionIdEl.value.trim():'';
   if(!fecha){toast('La fecha es obligatoria','err');return;}
   cl.tema=tema;cl.fecha=fecha;cl.grupoResp=grupoResp;
-  if(materialId){cl.materialId=materialId;}else{delete cl.materialId;}
-  const claseIdRef=cl.id||cl.fecha;
-  (DB.evaluaciones||[]).forEach(ev=>{
-    if(ev.claseId===claseIdRef)ev.claseId=undefined;
-  });
-  if(evaluacionId){
-    const ev=(DB.evaluaciones||[]).find(e=>e.id===evaluacionId);
-    if(ev)ev.claseId=claseIdRef;
-  }
   closeModal();toast('💾 Guardando...','info');
   const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
   toast('✅ Clase actualizada','ok');
-  renderClases();renderDash();renderCalGr();
-  if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();
+  renderClases();renderDash();
+}
+function openFormMaterialUrlForClase(clave){
+  const cl=getClaseByKey(clave);if(!cl)return;
+  const mat=cl.materialId?(DB.materialEstudio||[]).find(m=>m.id===cl.materialId):null;
+  let urlVal=mat?(mat.url||''):'';
+  if(!urlVal&&mat&&mat.contenido)urlVal=typeof extractUrlFromMaterialInput==='function'?extractUrlFromMaterialInput(mat.contenido)||mat.contenido:mat.contenido;
+  const tituloVal=mat?(mat.titulo||''):'';
+  const body='<div class="fr" style="margin-bottom:12px;"><label>URL del material</label><textarea id="material-url-inp" rows="3" placeholder="Pega la URL (ej. https://gamma.app/embed/...)" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">'+String(urlVal).replace(/</g,'&lt;').replace(/"/g,'&quot;')+'</textarea></div><div class="fr" style="margin-bottom:12px;"><label>Título (opcional)</label><input type="text" id="material-titulo-inp" value="'+String(tituloVal).replace(/"/g,'&quot;')+'" placeholder="Ej: Estudio de las dispensaciones" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;"></div><div class="btn-row"><button type="button" class="btn boutline" onclick="closeModal()">Cancelar</button><button type="button" class="btn bteal" onclick="saveMaterialUrlForClase(\''+clave.replace(/'/g,"\\'")+'\')">'+(mat?'Guardar':'Añadir')+'</button></div>';
+  if(typeof openSheet==='function')openSheet('📚',mat?'Editar URL del material':'Añadir URL del material','Solo para este estudio.',body);
+}
+async function saveMaterialUrlForClase(clave){
+  const urlEl=document.getElementById('material-url-inp');
+  const tituloEl=document.getElementById('material-titulo-inp');
+  if(!urlEl){toast('Error en el formulario','err');return;}
+  let url=typeof extractUrlFromMaterialInput==='function'?extractUrlFromMaterialInput(urlEl.value):(urlEl.value||'').trim();
+  if(!url){toast('Escribe o pega la URL.','err');return;}
+  if(!url.startsWith('http://')&&!url.startsWith('https://'))url='https://'+url;
+  const titulo=(tituloEl&&tituloEl.value?tituloEl.value.trim():'')||url.replace(/^https?:\/\//,'').split('/')[0]||'Material';
+  const cl=getClaseByKey(clave);if(!cl)return;
+  if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
+  if(cl.materialId){
+    const m=DB.materialEstudio.find(x=>x.id===cl.materialId);
+    if(m){m.url=url;m.titulo=titulo;}
+  }else{
+    const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
+    DB.materialEstudio.push({id:newId,titulo,url,orden:DB.materialEstudio.length});
+    cl.materialId=newId;
+  }
+  closeModal();toast('💾 Guardando...','info');
+  const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
+  toast('✅ Material actualizado','ok');
+  renderClases();if(typeof renderEstudioPV==='function')renderEstudioPV();
+  openClaseDetail(clave);
+}
+function triggerImportCuestionarioJSON(clave){
+  const cl=getClaseByKey(clave);if(!cl)return;
+  const claseIdRef=cl.id||cl.fecha;
+  const input=document.createElement('input');
+  input.type='file';
+  input.accept='.json,application/json';
+  input.style.display='none';
+  input.onchange=async function(){
+    const f=this.files[0];if(!f)return;
+    let json;
+    try{json=JSON.parse(await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsText(f);}));}catch(e){toast('El archivo no es un JSON válido','err');return;}
+    const titulo=(json.titulo||json.title||'').trim()||'Cuestionario importado';
+    const descripcion=(json.descripcion||json.description||'').trim();
+    const rawPreguntas=Array.isArray(json.preguntas)?json.preguntas:(Array.isArray(json.questions)?json.questions:[]);
+  const preguntas=rawPreguntas.map((p,i)=>{
+    const texto=String(p.texto||p.text||p.pregunta||'').trim();
+    let opciones=[];
+    const rawOp=p.opciones||p.options||p.choices;
+    if(Array.isArray(rawOp)){
+      const idxCorrecta=typeof p.correcta==='number'?p.correcta:(typeof p.correctaIndex==='number'?p.correctaIndex:-1);
+      rawOp.forEach((o,j)=>{
+        if(typeof o==='object'&&o!==null)opciones.push({texto:String(o.texto||o.text||'').trim(),correcta:!!o.correcta});
+        else opciones.push({texto:String(o).trim(),correcta:j===idxCorrecta});
+      });
+    }
+    if(!opciones.length)opciones=[{texto:'',correcta:true},{texto:'',correcta:false}];
+    return{id:'p'+Date.now()+'_'+i,texto,opciones};
+  });
+  if(!preguntas.length){toast('No se encontraron preguntas en el JSON','err');return;}
+  const evId='evq'+Date.now();
+  (DB.evaluaciones||[]).forEach(ev=>{if(ev.claseId===claseIdRef)ev.claseId=undefined;});
+  const ev={id:evId,titulo,descripcion,activo:true,claseId:claseIdRef,preguntas};
+  DB.evaluaciones=DB.evaluaciones||[];
+  DB.evaluaciones.push(ev);
+  toast('💾 Guardando...','info');
+  const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
+  toast('✅ Cuestionario creado desde JSON','ok');
+  renderClases();
+  if(typeof openFormEvaluacion==='function')openFormEvaluacion(evId);
+  };
+  document.body.appendChild(input);input.click();document.body.removeChild(input);
 }
 function confirmDelClase(key){
   const cl=getClaseByKey(key);if(!cl)return;
@@ -908,8 +982,8 @@ function getVersoDelDia(){
   const dayOfYear=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
   return VERSOS_DIA_RVR60[dayOfYear % VERSOS_DIA_RVR60.length];
 }
-function renderVersoDelDia(){
-  const wrap=document.getElementById('pv-verso-dia-wrap');
+function renderVersoDelDia(wrapId){
+  const wrap=document.getElementById(wrapId||'pv-verso-dia-wrap');
   if(!wrap)return;
   const v=getVersoDelDia();
   window._versoDiaRefCode=v.refCode;
