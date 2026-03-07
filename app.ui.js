@@ -8,17 +8,17 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   tabEl.classList.add('active');if(el)el.classList.add('active');
-  if(id==='t-cabs'){renderCabs();renderGrupos();}
+  if(id==='t-dash'){renderCabs();renderGrupos();}
   if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
-  if(id==='t-evaluaciones-admin'){if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
   if(id==='t-informes'){renderInformes();}
+  if(id==='t-estudio-admin'){if(typeof renderMaterialAdmin==='function')renderMaterialAdmin();if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
 }
 function initAdmin(){
-  buildSel();renderDash();renderCabs();
+  buildSel();renderDash();renderCabs();if(typeof renderGrupos==='function')renderGrupos();
   if(typeof renderEventosAdmin==='function')renderEventosAdmin();
   const wrap=document.getElementById('admin-perfil-wrap');
   const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
@@ -49,7 +49,7 @@ function goToStatCard(tipo){
   else if(tipo==='hermanos')fBadge='Hermano';
   else if(tipo==='amigos')fBadge='Amigo';
   _lastFGrupo=null;_lastFBadge=null;
-  showTab('t-cabs',document.querySelector('.ntab[onclick*="t-cabs"]'));
+  showTab('t-dash',document.querySelector('.ntab[onclick*="t-dash"]'));
 }
 function renderDash(){
   document.getElementById('stats-grid').innerHTML=`
@@ -722,7 +722,7 @@ function renderPersonal(cabId){
   const rem=document.getElementById('pv-photo-reminder');
   if(rem)rem.style.display=c.photo?'none':'block';
   document.getElementById('pv-name').textContent=c.nombre;
-  document.getElementById('pv-meta').textContent=`${c.dist} · ${c.grupo}`;
+  document.getElementById('pv-meta').textContent=c.grupo?'Grupo '+(c.grupo||''):'';
   document.getElementById('pv-bdg').innerHTML=mkBadges(c);
   document.getElementById('pv-total').textContent=cal.total.toFixed(1);
   document.getElementById('pv-rank').textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
@@ -848,7 +848,7 @@ function renderEvalPendienteBanner(cabId){
   if(!pendientes.length){wrap.innerHTML='';wrap.style.display='none';return;}
   wrap.style.display='block';
   const n=pendientes.length;
-  wrap.innerHTML=`<div onclick="showPvTab('evaluaciones')" style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.25);cursor:pointer;display:flex;align-items:center;gap:14px;">
+  wrap.innerHTML=`<div onclick="showPvTab('estudio')" style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 50%,#fcd34d 100%);border-radius:14px;padding:14px 18px;border:2px solid #f59e0b;box-shadow:0 4px 20px rgba(245,158,11,0.25);cursor:pointer;display:flex;align-items:center;gap:14px;">
     <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📝</div>
     <div style="flex:1;min-width:0;">
       <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#92400e;">Tienes cuestionarios de evaluación por completar</div>
@@ -914,24 +914,137 @@ function openVersoEnBiblia(){
 }
 
 function showPvTab(tab){
-  ['perfil','oracion','eventos','caballeros','calgr','evaluaciones','finanzas'].forEach(t=>{
+  ['perfil','oracion','eventos','calgr','finanzas','estudio'].forEach(t=>{
     const el=document.getElementById('pvtab-'+t);
     const btn=document.getElementById('pvtab-'+t+'-btn');
     if(el)el.classList.toggle('active',t===tab);
     if(btn)btn.classList.toggle('active',t===tab);
   });
+  const btnGrupos=document.getElementById('pv-btn-grupos');
+  if(btnGrupos)btnGrupos.classList.toggle('pv-hdr-active',tab==='calgr');
+  const btnPerfil=document.querySelector('.pv-hdr-perfil');
+  if(btnPerfil)btnPerfil.classList.toggle('pv-hdr-active',tab==='perfil');
   if(tab==='eventos')  renderEventosPV();
-  if(tab==='caballeros') renderCaballerosPV();
   if(tab==='calgr')    renderCalGr('pv-calgr-pg');
   if(tab==='oracion')  cargarPeticiones();
-  if(tab==='evaluaciones'){if(typeof renderEvaluacionesPV==='function')renderEvaluacionesPV();}
   if(tab==='finanzas') renderFinanzas();
+  if(tab==='estudio') renderEstudioPV();
 }
-function renderCaballerosPV(){
-  const el=document.getElementById('pv-caballeros-pg');
+
+// Estudio (vista caballero: material + evaluación vinculada + calificación del estudio)
+function renderEstudioPV(){
+  const el=document.getElementById('pv-estudio-lista');
   if(!el)return;
-  const list=ranking();
-  el.innerHTML=list.length?list.map(c=>mkCabCard(c)).join(''):'<p style="color:var(--text3);font-size:13px">No hay caballeros.</p>';
+  const arr=(Array.isArray(DB.materialEstudio)?DB.materialEstudio:[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const cabId=currentCabId;
+  const respuestas=DB.evaluacionRespuestas||[];
+  const evaluaciones=DB.evaluaciones||[];
+  if(arr.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay material publicado.</p>';return;}
+  let html='';
+  arr.forEach((m,i)=>{
+    html+=`<div style="margin-bottom:20px;">`;
+    html+=`<div onclick="openMaterialViewer('${m.id}')" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:16px 18px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.04);transition:border-color .2s,box-shadow .2s;">
+      <div style="font-weight:800;color:var(--dark);font-size:14px;">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Módulo ${i+1} · Toca para leer</div>
+    </div>`;
+    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.materialId===m.id);
+    if(ev){
+      const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
+      const nPreg=(ev.preguntas||[]).length;
+      const yaRespondido=!!miResp;
+      const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
+      const puedeComenzar=!yaRespondido||puedeRepetir;
+      const col=yaRespondido?'#fefce8':'#fef9c3';
+      const borde=yaRespondido?'rgba(212,168,0,0.5)':'rgba(245,197,24,0.5)';
+      const icono=yaRespondido?'✅':'📝';
+      html+=`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="margin-top:10px;background:linear-gradient(145deg,${col} 0%,${yaRespondido?'#fef08a':'#fef3c7'} 100%);border:1.5px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 20px rgba(245,197,24,0.15);">
+        <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
+          <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,197,24,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;">${icono}</div>
+          <div><div style="font-weight:800;font-size:13px;">${(ev.titulo||'Cuestionario').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:#4b5563;">${nPreg} preguntas${yaRespondido?' · Completado':''}</div></div>
+        </div>
+        <div style="display:flex;gap:8px;">${yaRespondido?`<button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="event.stopPropagation();verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}${puedeComenzar?`<button type="button" class="btn bteal" style="font-size:11px;padding:6px 14px;" onclick="event.stopPropagation();iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Repetir':'Comenzar'}</button>`:''}</div>
+      </div>`;
+      const cl=ev.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===ev.claseId):null;
+      if(cl&&(cl.cal||{})){
+        const caballerosConCal=DB.caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
+        const grupos={};
+        caballerosConCal.forEach(c=>{
+          const g=c.grupo||'Sin grupo';
+          if(!grupos[g])grupos[g]={s:0,n:0};
+          const q=cl.cal[c.id];
+          const t=typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):(typeof rowTotal==='function'?rowTotal(q):0);
+          grupos[g].s+=t;grupos[g].n++;
+        });
+        const claseLbl=(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' — '+(cl.tema||'Clase').substring(0,40);
+        html+=`<div style="margin-top:10px;padding:14px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:10px;">📊 Calificación de este estudio</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${claseLbl.replace(/</g,'&lt;')}</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">`;
+        caballerosConCal.slice(0,15).forEach(c=>{
+          const q=cl.cal[c.id];
+          const t=typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):(typeof rowTotal==='function'?rowTotal(q):0);
+          const nom=typeof nombreCorto==='function'?nombreCorto(c):(c.nombre||c.id);
+          html+=`<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;"><span>${(nom||'').replace(/</g,'&lt;')}</span><strong style="color:var(--teal2);">${t}</strong></div>`;
+        });
+        if(caballerosConCal.length>15)html+=`<div style="font-size:11px;color:var(--text3);">y ${caballerosConCal.length-15} más</div>`;
+        html+=`</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;">Por grupo:</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">`;
+        Object.keys(grupos).sort().forEach(g=>{
+          const avg=grupos[g].n?+(grupos[g].s/grupos[g].n).toFixed(1):'—';
+          html+=`<span style="font-size:11px;padding:4px 10px;background:white;border:1px solid #e2e8f0;border-radius:8px;">${(g||'Sin grupo').replace(/</g,'&lt;')}: <strong>${avg}</strong></span>`;
+        });
+        html+=`</div></div>`;
+      }
+    }
+    html+=`</div>`;
+  });
+  el.innerHTML=html;
+}
+let _materialViewerModuleId=null;
+function openMaterialViewer(id){
+  const m=(DB.materialEstudio||[]).find(x=>x.id===id);
+  if(!m)return;
+  _materialViewerModuleId=id;
+  const wrap=document.getElementById('material-viewer-wrap');
+  const ttl=document.getElementById('material-viewer-ttl');
+  const content=document.getElementById('material-viewer-content');
+  if(!wrap||!ttl||!content)return;
+  wrap.classList.remove('material-lectura','material-zoom-lg');
+  ttl.textContent=m.titulo||'Material';
+  content.innerHTML=m.contenido||'<p style="color:var(--text3);">Sin contenido.</p>';
+  content.classList.remove('material-zoom-lg');
+  const btnLectura=document.getElementById('material-btn-lectura');
+  if(btnLectura)btnLectura.textContent='Modo lectura';
+  wrap.style.display='flex';
+  function onEsc(e){if(e.key==='Escape'){closeMaterialViewer();document.removeEventListener('keydown',onEsc);}}
+  document.addEventListener('keydown',onEsc);
+}
+function closeMaterialViewer(){
+  const wrap=document.getElementById('material-viewer-wrap');
+  if(wrap){wrap.style.display='none';if(wrap.requestFullscreen)document.exitFullscreen().catch(()=>{});}
+  _materialViewerModuleId=null;
+}
+function toggleMaterialFullscreen(){
+  const wrap=document.getElementById('material-viewer-wrap');
+  if(!wrap)return;
+  if(!document.fullscreenElement){wrap.requestFullscreen?wrap.requestFullscreen():wrap.webkitRequestFullScreen?wrap.webkitRequestFullScreen():{};} else {document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen?document.webkitExitFullscreen():{};}
+}
+function toggleMaterialLectura(){
+  const wrap=document.getElementById('material-viewer-wrap');
+  const btn=document.getElementById('material-btn-lectura');
+  if(!wrap||!btn)return;
+  const activar=!wrap.classList.contains('material-lectura');
+  wrap.classList.toggle('material-lectura');
+  btn.textContent=activar?'Salir modo lectura':'Modo lectura';
+  if(activar){
+    try{wrap.requestFullscreen?wrap.requestFullscreen():wrap.webkitRequestFullScreen?wrap.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT):{};}catch(e){}
+  } else {
+    try{if(document.fullscreenElement)document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen?document.webkitExitFullscreen():{};}catch(e){}
+  }
+}
+function toggleMaterialZoom(){
+  const content=document.getElementById('material-viewer-content');
+  if(!content)return;
+  content.classList.toggle('material-zoom-lg');
 }
 
 // ═══════════════════════════════════════════════════════════════

@@ -700,6 +700,7 @@ function ensureDbShape(){
   }
   if(DB.adminNombre===undefined)DB.adminNombre='';
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
+  if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
   addClasesFaltantes();
 }
 
@@ -970,17 +971,17 @@ function showTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
   tabEl.classList.add('active');if(el)el.classList.add('active');
-  if(id==='t-cabs'){renderCabs();renderGrupos();}
+  if(id==='t-dash'){renderCabs();renderGrupos();}
   if(id==='t-clases'){renderClases();renderCalGr('calgr-pg');}
   if(id==='t-cumple')renderCumple();
   if(id==='t-peticiones'){cargarPeticionesAdmin();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
-  if(id==='t-evaluaciones-admin'){if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
   if(id==='t-informes'){renderInformes();}
+  if(id==='t-estudio-admin'){if(typeof renderMaterialAdmin==='function')renderMaterialAdmin();if(typeof renderEvaluacionesAdmin==='function')renderEvaluacionesAdmin();}
 }
 function initAdmin(){
-  buildSel();renderDash();renderCabs();
+  buildSel();renderDash();renderCabs();if(typeof renderGrupos==='function')renderGrupos();
   const wrap=document.getElementById('admin-perfil-wrap');
   const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
   const tieneFoto=!!DB.adminPhoto;
@@ -1010,7 +1011,7 @@ function goToStatCard(tipo){
   else if(tipo==='hermanos')fBadge='Hermano';
   else if(tipo==='amigos')fBadge='Amigo';
   _lastFGrupo=null;_lastFBadge=null;
-  showTab('t-cabs',document.querySelector('.ntab[onclick*="t-cabs"]'));
+  showTab('t-dash',document.querySelector('.ntab[onclick*="t-dash"]'));
 }
 function renderDash(){
   document.getElementById('stats-grid').innerHTML=`
@@ -1664,6 +1665,140 @@ function renderInformes(){
     sel.innerHTML='<option value="">Seleccionar caballero</option>'+opts;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// MATERIAL DE ESTUDIO (admin: CRUD módulos)
+// ═══════════════════════════════════════════════════════════════
+function renderMaterialAdmin(){
+  const list=document.getElementById('material-admin-lista');
+  if(!list)return;
+  const arr=Array.isArray(DB.materialEstudio)?DB.materialEstudio:[];
+  list.innerHTML=arr.length===0?'<p style="color:var(--text3);font-size:13px">Aún no hay módulos. Añade el primero con el botón de abajo.</p>':arr.map((m,i)=>`
+    <div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;color:var(--dark);">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
+        <div style="font-size:11px;color:var(--text3);">Módulo ${i+1}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="openFormMaterial('${m.id}')">Editar</button>
+        <button type="button" class="btn bred" style="font-size:11px;padding:6px 12px;" onclick="confirmDelMaterial('${m.id}')">Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+function insertMaterialTable(){
+  const html='<table class="material-table" style="border-collapse:collapse;width:100%;max-width:100%;margin:10px 0;"><tr><td style="border:1px solid #ccc;padding:8px;"></td><td style="border:1px solid #ccc;padding:8px;"></td></tr><tr><td style="border:1px solid #ccc;padding:8px;"></td><td style="border:1px solid #ccc;padding:8px;"></td></tr></table>';
+  document.execCommand('insertHTML',false,html);
+}
+function insertMaterialImage(){
+  const url=prompt('Pega la URL de la imagen o gráfico:');
+  if(!url||!url.trim())return;
+  const html='<img src="'+url.replace(/"/g,'&quot;')+'" alt="Imagen" style="max-width:100%;height:auto;display:block;margin:10px 0;" loading="lazy">';
+  document.execCommand('insertHTML',false,html);
+}
+function insertMaterialList(style){
+  const ul='<ul style="list-style-type:'+style+';margin:8px 0 8px 20px;"><li></li></ul>';
+  document.execCommand('insertHTML',false,ul);
+}
+function openFormMaterial(id){
+  const isNew=!id;
+  const m=isNew?null:(DB.materialEstudio||[]).find(x=>x.id===id);
+  const titulo=isNew?'':(m?m.titulo||'':'');
+  const contenido=isNew?'':(m?m.contenido||'':'');
+  const body=`
+    <div class="fr" style="margin-bottom:12px;"><label>Título del módulo</label><input type="text" id="material-form-titulo" value="${(titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Introducción a las dispensaciones I"></div>
+    <div class="fr"><label>Contenido</label>
+      <div class="material-toolbar">
+        <span class="material-tb-group">Títulos:</span>
+        <button type="button" onclick="document.execCommand('formatBlock','h1')" title="Título 1">H1</button>
+        <button type="button" onclick="document.execCommand('formatBlock','h2')" title="Título 2">H2</button>
+        <button type="button" onclick="document.execCommand('formatBlock','h3')" title="Título 3">H3</button>
+        <span class="material-tb-group">Texto:</span>
+        <button type="button" onclick="document.execCommand('bold')" title="Negrita">B</button>
+        <button type="button" onclick="document.execCommand('italic')" title="Cursiva">I</button>
+        <button type="button" onclick="document.execCommand('underline')" title="Subrayado">S</button>
+        <button type="button" onclick="document.execCommand('strikeThrough')" title="Tachado">T</button>
+        <button type="button" onclick="var c=document.getElementById('material-fcolor');c.click();" title="Color texto">A▣</button>
+        <input type="color" id="material-fcolor" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" onchange="document.execCommand('foreColor',false,this.value);this.value='#000000';">
+        <button type="button" onclick="var c=document.getElementById('material-bcolor');c.click();" title="Resaltar">▣</button>
+        <input type="color" id="material-bcolor" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" onchange="document.execCommand('hiliteColor',false,this.value);this.value='#ffff00';">
+        <span class="material-tb-group">Listas:</span>
+        <button type="button" onclick="document.execCommand('insertUnorderedList')" title="Viñetas">•</button>
+        <button type="button" onclick="document.execCommand('insertOrderedList')" title="Numerada">1.</button>
+        <button type="button" onclick="insertMaterialList('circle')" title="Viñetas círculo">○</button>
+        <button type="button" onclick="insertMaterialList('square')" title="Viñetas cuadrado">■</button>
+        <span class="material-tb-group">Insertar:</span>
+        <button type="button" onclick="insertMaterialTable()" title="Tabla">Tabla</button>
+        <button type="button" onclick="insertMaterialImage()" title="Imagen">Img</button>
+        <button type="button" onclick="insertMaterialImage()" title="Gráfico (imagen)">Gráfico</button>
+        <span class="material-tb-group">Fuente:</span>
+        <select class="material-tb-select" onchange="document.execCommand('fontName',false,this.value);this.selectedIndex=0;" title="Tipo de letra">
+          <option value="">Fuente</option>
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Montserrat">Montserrat</option>
+          <option value="Lato">Lato</option>
+        </select>
+      </div>
+      <div id="material-form-editor" class="material-editor" contenteditable="true">${contenido}</div>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button type="button" class="btn boutline" onclick="closeModal()">Cancelar</button>
+      <button type="button" class="btn bteal" onclick="saveMaterial('${id||''}')">Guardar</button>
+    </div>`;
+  if(typeof openSheet==='function')openSheet(isNew?'✚':'📖',isNew?'Nuevo módulo':'Editar módulo','',body);
+}
+function saveMaterial(id){
+  const tituloEl=document.getElementById('material-form-titulo');
+  const editorEl=document.getElementById('material-form-editor');
+  if(!tituloEl||!editorEl)return;
+  const titulo=tituloEl.value.trim();
+  const contenido=editorEl.innerHTML;
+  if(!titulo){toast('Escribe un título para el módulo.','err');return;}
+  if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
+  const isNew=!id;
+  if(isNew){
+    const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
+    DB.materialEstudio.push({id:newId,titulo,contenido,orden:DB.materialEstudio.length});
+  } else {
+    const idx=DB.materialEstudio.findIndex(x=>x.id===id);
+    if(idx>=0){DB.materialEstudio[idx].titulo=titulo;DB.materialEstudio[idx].contenido=contenido;}
+  }
+  saveDB().then(()=>{toast('✅ Módulo guardado','ok');closeModal();renderMaterialAdmin();}).catch(()=>toast('Error al guardar','err'));
+}
+function openFormMaterialFromCode(){
+  const ejemploGamma='<iframe src="https://gamma.app/embed/j0n2ufu1l7v2m8b" style="width: 700px; max-width: 100%; height: 450px" allow="fullscreen" title="ESTUDIO DE LAS DISPENSACIONES"></iframe>';
+  const ejemploEsc=ejemploGamma.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const body='<div class="fr" style="margin-bottom:12px;"><label>Título del módulo</label><input type="text" id="material-code-titulo" value="ESTUDIO DE LAS DISPENSACIONES" placeholder="Ej: Estudio de las dispensaciones"></div><div class="fr"><label>Contenido HTML (iframe, imágenes, etc.)</label><button type="button" class="btn boutline" style="font-size:11px;margin-bottom:8px;" onclick="var e=document.getElementById(\'material-code-ejemplo\');if(e)document.getElementById(\'material-code-html\').value=e.getAttribute(\'data-html\')">Usar ejemplo Gamma</button><textarea id="material-code-html" rows="8" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:monospace;font-size:12px;" placeholder="Pega aquí el HTML..."></textarea><span id="material-code-ejemplo" data-html="'+ejemploEsc+'" style="display:none"></span></div><div class="btn-row" style="margin-top:16px;"><button type="button" class="btn boutline" onclick="closeModal()">Cancelar</button><button type="button" class="btn bteal" onclick="saveMaterialFromCode()">Guardar módulo</button></div>';
+  if(typeof openSheet==='function')openSheet('📝','Añadir módulo desde código','Pega HTML (iframe, etc.)',body);
+  setTimeout(function(){ var ta=document.getElementById('material-code-html'); if(ta)ta.value=ejemploGamma; },0);
+}
+function saveMaterialFromCode(){
+  const tituloEl=document.getElementById('material-code-titulo');
+  const htmlEl=document.getElementById('material-code-html');
+  if(!tituloEl||!htmlEl)return;
+  const titulo=tituloEl.value.trim();
+  const contenido=htmlEl.value.trim();
+  if(!titulo){toast('Escribe un título para el módulo.','err');return;}
+  if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
+  const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
+  DB.materialEstudio.push({id:newId,titulo,contenido,orden:DB.materialEstudio.length});
+  saveDB().then(()=>{toast('✅ Módulo guardado','ok');closeModal();renderMaterialAdmin();}).catch(()=>toast('Error al guardar','err'));
+}
+function confirmDelMaterial(id){
+  const m=(DB.materialEstudio||[]).find(x=>x.id===id);
+  if(!m)return;
+  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdelmat"><p>¿Eliminar el módulo <strong>${(m.titulo||'').replace(/</g,'&lt;')}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdelmat').remove()">Cancelar</button><button class="btn bred" onclick="doDelMaterial('${id}')">Eliminar</button></div></div>`;
+}
+function doDelMaterial(id){
+  if(!Array.isArray(DB.materialEstudio))return;
+  DB.materialEstudio=DB.materialEstudio.filter(x=>x.id!==id);
+  document.getElementById('cdelmat').remove();
+  saveDB().then(()=>{toast('Módulo eliminado','ok');renderMaterialAdmin();}).catch(()=>{});
+}
+
 async function generarInformeEconomico(){
   const gastos=DB.finanzasGastos||[];
   const actividades=DB.finanzasActividades||[];

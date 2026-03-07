@@ -322,10 +322,16 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .vine-ico{font-size:16px;color:var(--teal);}
 
 /* ── PERSONAL VIEW TABS ── */
-.pv-nav{background:var(--dark2);display:flex;flex-direction:column;border-bottom:3px solid rgba(0,0,0,0.15);flex-shrink:0;padding:0 8px 0;gap:0;}
+.pv-nav{background:var(--dark2);display:flex;border-bottom:3px solid rgba(0,0,0,0.15);flex-shrink:0;padding:0 8px 0;gap:0;}
+.pv-nav-single-row{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;}
+.pv-nav-single-row .pv-ntab{flex:1;min-width:0;}
 .pv-nav-row{display:flex;flex:1;min-width:0;gap:4px;}
 .pv-nav-row .pv-ntab{flex:1;min-width:0;}
 .pv-nav::-webkit-scrollbar{display:none;}
+.pv-hdr-icon{font-size:16px;}
+.pv-hdr-perfil{background:var(--teal)!important;color:white!important;border-color:rgba(255,255,255,0.3)!important;}
+.pv-hdr-perfil:hover{background:var(--teal2)!important;color:white!important;}
+.pv-hdr-icon.pv-hdr-active,.pv-hdr-perfil.pv-hdr-active{box-shadow:0 0 0 2px rgba(255,255,255,0.8);}
 .pv-ntab{padding:14px 8px;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.5);cursor:pointer;text-align:center;border-radius:10px 10px 0 0;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-tap-highlight-color:transparent;border:1px solid transparent;border-bottom:none;margin-bottom:-1px;}
 .pv-ntab:hover{color:rgba(255,255,255,0.7);}
 .pv-ntab.active{color:var(--teal);background:var(--off);border-color:#e5e7eb;border-bottom:2px solid var(--off);font-weight:800;box-shadow:0 -2px 6px rgba(0,0,0,0.08);}
@@ -351,6 +357,47 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .ntab{font-size:12px;padding:13px 15px;}
 @media(min-width:400px){.pv-ntab{font-size:12px;padding:14px 10px;}}
 @media(min-width:500px){.pv-ntab{font-size:13px;padding:15px 12px;}}
+
+/* Material de estudio: editor toolbar + visor */
+.material-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 0;margin-bottom:8px;border-bottom:1px solid #e5e7eb;}
+.material-toolbar button{min-width:28px;height:28px;padding:0 6px;font-size:11px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;cursor:pointer;}
+.material-toolbar button:hover{background:#f3f4f6;}
+.material-toolbar .material-tb-group{font-size:10px;color:#6b7280;margin-right:2px;}
+.material-toolbar .material-tb-select{height:28px;padding:0 6px;font-size:11px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;max-width:110px;}
+.material-editor{min-height:200px;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.6;outline:none;}
+.material-editor:focus{border-color:var(--teal);}
+.material-editor table{border-collapse:collapse;width:100%;max-width:100%;}
+.material-editor img{max-width:100%;height:auto;}
+.material-viewer-wrap{position:fixed;inset:0;background:#fff;z-index:300;display:flex;flex-direction:column;overflow:hidden;}
+.material-viewer-wrap:not([style*="display: none"]){display:flex;}
+.material-viewer-inner{display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.material-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:var(--dark2);color:#fff;flex-shrink:0;}
+.material-viewer-ttl{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;}
+.material-viewer-actions{display:flex;flex-wrap:wrap;gap:6px;}
+.material-viewer-actions .btn-sm{font-size:11px;padding:6px 10px;}
+.material-viewer-content{padding:18px 16px 40px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;font-size:clamp(15px,4vw,17px);line-height:1.7;word-wrap:break-word;}
+.material-viewer-content.material-zoom-lg{font-size:clamp(17px,4.5vw,20px);}
+.material-viewer-content h1,.material-viewer-content h2,.material-viewer-content h3{font-family:'Montserrat',sans-serif;font-weight:800;margin:1em 0 0.5em;line-height:1.3;}
+.material-viewer-content h1{font-size:1.5em;}
+.material-viewer-content h2{font-size:1.3em;}
+.material-viewer-content h3{font-size:1.15em;}
+.material-viewer-content table{border-collapse:collapse;width:100%;max-width:100%;overflow:auto;display:block;}
+.material-viewer-content table th,.material-viewer-content table td{border:1px solid #d1d5db;padding:10px 12px;text-align:left;}
+.material-viewer-content table th{background:#f3f4f6;font-weight:700;}
+.material-viewer-content img{max-width:100%;height:auto;display:block;margin:12px 0;}
+.material-viewer-content iframe{max-width:100%;display:block;margin:12px 0;border:1px solid #e5e7eb;border-radius:8px;}
+.material-viewer-content ul,.material-viewer-content ol{margin:8px 0 8px 20px;}
+.material-viewer-content ul{list-style-type:disc;}
+.material-viewer-content ul ul{list-style-type:circle;}
+.material-viewer-content ul ul ul{list-style-type:square;}
+.material-viewer-content ol{list-style-type:decimal;}
+.material-viewer-wrap.material-lectura{background:#f4ecd8;}
+.material-viewer-wrap.material-lectura .material-viewer-inner{background:#f4ecd8;}
+.material-viewer-wrap.material-lectura .material-viewer-head{background:#5c4a3a;color:#f4ecd8;}
+.material-viewer-wrap.material-lectura .material-viewer-content{background:#f4ecd8;color:#3d3630;}
+.material-viewer-wrap.material-lectura #material-btn-fullscreen,.material-viewer-wrap.material-lectura #material-btn-zoom{display:none;}
+.material-viewer-wrap.material-lectura .material-viewer-content{max-width:720px;margin:0 auto;}
+
 .cab-nm,.cl-nm,.gr-nm,.gr-rname,.gname{font-size:15px;}
 .cab-mt,.cl-mt,.sh-sub,.gr-rdist{font-size:13px;}
 .chip{font-size:12px;padding:7px 14px;}
@@ -433,13 +480,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
   <div class="app-nav">
     <div class="ntab active" onclick="showTab('t-dash',this)">Dashboard</div>
-    <div class="ntab" onclick="showTab('t-cabs',this)">👥 Caballeros</div>
     <div class="ntab" onclick="showTab('t-clases',this)">📚 Clases</div>
-    <div class="ntab" onclick="showTab('t-evaluaciones-admin',this)">📝 Evaluación</div>
     <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
     <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
     <div class="ntab" onclick="showTab('t-informes',this)">📊 Informes</div>
+    <div class="ntab" onclick="showTab('t-estudio-admin',this)">📚 Estudio</div>
   </div>
 
   <!-- DASHBOARD -->
@@ -466,33 +512,13 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
       <!-- Recent clases -->
       <div class="sec-ttl" style="margin-top:16px">📅 Clases recientes</div>
       <div id="recent-cl"></div>
-    </div>
-  </div>
-
-  <!-- CABALLEROS -->
-  <div id="t-cabs" class="tab">
-    <div class="pg">
-      <!-- MATERIAL DE ESTUDIO -->
-      <a href="https://gamma.app/docs/ESTUDIO-DE-LAS-DISPENSACIONES-j0n2ufu1l7v2m8b" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:block;margin-bottom:14px;">
-        <div style="background:linear-gradient(135deg,#1a1f2e 0%,#242b3d 50%,#1d6b77 100%);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:14px;border:1px solid rgba(58,171,186,0.3);box-shadow:0 4px 20px rgba(58,171,186,0.18);position:relative;overflow:hidden;">
-          <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(245,197,24,0.15) 0%,transparent 70%);pointer-events:none;"></div>
-          <div style="font-size:30px;flex-shrink:0;">📖</div>
-          <div style="flex:1;">
-            <div style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;">Material de Estudio</div>
-            <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#f5c518;letter-spacing:1px;text-transform:uppercase;">Estudio de las Dispensaciones</div>
-          </div>
-          <div style="font-size:18px;color:rgba(58,171,186,0.8);flex-shrink:0;">→</div>
-        </div>
-      </a>
-
-      <div class="sec-ttl">Caballeros <button class="btn bteal" onclick="openFormCab(null)" style="font-size:11px;padding:7px 12px">+ Agregar</button></div>
+      <!-- Caballeros (gestión; sin pestaña propia) -->
+      <div class="sec-ttl" style="margin-top:24px;padding-top:20px;border-top:1px solid #e5e7eb;">👥 Caballeros <button class="btn bteal" onclick="openFormCab(null)" style="font-size:11px;padding:7px 12px">+ Agregar</button></div>
       <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" id="search-inp" placeholder="Buscar caballero..." oninput="onSearch()"></div>
-      <!-- Row 1: group chips -->
       <div class="chips-row" id="chips-grupo"></div>
-      <!-- Row 2: badge chips -->
       <div class="chips-row" id="chips-badge"></div>
       <div id="cabs-list" class="card-list"></div>
-      <div class="sec-ttl" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">Grupos</div>
+      <div class="sec-ttl" style="margin-top:16px;">Grupos</div>
       <div id="grupos-pg" class="pg" style="padding-left:0;padding-right:0;"></div>
     </div>
   </div>
@@ -611,11 +637,18 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     </div>
   </div>
 
-  <!-- EVALUACIONES (cuestionarios interactivos) -->
-  <div id="t-evaluaciones-admin" class="tab">
+  <!-- MATERIAL DE ESTUDIO (admin: módulos + cuestionarios vinculados) -->
+  <div id="t-estudio-admin" class="tab">
     <div class="pg" style="max-width:800px;">
-      <div class="sec-ttl">📝 Evaluación</div>
-      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Crea cuestionarios para que los caballeros respondan. Cada pregunta puede tener varias opciones y una respuesta correcta; al enviar se calcula la puntuación.</p>
+      <div class="sec-ttl">📚 Estudio</div>
+      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Crea módulos por tema. Cada módulo puede tener una evaluación vinculada (clase + cuestionario). Los caballeros ven el material, la evaluación y las calificaciones en la pestaña Estudio.</p>
+      <div id="material-admin-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">
+        <button type="button" class="btn bteal" onclick="openFormMaterial(null)">+ Añadir módulo</button>
+        <button type="button" class="btn boutline" onclick="openFormMaterialFromCode()">📝 Añadir desde código (HTML/iframe)</button>
+      </div>
+      <div class="sec-ttl" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">📝 Cuestionarios (evaluaciones)</div>
+      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Vincula cada cuestionario a una clase y a un material. Aparecerá debajo de ese material para los caballeros.</p>
       <div id="evaluaciones-admin-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
       <button type="button" class="btn bteal" style="margin-top:12px;" onclick="openFormEvaluacion(null)">+ Nuevo cuestionario</button>
     </div>
@@ -656,7 +689,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
         <div class="h-sub">Mi Perfil · Evidencias 2026</div>
       </div>
     </div>
-    <div class="hacts"><button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button><button class="btn-hdr" onclick="openChangeCabPw()" title="Mi perfil">👤</button><button class="btn-hdr" onclick="logout()">Salir</button></div>
+    <div class="hacts">
+      <button class="btn-hdr pv-hdr-icon" id="pv-btn-grupos" onclick="showPvTab('calgr')" title="Grupos">👥</button>
+      <button class="btn-hdr pv-hdr-perfil" onclick="openChangeCabPw()" title="Mi perfil">👤</button>
+      <button class="btn-hdr" id="pv-btn-finanzas" onclick="showPvTab('finanzas')" style="display:none;" title="Finanzas">💰</button>
+      <button class="btn-hdr" onclick="logout()">Salir</button>
+    </div>
   </div>
   <div class="pv-hero">
     <div class="pv-av-wrap">
@@ -670,18 +708,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   </div>
   <input type="file" id="photo-input-pv" accept="image/*" onchange="handlePhoto(event,'pv')">
 
-  <!-- PESTAÑAS NAVEGACIÓN -->
-  <nav class="pv-nav">
-    <div class="pv-nav-row">
-      <div class="pv-ntab active" id="pvtab-perfil-btn" onclick="showPvTab('perfil')">🏠 Inicio</div>
-      <div class="pv-ntab" id="pvtab-eventos-btn" onclick="showPvTab('eventos')">🗓 Eventos</div>
-      <div class="pv-ntab" id="pvtab-evaluaciones-btn" onclick="showPvTab('evaluaciones')">📝 Eval.</div>
-    </div>
-    <div class="pv-nav-row">
-      <div class="pv-ntab" id="pvtab-oracion-btn" onclick="showPvTab('oracion')">🙏 Oración</div>
-      <div class="pv-ntab" id="pvtab-caballeros-btn" onclick="showPvTab('caballeros')">⚔️ Caballeros</div>
-      <div class="pv-ntab" id="pvtab-calgr-btn" onclick="showPvTab('calgr')">📊 Grupos</div>
-    </div>
+  <!-- PESTAÑAS NAVEGACIÓN (una sola fila) -->
+  <nav class="pv-nav pv-nav-single-row">
+    <div class="pv-ntab active" id="pvtab-perfil-btn" onclick="showPvTab('perfil')">🏠 Inicio</div>
+    <div class="pv-ntab" id="pvtab-oracion-btn" onclick="showPvTab('oracion')">🙏 Oración</div>
+    <div class="pv-ntab" id="pvtab-estudio-btn" onclick="showPvTab('estudio')">📚 Estudio</div>
+    <div class="pv-ntab" id="pvtab-eventos-btn" onclick="showPvTab('eventos')">📅 Eventos</div>
   </nav>
 
   <!-- ── TAB: PERFIL ── -->
@@ -821,14 +853,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     </div>
   </div>
 
-  <!-- ── TAB: CABALLEROS (PV) ── -->
-  <div class="pv-tab" id="pvtab-caballeros">
-    <div class="pv-body">
-      <div class="sec-ttl" style="margin-bottom:10px;">👥 Caballeros · por puntuación</div>
-      <div id="pv-caballeros-pg" class="card-list" style="max-height:70vh;overflow-y:auto"></div>
-    </div>
-  </div>
-
   <!-- ── TAB: CALIFICACIÓN POR GRUPOS (PV) ── -->
   <div class="pv-tab" id="pvtab-calgr">
     <div class="pv-body">
@@ -836,10 +860,12 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
     </div>
   </div>
 
-  <!-- ── TAB: EVALUACIONES (cuestionarios) ── -->
-  <div class="pv-tab" id="pvtab-evaluaciones">
+  <!-- ── TAB: MATERIAL DE ESTUDIO (solo lectura) ── -->
+  <div class="pv-tab" id="pvtab-estudio">
     <div class="pv-body">
-      <div id="evaluaciones-pv-lista" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <div class="sec-ttl" style="margin-bottom:10px;">📚 Estudio</div>
+      <p style="color:var(--text3);font-size:12px;margin-bottom:14px;">Toca un tema para leer el material. Debajo verás la evaluación y las calificaciones del estudio.</p>
+      <div id="pv-estudio-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
     </div>
   </div>
 
@@ -947,6 +973,23 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 
 <input type="file" id="photo-input-modal" accept="image/*" onchange="handlePhoto(event,'modal')">
 
+<!-- Visor material de estudio (solo lectura, pantalla completa, modo lectura) -->
+<div id="material-viewer-wrap" class="material-viewer-wrap" style="display:none;">
+  <div class="material-viewer-inner">
+    <div class="material-viewer-head">
+      <span class="material-viewer-ttl" id="material-viewer-ttl"></span>
+      <div class="material-viewer-actions">
+        <button type="button" class="btn btn-sm boutline" id="material-btn-zoom" onclick="toggleMaterialZoom()" title="Ampliar texto">A+</button>
+        <button type="button" class="btn btn-sm boutline" id="material-btn-lectura" onclick="toggleMaterialLectura()" title="Modo lectura">Modo lectura</button>
+        <button type="button" class="btn btn-sm bteal" id="material-btn-fullscreen" onclick="toggleMaterialFullscreen()" title="Pantalla completa">⛶</button>
+        <button type="button" class="btn btn-sm boutline" onclick="closeMaterialViewer()">Cerrar</button>
+      </div>
+    </div>
+    <div class="material-viewer-content" id="material-viewer-content"></div>
+  </div>
+</div>
+
+<!-- Visor Estudio: página por URL dentro de la app -->
 <script src="app.ui.js"></script>
 </body>
 </html>
