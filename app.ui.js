@@ -449,7 +449,7 @@ function mkClaseCardAdmin(cl,esProximo,materialDisponible){
   const realizada=cl.fecha<=today;
   const calificada=claseAvg(cl)>0;
   const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
-  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':(esProximo?'<span class="cl-badge cl-proxima">Próximo</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>');
+  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':(esProximo?'<span class="cl-badge cl-proxima">Próximo</span>':'');
   const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
   const materialLine=materialDisponible?'<div style="font-size:10px;color:#0e7490;font-weight:700;margin-top:4px;">Material disponible</div>':'';
   const avg=claseAvg(cl);

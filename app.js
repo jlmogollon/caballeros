@@ -1844,6 +1844,7 @@ function generarInformeIndividualPorId(id){
   const ptsPosibles=totalClases*10;
   const rank=typeof getRank==='function'?getRank(id):'—';
   const valEstrellas=typeof autoVal==='function'?autoVal(cab):0;
+  const escP=s=>String(s||'').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const rolesTexto=(CHECKS||[]).filter(k=>cab[k]).map(k=>(CLBL||{})[k]||k).join(' / ');
   const starsHtml='<div class="distinciones-pdf"><div class="distinciones-pdf-title">Distinciones</div>'+(rolesTexto?'<div class="distinciones-pdf-roles">'+escP(rolesTexto)+'</div>':'')+'<div class="distinciones-pdf-stars">'+(CHECKS||[]).map((k,i)=>'<div class="distinciones-pdf-item" title="'+(CLBL[k]||k)+'"><div class="distinciones-pdf-starwrap"><span class="star-pdf '+(i<valEstrellas?'lit':'')+'">★</span></div><span class="distinciones-pdf-lbl">'+(CLBL[k]||k)+'</span></div>').join('')+'</div></div>';
   const gastos=(DB.finanzasGastos||[]).filter(x=>x.responsable===id);
@@ -1856,7 +1857,6 @@ function generarInformeIndividualPorId(id){
   const asistStr=(calCab?calCab.asist:0)+'/'+(totalClases||1);
   const barrasInd='<div style="padding:8px 16px 12px"><div style="margin-bottom:8px"><div style="font-size:10px;color:#4b5563;margin-bottom:3px">Asistencia a clases</div><div style="font-size:14px;font-weight:700;color:#1a1f2e">'+asistStr+'</div>'+barRow('',calCab?calCab.asist:0,totalClases||1,pctAsist>=80?'#16a34a':pctAsist>=60?'#f5c518':'#ef4444')+'</div><div style="margin-bottom:6px"><div style="font-size:10px;color:#4b5563;margin-bottom:3px">Puntuación acumulada vs puntuación posible</div>'+barRow('Acumulada / posible',parseFloat(pts)||0,ptsPosibles||1,'#3aabba')+'<div style="font-size:11px;font-weight:600;color:#3aabba;margin-top:3px">'+pts+' pts de '+(ptsPosibles||0)+' posibles</div></div></div>';
   const fotoCab=cab.photo?'<img src="'+cab.photo+'" style="width:48px;height:48px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;border:2px solid rgba(58,171,186,0.3)">':'';
-  const escP=s=>String(s||'').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const fbautVal=cab.bautizado&&cab.fechaBautizado?fmtDate(cab.fechaBautizado):'—';
   const fsellVal=cab.sellado&&cab.fechaSellado?fmtDate(cab.fechaSellado):'—';
   const perfStat=(lbl,val)=>val?('<div class="stat"><div class="stat-lbl">'+escP(lbl)+'</div><div class="stat-val">'+escP(val)+'</div></div>'):'';
