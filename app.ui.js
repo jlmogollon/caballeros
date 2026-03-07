@@ -935,32 +935,36 @@ function showPvTab(tab){
 function renderEstudioPV(){
   const el=document.getElementById('pv-estudio-lista');
   if(!el)return;
-  const arr=(Array.isArray(DB.materialEstudio)?DB.materialEstudio:[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0));
+  const arr=(Array.isArray(DB.materialEstudio)?DB.materialEstudio:[]).slice().sort((a,b)=>(a.orden||0)-(b.orden||0)).filter(m=>!!getMaterialUrl(m));
   const cabId=currentCabId;
   const respuestas=DB.evaluacionRespuestas||[];
   const evaluaciones=DB.evaluaciones||[];
   if(arr.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay material publicado.</p>';return;}
   let html='';
+  const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
+  const grupoCaballero=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
   arr.forEach((m,i)=>{
     html+=`<div style="margin-bottom:20px;">`;
-    html+=`<div onclick="openMaterialViewer('${m.id}')" style="background:white;border:1.5px solid #e9edf2;border-radius:14px;padding:16px 18px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.04);transition:border-color .2s,box-shadow .2s;">
-      <div style="font-weight:800;color:var(--dark);font-size:14px;">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Módulo ${i+1} · Toca para leer</div>
+    html+=`<div onclick="openMaterialViewer('${m.id}')" style="background:linear-gradient(145deg,#f0f9ff 0%,#e0f2fe 50%,#bae6fd 100%);border:1.5px solid rgba(14,165,233,0.35);border-radius:14px;padding:18px 20px;cursor:pointer;box-shadow:0 4px 16px rgba(14,165,233,0.12);transition:border-color .2s,box-shadow .2s;">
+      <div style="font-size:10px;font-weight:800;color:#0369a1;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Material de estudio</div>
+      <div style="font-weight:800;color:var(--dark);font-size:15px;">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
+      <div style="font-size:12px;color:#0c4a6e;margin-top:6px;opacity:0.9;">Toca para abrir la página</div>
     </div>`;
     const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.materialId===m.id);
     if(ev){
       const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
-      const nPreg=(ev.preguntas||[]).length;
       const yaRespondido=!!miResp;
+      const media10=yaRespondido&&miResp&&(miResp.totalPreguntas||0)>0?+(miResp.puntuacion/miResp.totalPreguntas*10).toFixed(2):null;
       const puedeRepetir=!!(miResp&&miResp.puedeRepetir);
       const puedeComenzar=!yaRespondido||puedeRepetir;
       const col=yaRespondido?'#fefce8':'#fef9c3';
       const borde=yaRespondido?'rgba(212,168,0,0.5)':'rgba(245,197,24,0.5)';
       const icono=yaRespondido?'✅':'📝';
+      const subtituloEval=yaRespondido?('Cuestionario completado'+(media10!=null?' · '+media10+'/10':'')):'Cuestionario de evaluación';
       html+=`<div onclick="${puedeComenzar?'iniciarCuestionarioPV(\''+ev.id+'\')':yaRespondido?'verResultadoEvaluacionPV(\''+ev.id+'\')':''}" style="margin-top:10px;background:linear-gradient(145deg,${col} 0%,${yaRespondido?'#fef08a':'#fef3c7'} 100%);border:1.5px solid ${borde};border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;cursor:pointer;box-shadow:0 4px 20px rgba(245,197,24,0.15);">
         <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
           <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,197,24,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;">${icono}</div>
-          <div><div style="font-weight:800;font-size:13px;">${(ev.titulo||'Cuestionario').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:#4b5563;">${nPreg} preguntas${yaRespondido?' · Completado':''}</div></div>
+          <div><div style="font-weight:800;font-size:13px;">${(ev.titulo||'Cuestionario').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:#4b5563;">${subtituloEval}</div></div>
         </div>
         <div style="display:flex;gap:8px;">${yaRespondido?`<button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="event.stopPropagation();verResultadoEvaluacionPV('${ev.id}')">Ver resultado</button>`:''}${puedeComenzar?`<button type="button" class="btn bteal" style="font-size:11px;padding:6px 14px;" onclick="event.stopPropagation();iniciarCuestionarioPV('${ev.id}')">${yaRespondido?'Repetir':'Comenzar'}</button>`:''}</div>
       </div>`;
@@ -976,75 +980,57 @@ function renderEstudioPV(){
           grupos[g].s+=t;grupos[g].n++;
         });
         const claseLbl=(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' — '+(cl.tema||'Clase').substring(0,40);
+        const miCal=typeof classScoreForCab==='function'?classScoreForCab(cl,cabId):null;
+        const miCalTxt=miCal!=null?(typeof fmtScore==='function'?fmtScore(miCal):miCal):'—';
         html+=`<div style="margin-top:10px;padding:14px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;">
           <div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:10px;">📊 Calificación de este estudio</div>
           <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">${claseLbl.replace(/</g,'&lt;')}</div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">`;
-        caballerosConCal.slice(0,15).forEach(c=>{
-          const q=cl.cal[c.id];
-          const t=typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):(typeof rowTotal==='function'?rowTotal(q):0);
-          const nom=typeof nombreCorto==='function'?nombreCorto(c):(c.nombre||c.id);
-          html+=`<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;"><span>${(nom||'').replace(/</g,'&lt;')}</span><strong style="color:var(--teal2);">${t}</strong></div>`;
-        });
-        if(caballerosConCal.length>15)html+=`<div style="font-size:11px;color:var(--text3);">y ${caballerosConCal.length-15} más</div>`;
-        html+=`</div><div style="font-size:11px;font-weight:700;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;">Por grupo:</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;">`;
-        Object.keys(grupos).sort().forEach(g=>{
+          <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:12px;padding:8px 10px;background:white;border-radius:8px;border:1px solid #e2e8f0;">Tu calificación: <span style="color:var(--teal2);">${miCalTxt}</span></div>
+          <div style="font-family:Montserrat,sans-serif;font-size:12px;font-weight:800;color:#1a1f2e;margin-bottom:8px;">Comparación por grupo</div>`;
+        const gNames=Object.keys(grupos).sort();
+        const maxAvg=Math.max(...gNames.map(g=>grupos[g].n?grupos[g].s/grupos[g].n:0),0.01);
+        gNames.forEach(g=>{
           const avg=grupos[g].n?+(grupos[g].s/grupos[g].n).toFixed(1):'—';
-          html+=`<span style="font-size:11px;padding:4px 10px;background:white;border:1px solid #e2e8f0;border-radius:8px;">${(g||'Sin grupo').replace(/</g,'&lt;')}: <strong>${avg}</strong></span>`;
+          const avgNum=grupos[g].n?grupos[g].s/grupos[g].n:0;
+          const pct=maxAvg>0?Math.min(100,(avgNum/10)*100):0;
+          const esMiGrupo=(g||'Sin grupo')===grupoCaballero;
+          html+=`<div class="bw" style="margin-bottom:8px;"><div class="bl" style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;font-weight:600;"><span style="color:var(--text2);">${(g||'Sin grupo').replace(/</g,'&lt;')}${esMiGrupo?' <span style="color:var(--teal2);font-size:10px;">(tu grupo)</span>':''}</span><span style="color:var(--teal2);">${avg}/10</span></div><div class="bt" style="height:8px;background:#f0f2f5;border-radius:4px;overflow:hidden;${esMiGrupo?'border:2px solid var(--teal2);box-sizing:border-box;':''}"><div class="bf" style="width:${pct}%;height:100%;background:${esMiGrupo?'linear-gradient(90deg,var(--teal),var(--teal2))':'rgba(58,171,186,0.4)'};border-radius:4px;transition:width .6s ease;"></div></div></div>`;
         });
-        html+=`</div></div>`;
+        html+=`</div>`;
       }
     }
     html+=`</div>`;
   });
   el.innerHTML=html;
 }
-let _materialViewerModuleId=null;
+function getMaterialUrl(m){
+  if(m.url)return m.url.startsWith('http')?m.url:'https://'+m.url;
+  if(m.contenido){
+    const match=String(m.contenido).match(/src\s*=\s*["']([^"']+)["']/i);
+    if(match)return match[1].trim().startsWith('http')?match[1].trim():'https://'+match[1].trim();
+  }
+  return '';
+}
 function openMaterialViewer(id){
   const m=(DB.materialEstudio||[]).find(x=>x.id===id);
   if(!m)return;
-  _materialViewerModuleId=id;
+  const url=getMaterialUrl(m);
+  if(!url){toast('Este material no tiene URL.','err');return;}
   const wrap=document.getElementById('material-viewer-wrap');
   const ttl=document.getElementById('material-viewer-ttl');
-  const content=document.getElementById('material-viewer-content');
-  if(!wrap||!ttl||!content)return;
-  wrap.classList.remove('material-lectura','material-zoom-lg');
+  const iframe=document.getElementById('material-viewer-iframe');
+  if(!wrap||!ttl||!iframe)return;
   ttl.textContent=m.titulo||'Material';
-  content.innerHTML=m.contenido||'<p style="color:var(--text3);">Sin contenido.</p>';
-  content.classList.remove('material-zoom-lg');
-  const btnLectura=document.getElementById('material-btn-lectura');
-  if(btnLectura)btnLectura.textContent='Modo lectura';
+  iframe.src=url;
   wrap.style.display='flex';
   function onEsc(e){if(e.key==='Escape'){closeMaterialViewer();document.removeEventListener('keydown',onEsc);}}
   document.addEventListener('keydown',onEsc);
 }
 function closeMaterialViewer(){
   const wrap=document.getElementById('material-viewer-wrap');
-  if(wrap){wrap.style.display='none';if(wrap.requestFullscreen)document.exitFullscreen().catch(()=>{});}
-  _materialViewerModuleId=null;
-}
-function toggleMaterialFullscreen(){
-  const wrap=document.getElementById('material-viewer-wrap');
-  if(!wrap)return;
-  if(!document.fullscreenElement){wrap.requestFullscreen?wrap.requestFullscreen():wrap.webkitRequestFullScreen?wrap.webkitRequestFullScreen():{};} else {document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen?document.webkitExitFullscreen():{};}
-}
-function toggleMaterialLectura(){
-  const wrap=document.getElementById('material-viewer-wrap');
-  const btn=document.getElementById('material-btn-lectura');
-  if(!wrap||!btn)return;
-  const activar=!wrap.classList.contains('material-lectura');
-  wrap.classList.toggle('material-lectura');
-  btn.textContent=activar?'Salir modo lectura':'Modo lectura';
-  if(activar){
-    try{wrap.requestFullscreen?wrap.requestFullscreen():wrap.webkitRequestFullScreen?wrap.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT):{};}catch(e){}
-  } else {
-    try{if(document.fullscreenElement)document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen?document.webkitExitFullscreen():{};}catch(e){}
-  }
-}
-function toggleMaterialZoom(){
-  const content=document.getElementById('material-viewer-content');
-  if(!content)return;
-  content.classList.toggle('material-zoom-lg');
+  const iframe=document.getElementById('material-viewer-iframe');
+  if(wrap)wrap.style.display='none';
+  if(iframe)iframe.src='about:blank';
 }
 
 // ═══════════════════════════════════════════════════════════════

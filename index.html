@@ -388,15 +388,6 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 @media(min-width:500px){.pv-ntab{font-size:12px;padding:12px 10px;}}
 
 /* Material de estudio: editor toolbar + visor */
-.material-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 0;margin-bottom:8px;border-bottom:1px solid #e5e7eb;}
-.material-toolbar button{min-width:28px;height:28px;padding:0 6px;font-size:11px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;cursor:pointer;}
-.material-toolbar button:hover{background:#f3f4f6;}
-.material-toolbar .material-tb-group{font-size:10px;color:#6b7280;margin-right:2px;}
-.material-toolbar .material-tb-select{height:28px;padding:0 6px;font-size:11px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;max-width:110px;}
-.material-editor{min-height:200px;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.6;outline:none;}
-.material-editor:focus{border-color:var(--teal);}
-.material-editor table{border-collapse:collapse;width:100%;max-width:100%;}
-.material-editor img{max-width:100%;height:auto;}
 .material-viewer-wrap{position:fixed;inset:0;background:#fff;z-index:300;display:flex;flex-direction:column;overflow:hidden;}
 .material-viewer-wrap:not([style*="display: none"]){display:flex;}
 .material-viewer-inner{display:flex;flex-direction:column;height:100%;overflow:hidden;}
@@ -404,28 +395,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .material-viewer-ttl{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;}
 .material-viewer-actions{display:flex;flex-wrap:wrap;gap:6px;}
 .material-viewer-actions .btn-sm{font-size:11px;padding:6px 10px;}
-.material-viewer-content{padding:18px 16px 40px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;font-size:clamp(15px,4vw,17px);line-height:1.7;word-wrap:break-word;}
-.material-viewer-content.material-zoom-lg{font-size:clamp(17px,4.5vw,20px);}
-.material-viewer-content h1,.material-viewer-content h2,.material-viewer-content h3{font-family:'Montserrat',sans-serif;font-weight:800;margin:1em 0 0.5em;line-height:1.3;}
-.material-viewer-content h1{font-size:1.5em;}
-.material-viewer-content h2{font-size:1.3em;}
-.material-viewer-content h3{font-size:1.15em;}
-.material-viewer-content table{border-collapse:collapse;width:100%;max-width:100%;overflow:auto;display:block;}
-.material-viewer-content table th,.material-viewer-content table td{border:1px solid #d1d5db;padding:10px 12px;text-align:left;}
-.material-viewer-content table th{background:#f3f4f6;font-weight:700;}
-.material-viewer-content img{max-width:100%;height:auto;display:block;margin:12px 0;}
-.material-viewer-content iframe{max-width:100%;display:block;margin:12px 0;border:1px solid #e5e7eb;border-radius:8px;}
-.material-viewer-content ul,.material-viewer-content ol{margin:8px 0 8px 20px;}
-.material-viewer-content ul{list-style-type:disc;}
-.material-viewer-content ul ul{list-style-type:circle;}
-.material-viewer-content ul ul ul{list-style-type:square;}
-.material-viewer-content ol{list-style-type:decimal;}
-.material-viewer-wrap.material-lectura{background:#f4ecd8;}
-.material-viewer-wrap.material-lectura .material-viewer-inner{background:#f4ecd8;}
-.material-viewer-wrap.material-lectura .material-viewer-head{background:#5c4a3a;color:#f4ecd8;}
-.material-viewer-wrap.material-lectura .material-viewer-content{background:#f4ecd8;color:#3d3630;}
-.material-viewer-wrap.material-lectura #material-btn-fullscreen,.material-viewer-wrap.material-lectura #material-btn-zoom{display:none;}
-.material-viewer-wrap.material-lectura .material-viewer-content{max-width:720px;margin:0 auto;}
+.material-viewer-iframe{flex:1;width:100%;border:none;min-height:0;display:block;}
 
 .cab-nm,.cl-nm,.gr-nm,.gr-rname,.gname{font-size:15px;}
 .cab-mt,.cl-mt,.sh-sub,.gr-rdist{font-size:13px;}
@@ -670,12 +640,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   <div id="t-estudio-admin" class="tab">
     <div class="pg" style="max-width:800px;">
       <div class="sec-ttl">📚 Estudio</div>
-      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Crea módulos por tema. Cada módulo puede tener una evaluación vinculada (clase + cuestionario). Los caballeros ven el material, la evaluación y las calificaciones en la pestaña Estudio.</p>
+      <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Agrega material insertando la URL (ej. enlace de Gamma). La página se verá tal cual dentro de la app. Cada material puede tener una evaluación vinculada.</p>
       <div id="material-admin-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">
-        <button type="button" class="btn bteal" onclick="openFormMaterial(null)">+ Añadir módulo</button>
-        <button type="button" class="btn boutline" onclick="openFormMaterialFromCode()">📝 Añadir desde código (HTML/iframe)</button>
-      </div>
+      <button type="button" class="btn bteal" style="margin-top:12px;" onclick="openFormMaterialUrl(-1)">+ Insertar URL</button>
       <div class="sec-ttl" style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;">📝 Cuestionarios (evaluaciones)</div>
       <p style="color:var(--text3);font-size:13px;margin-bottom:16px;">Vincula cada cuestionario a una clase y a un material. Aparecerá debajo de ese material para los caballeros.</p>
       <div id="evaluaciones-admin-lista" style="display:flex;flex-direction:column;gap:10px;"></div>
@@ -1004,23 +971,16 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 
 <input type="file" id="photo-input-modal" accept="image/*" onchange="handlePhoto(event,'modal')">
 
-<!-- Visor material de estudio (solo lectura, pantalla completa, modo lectura) -->
+<!-- Visor material de estudio: iframe con la URL (p. ej. Gamma) tal cual -->
 <div id="material-viewer-wrap" class="material-viewer-wrap" style="display:none;">
   <div class="material-viewer-inner">
     <div class="material-viewer-head">
       <span class="material-viewer-ttl" id="material-viewer-ttl"></span>
-      <div class="material-viewer-actions">
-        <button type="button" class="btn btn-sm boutline" id="material-btn-zoom" onclick="toggleMaterialZoom()" title="Ampliar texto">A+</button>
-        <button type="button" class="btn btn-sm boutline" id="material-btn-lectura" onclick="toggleMaterialLectura()" title="Modo lectura">Modo lectura</button>
-        <button type="button" class="btn btn-sm bteal" id="material-btn-fullscreen" onclick="toggleMaterialFullscreen()" title="Pantalla completa">⛶</button>
-        <button type="button" class="btn btn-sm boutline" onclick="closeMaterialViewer()">Cerrar</button>
-      </div>
+      <button type="button" class="btn btn-sm boutline" onclick="closeMaterialViewer()">Cerrar</button>
     </div>
-    <div class="material-viewer-content" id="material-viewer-content"></div>
+    <iframe id="material-viewer-iframe" class="material-viewer-iframe" title="Material de estudio"></iframe>
   </div>
 </div>
-
-<!-- Visor Estudio: página por URL dentro de la app -->
 <script src="app.ui.js"></script>
 </body>
 </html>

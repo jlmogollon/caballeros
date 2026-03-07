@@ -912,9 +912,10 @@ function buildSel(){
   if(!sel)return;
   sel.innerHTML='<option value="">— Seleccionar —</option>';
   if(!DB||!DB.caballeros)return;
-  [...DB.caballeros].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'')).forEach(c=>{
+  const nom = c=>(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre||'');
+  [...DB.caballeros].sort((a,b)=>nom(a).localeCompare(nom(b))).forEach(c=>{
     const o=document.createElement('option');o.value=c.id;
-    o.textContent=(c.nombreMostrar&&String(c.nombreMostrar).trim())?c.nombreMostrar.trim():c.nombre||'';
+    o.textContent=nom(c);
     sel.appendChild(o);
   });
 }
@@ -1345,12 +1346,13 @@ function renderFinanzas(){
   });
   const pvPrefix=['pv-fin-fecha-g','pv-fin-fecha-a','pv-fin-fecha-d','pv-fin-fecha-v'];
   pvPrefix.forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoy;});
-  const opts=(DB.caballeros||[]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  const nombreMostrarCab=c=>(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre||'');
+  const cabOpts=[...(DB.caballeros||[])].sort((a,b)=>nombreMostrarCab(a).localeCompare(nombreMostrarCab(b))).map(c=>`<option value="${c.id}">${nombreMostrarCab(c)}</option>`).join('');
   ['fin-resp-g','fin-resp-a','fin-resp-d','fin-resp-v'].forEach(id=>{
-    const sel=document.getElementById(id);if(sel){sel.innerHTML='<option value="">Seleccionar</option>'+opts;}
+    const sel=document.getElementById(id);if(sel){sel.innerHTML='<option value="">Seleccionar</option>'+cabOpts;}
   });
   ['pv-fin-resp-g','pv-fin-resp-a','pv-fin-resp-d','pv-fin-resp-v'].forEach(id=>{
-    const sel=document.getElementById(id);if(sel){sel.innerHTML='<option value="">Seleccionar</option>'+opts;}
+    const sel=document.getElementById(id);if(sel){sel.innerHTML='<option value="">Seleccionar</option>'+cabOpts;}
   });
   renderListaGastos();renderListaActividades();renderListaDonativos();renderListaVotos();
 }
@@ -1661,138 +1663,75 @@ function barRow(label,value,max,color){const v=parseFloat(value)||0;const m=pars
 function renderInformes(){
   const sel=document.getElementById('informe-cab-sel');
   if(sel){
-    const opts=(DB.caballeros||[]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+    const nombreMostrar=c=>(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre||'');
+    const ordenados=[...(DB.caballeros||[])].sort((a,b)=>nombreMostrar(a).localeCompare(nombreMostrar(b)));
+    const opts=ordenados.map(c=>`<option value="${c.id}">${nombreMostrar(c)}</option>`).join('');
     sel.innerHTML='<option value="">Seleccionar caballero</option>'+opts;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MATERIAL DE ESTUDIO (admin: CRUD módulos)
+// MATERIAL DE ESTUDIO (admin: solo URL, p. ej. Gamma)
 // ═══════════════════════════════════════════════════════════════
+function extractUrlFromMaterialInput(input){
+  const s=(input||'').trim();
+  if(!s)return '';
+  if(s.startsWith('http://')||s.startsWith('https://'))return s;
+  const m=s.match(/src\s*=\s*["']([^"']+)["']/i)||s.match(/src\s*=\s*([^\s>]+)/i);
+  return m?(m[1]||'').trim():s;
+}
 function renderMaterialAdmin(){
   const list=document.getElementById('material-admin-lista');
   if(!list)return;
   const arr=Array.isArray(DB.materialEstudio)?DB.materialEstudio:[];
-  list.innerHTML=arr.length===0?'<p style="color:var(--text3);font-size:13px">Aún no hay módulos. Añade el primero con el botón de abajo.</p>':arr.map((m,i)=>`
+  list.innerHTML=arr.length===0?'<p style="color:var(--text3);font-size:13px">Aún no hay material. Inserta la primera URL con el botón de abajo.</p>':arr.map((m,i)=>`
     <div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;color:var(--dark);">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
-        <div style="font-size:11px;color:var(--text3);">Módulo ${i+1}</div>
+        <div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(m.url||m.contenido||'').replace(/</g,'&lt;').substring(0,60)}${(m.url||m.contenido||'').length>60?'…':''}</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="openFormMaterial('${m.id}')">Editar</button>
+        <button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px;" onclick="openFormMaterialUrl(${i})">Editar</button>
         <button type="button" class="btn bred" style="font-size:11px;padding:6px 12px;" onclick="confirmDelMaterial('${m.id}')">Eliminar</button>
       </div>
     </div>`).join('');
 }
-function insertMaterialTable(){
-  const html='<table class="material-table" style="border-collapse:collapse;width:100%;max-width:100%;margin:10px 0;"><tr><td style="border:1px solid #ccc;padding:8px;"></td><td style="border:1px solid #ccc;padding:8px;"></td></tr><tr><td style="border:1px solid #ccc;padding:8px;"></td><td style="border:1px solid #ccc;padding:8px;"></td></tr></table>';
-  document.execCommand('insertHTML',false,html);
+function openFormMaterialUrl(editIndex){
+  const list=Array.isArray(DB.materialEstudio)?DB.materialEstudio:[];
+  const isEdit=typeof editIndex==='number'&&editIndex>=0&&editIndex<list.length;
+  const item=isEdit?list[editIndex]:null;
+  let urlVal=item?(item.url||''):'';
+  if(!urlVal&&item&&item.contenido)urlVal=extractUrlFromMaterialInput(item.contenido)||item.contenido;
+  const tituloVal=item?(item.titulo||''):'';
+  const body='<div class="fr" style="margin-bottom:12px;"><label>URL</label><textarea id="material-url-inp" rows="3" placeholder="Pega la URL (ej. https://gamma.app/embed/...) o el código del iframe" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">'+String(urlVal).replace(/</g,'&lt;').replace(/"/g,'&quot;')+'</textarea></div><div class="fr" style="margin-bottom:12px;"><label>Título (opcional)</label><input type="text" id="material-titulo-inp" value="'+String(tituloVal).replace(/"/g,'&quot;')+'" placeholder="Ej: Estudio de las dispensaciones" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;"></div><div class="btn-row"><button type="button" class="btn boutline" onclick="closeModal()">Cancelar</button><button type="button" class="btn bteal" onclick="saveMaterialUrl('+editIndex+')">'+(isEdit?'Guardar':'Insertar')+'</button></div>';
+  if(typeof openSheet==='function')openSheet('📚',isEdit?'Editar material':'Insertar URL','La página se verá tal cual (ej. Gamma) dentro de la app.',body);
 }
-function insertMaterialImage(){
-  const url=prompt('Pega la URL de la imagen o gráfico:');
-  if(!url||!url.trim())return;
-  const html='<img src="'+url.replace(/"/g,'&quot;')+'" alt="Imagen" style="max-width:100%;height:auto;display:block;margin:10px 0;" loading="lazy">';
-  document.execCommand('insertHTML',false,html);
-}
-function insertMaterialList(style){
-  const ul='<ul style="list-style-type:'+style+';margin:8px 0 8px 20px;"><li></li></ul>';
-  document.execCommand('insertHTML',false,ul);
-}
-function openFormMaterial(id){
-  const isNew=!id;
-  const m=isNew?null:(DB.materialEstudio||[]).find(x=>x.id===id);
-  const titulo=isNew?'':(m?m.titulo||'':'');
-  const contenido=isNew?'':(m?m.contenido||'':'');
-  const body=`
-    <div class="fr" style="margin-bottom:12px;"><label>Título del módulo</label><input type="text" id="material-form-titulo" value="${(titulo||'').replace(/"/g,'&quot;')}" placeholder="Ej: Introducción a las dispensaciones I"></div>
-    <div class="fr"><label>Contenido</label>
-      <div class="material-toolbar">
-        <span class="material-tb-group">Títulos:</span>
-        <button type="button" onclick="document.execCommand('formatBlock','h1')" title="Título 1">H1</button>
-        <button type="button" onclick="document.execCommand('formatBlock','h2')" title="Título 2">H2</button>
-        <button type="button" onclick="document.execCommand('formatBlock','h3')" title="Título 3">H3</button>
-        <span class="material-tb-group">Texto:</span>
-        <button type="button" onclick="document.execCommand('bold')" title="Negrita">B</button>
-        <button type="button" onclick="document.execCommand('italic')" title="Cursiva">I</button>
-        <button type="button" onclick="document.execCommand('underline')" title="Subrayado">S</button>
-        <button type="button" onclick="document.execCommand('strikeThrough')" title="Tachado">T</button>
-        <button type="button" onclick="var c=document.getElementById('material-fcolor');c.click();" title="Color texto">A▣</button>
-        <input type="color" id="material-fcolor" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" onchange="document.execCommand('foreColor',false,this.value);this.value='#000000';">
-        <button type="button" onclick="var c=document.getElementById('material-bcolor');c.click();" title="Resaltar">▣</button>
-        <input type="color" id="material-bcolor" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" onchange="document.execCommand('hiliteColor',false,this.value);this.value='#ffff00';">
-        <span class="material-tb-group">Listas:</span>
-        <button type="button" onclick="document.execCommand('insertUnorderedList')" title="Viñetas">•</button>
-        <button type="button" onclick="document.execCommand('insertOrderedList')" title="Numerada">1.</button>
-        <button type="button" onclick="insertMaterialList('circle')" title="Viñetas círculo">○</button>
-        <button type="button" onclick="insertMaterialList('square')" title="Viñetas cuadrado">■</button>
-        <span class="material-tb-group">Insertar:</span>
-        <button type="button" onclick="insertMaterialTable()" title="Tabla">Tabla</button>
-        <button type="button" onclick="insertMaterialImage()" title="Imagen">Img</button>
-        <button type="button" onclick="insertMaterialImage()" title="Gráfico (imagen)">Gráfico</button>
-        <span class="material-tb-group">Fuente:</span>
-        <select class="material-tb-select" onchange="document.execCommand('fontName',false,this.value);this.selectedIndex=0;" title="Tipo de letra">
-          <option value="">Fuente</option>
-          <option value="Arial">Arial</option>
-          <option value="Georgia">Georgia</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Verdana">Verdana</option>
-          <option value="Courier New">Courier New</option>
-          <option value="Montserrat">Montserrat</option>
-          <option value="Lato">Lato</option>
-        </select>
-      </div>
-      <div id="material-form-editor" class="material-editor" contenteditable="true">${contenido}</div>
-    </div>
-    <div class="btn-row" style="margin-top:16px;">
-      <button type="button" class="btn boutline" onclick="closeModal()">Cancelar</button>
-      <button type="button" class="btn bteal" onclick="saveMaterial('${id||''}')">Guardar</button>
-    </div>`;
-  if(typeof openSheet==='function')openSheet(isNew?'✚':'📖',isNew?'Nuevo módulo':'Editar módulo','',body);
-}
-function saveMaterial(id){
-  const tituloEl=document.getElementById('material-form-titulo');
-  const editorEl=document.getElementById('material-form-editor');
-  if(!tituloEl||!editorEl)return;
-  const titulo=tituloEl.value.trim();
-  const contenido=editorEl.innerHTML;
-  if(!titulo){toast('Escribe un título para el módulo.','err');return;}
+function saveMaterialUrl(editIndex){
+  const urlEl=document.getElementById('material-url-inp');
+  const tituloEl=document.getElementById('material-titulo-inp');
+  if(!urlEl)return;
+  let url=extractUrlFromMaterialInput(urlEl.value);
+  if(!url){toast('Escribe o pega la URL (o el iframe).','err');return;}
+  if(!url.startsWith('http://')&&!url.startsWith('https://'))url='https://'+url;
+  const titulo=(tituloEl&&tituloEl.value?tituloEl.value.trim():'')||url.replace(/^https?:\/\//,'').split('/')[0]||'Material';
   if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
-  const isNew=!id;
-  if(isNew){
-    const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
-    DB.materialEstudio.push({id:newId,titulo,contenido,orden:DB.materialEstudio.length});
+  const list=DB.materialEstudio;
+  const isEdit=typeof editIndex==='number'&&editIndex>=0&&editIndex<list.length;
+  if(isEdit){
+    const m=list[editIndex];
+    if(m){m.url=url;m.titulo=titulo;if(m.contenido!==undefined)delete m.contenido;}
   } else {
-    const idx=DB.materialEstudio.findIndex(x=>x.id===id);
-    if(idx>=0){DB.materialEstudio[idx].titulo=titulo;DB.materialEstudio[idx].contenido=contenido;}
+    const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
+    DB.materialEstudio.push({id:newId,titulo,url,orden:DB.materialEstudio.length});
   }
-  saveDB().then(()=>{toast('✅ Módulo guardado','ok');closeModal();renderMaterialAdmin();}).catch(()=>toast('Error al guardar','err'));
-}
-function openFormMaterialFromCode(){
-  const ejemploGamma='<iframe src="https://gamma.app/embed/j0n2ufu1l7v2m8b" style="width: 700px; max-width: 100%; height: 450px" allow="fullscreen" title="ESTUDIO DE LAS DISPENSACIONES"></iframe>';
-  const ejemploEsc=ejemploGamma.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-  const body='<div class="fr" style="margin-bottom:12px;"><label>Título del módulo</label><input type="text" id="material-code-titulo" value="ESTUDIO DE LAS DISPENSACIONES" placeholder="Ej: Estudio de las dispensaciones"></div><div class="fr"><label>Contenido HTML (iframe, imágenes, etc.)</label><button type="button" class="btn boutline" style="font-size:11px;margin-bottom:8px;" onclick="var e=document.getElementById(\'material-code-ejemplo\');if(e)document.getElementById(\'material-code-html\').value=e.getAttribute(\'data-html\')">Usar ejemplo Gamma</button><textarea id="material-code-html" rows="8" style="width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:monospace;font-size:12px;" placeholder="Pega aquí el HTML..."></textarea><span id="material-code-ejemplo" data-html="'+ejemploEsc+'" style="display:none"></span></div><div class="btn-row" style="margin-top:16px;"><button type="button" class="btn boutline" onclick="closeModal()">Cancelar</button><button type="button" class="btn bteal" onclick="saveMaterialFromCode()">Guardar módulo</button></div>';
-  if(typeof openSheet==='function')openSheet('📝','Añadir módulo desde código','Pega HTML (iframe, etc.)',body);
-  setTimeout(function(){ var ta=document.getElementById('material-code-html'); if(ta)ta.value=ejemploGamma; },0);
-}
-function saveMaterialFromCode(){
-  const tituloEl=document.getElementById('material-code-titulo');
-  const htmlEl=document.getElementById('material-code-html');
-  if(!tituloEl||!htmlEl)return;
-  const titulo=tituloEl.value.trim();
-  const contenido=htmlEl.value.trim();
-  if(!titulo){toast('Escribe un título para el módulo.','err');return;}
-  if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
-  const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
-  DB.materialEstudio.push({id:newId,titulo,contenido,orden:DB.materialEstudio.length});
-  saveDB().then(()=>{toast('✅ Módulo guardado','ok');closeModal();renderMaterialAdmin();}).catch(()=>toast('Error al guardar','err'));
+  saveDB().then(()=>{toast(isEdit?'✅ Actualizado':'✅ URL agregada','ok');closeModal();renderMaterialAdmin();if(typeof renderEstudioPV==='function')renderEstudioPV();}).catch(()=>toast('Error al guardar','err'));
 }
 function confirmDelMaterial(id){
   const m=(DB.materialEstudio||[]).find(x=>x.id===id);
   if(!m)return;
   const tituloEsc=(m.titulo||'Sin título').replace(/</g,'&lt;');
   if(typeof openSheet==='function')openSheet('🗑','Eliminar módulo','',`
-    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Eliminar el módulo <strong>${tituloEsc}</strong>? El contenido se perderá.</p>
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px;">¿Eliminar el material <strong>${tituloEsc}</strong>? Se quitará de la lista.</p>
     <div class="btn-row">
       <button class="btn boutline" onclick="closeModal()">Cancelar</button>
       <button class="btn bred" onclick="closeModal();doDelMaterial('${id}')">Eliminar</button>
