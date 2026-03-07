@@ -916,15 +916,21 @@ function showPvTab(tab){
   if(tab==='estudio') renderEstudioPV();
 }
 
-// Tarjeta de clase/estudio para vista personal: mismo aspecto que Admin (bloque fecha, tema, grupo·asistentes, badges, nota). La nota mostrada es la del grupo del caballero.
-function mkClaseCardPV(cl,cabId){
+// Tarjeta de clase/estudio para vista personal. esProximo=true solo para el siguiente estudio (próximo por fecha). materialDisponible=si tiene material de estudio con URL.
+function mkClaseCardPV(cl,cabId,esProximo,materialDisponible){
   const{d,m}=typeof fmtBox==='function'?fmtBox(cl.fecha):{d:'',m:''};
   const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
   const today=new Date().toISOString().split('T')[0];
   const realizada=cl.fecha<=today;
   const calificada=typeof claseAvg==='function'&&claseAvg(cl)>0;
-  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':'<span class="cl-badge cl-proxima">Próxima</span>';
+  let estadoRealizada='';
+  if(realizada){
+    estadoRealizada='<span class="cl-badge cl-realizada">✓ Realizada</span>';
+  }else{
+    if(esProximo)estadoRealizada='<span class="cl-badge cl-proxima">Próximo</span>';
+  }
   const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
+  const materialTxt=esProximo&&materialDisponible?' <span style="font-size:10px;color:#0e7490;font-weight:700;">· Material disponible</span>':'';
   let avgGrupo=0;
   const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
   const grupoCab=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
@@ -937,23 +943,26 @@ function mkClaseCardPV(cl,cabId){
   }
   const sc=avgGrupo>=7?'#15803d':avgGrupo>=4?'var(--gold2)':'var(--text3)';
   const claseId=cl.id||cl.fecha;
-  return`<div class="cl-card" onclick="openEstudioDetallePV('${claseId}')">
-    <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
+  const cardStyle=esProximo?'border:2px solid #f59e0b;box-shadow:0 0 0 1px #fbbf24,0 4px 20px rgba(245,158,11,0.25);background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);':'';
+  return`<div class="cl-card" onclick="openEstudioDetallePV('${claseId}')" style="${cardStyle}">
+    <div class="cl-date" style="${esProximo?'background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 2px 8px rgba(245,158,11,0.4);':''}"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
     <div class="cl-inf">
       <div class="cl-nm">${(cl.tema||'Estudio de las Dispensaciones').replace(/</g,'&lt;')}</div>
-      <div class="cl-mt">${(cl.grupoResp||'Sin asignar').replace(/</g,'&lt;')} · ${asist} asistentes</div>
+      <div class="cl-mt">${(cl.grupoResp||'Sin asignar').replace(/</g,'&lt;')}${calificada?' · '+asist+' asistentes':''}${materialTxt}</div>
       <div class="cl-badges">${estadoRealizada} ${estadoCalif}</div>
     </div>
     <div class="cl-avg" style="color:${sc}">${avgGrupo>0?avgGrupo.toFixed(1):'—'}</div>
   </div>`;
 }
-// Estudio (vista caballero): lista de estudios desde DB.clases ordenada por año; banner como en Admin (captura).
+// Estudio (vista caballero): lista de estudios desde DB.clases ordenada por año. El próximo estudio (primera fecha futura) lleva "Próximo" y se indica si tiene material disponible; el resto de futuros solo "Pendiente".
 function renderEstudioPV(){
   const el=document.getElementById('pv-estudio-lista');
   if(!el)return;
   const cabId=typeof currentCabId!=='undefined'?currentCabId:'';
   const clases=(Array.isArray(DB.clases)?DB.clases:[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
   if(clases.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay estudios (clases) registrados.</p>';return;}
+  const todayStr=new Date().toISOString().split('T')[0];
+  const todasOrdenadas=[];
   const byYear={};
   clases.forEach(cl=>{
     const y=(cl.fecha||'').substring(0,4)||'Sin año';
@@ -961,10 +970,26 @@ function renderEstudioPV(){
     byYear[y].push(cl);
   });
   const years=Object.keys(byYear).sort((a,b)=>a.localeCompare(b));
+  years.forEach(y=>{ byYear[y].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(cl=>todasOrdenadas.push(cl)); });
+  const proximoClase=todasOrdenadas.find(cl=>(cl.fecha||'')>todayStr);
+  const proximoClaseId=proximoClase?(proximoClase.id||proximoClase.fecha):null;
+  const evaluaciones=DB.evaluaciones||[];
+  const materialEstudio=DB.materialEstudio||[];
+  const tieneMaterial=(cl)=>{
+    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&(e.claseId===(cl.id||cl.fecha)));
+    if(!ev||!ev.materialId)return false;
+    const m=materialEstudio.find(x=>x.id===ev.materialId);
+    return m&&typeof getMaterialUrl==='function'&&!!getMaterialUrl(m);
+  };
   let html='';
   years.forEach(y=>{
     html+=`<div class="cl-year-ttl">${y}</div>`;
-    byYear[y].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(cl=>{ html+=typeof mkClaseCardPV==='function'?mkClaseCardPV(cl,cabId):''; });
+    byYear[y].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(cl=>{
+      const claseId=cl.id||cl.fecha;
+      const esProximo=claseId===proximoClaseId;
+      const materialDisponible=tieneMaterial(cl);
+      html+=typeof mkClaseCardPV==='function'?mkClaseCardPV(cl,cabId,esProximo,materialDisponible):'';
+    });
   });
   el.innerHTML=html;
 }
