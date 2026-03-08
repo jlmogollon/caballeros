@@ -61,6 +61,17 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .tab{display:none;flex:1;overflow-y:auto;}
 .tab.active{display:block;}
 .pg{padding:16px;}
+
+/* ── BANNER INSTALAR APP (inicio) ── */
+.install-app-banner{margin-bottom:16px;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid var(--border);}
+.install-app-banner-inner{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:linear-gradient(135deg,var(--teal-bg) 0%,#e0f7fa 100%);position:relative;}
+.install-app-banner-ico{font-size:24px;flex-shrink:0;line-height:1;}
+.install-app-banner-txt{flex:1;min-width:0;}
+.install-app-banner-title{display:block;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:var(--teal2);margin-bottom:6px;}
+.install-app-banner-steps{font-size:12px;color:var(--text2);line-height:1.45;margin:0;}
+.install-app-banner-close{position:absolute;top:8px;right:8px;width:32px;height:32px;border:none;background:rgba(0,0,0,0.06);border-radius:50%;font-size:20px;line-height:1;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;-webkit-tap-highlight-color:transparent;}
+.install-app-banner-close:hover{background:rgba(0,0,0,0.1);color:var(--text);}
+
 .sec-ttl{font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
 .sec-ttl .tag{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;background:var(--teal-bg);color:var(--teal2);border:1px solid var(--border);}
 

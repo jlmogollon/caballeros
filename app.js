@@ -1068,7 +1068,29 @@ function logout(){currentCabId=null;try{sessionStorage.removeItem('caballeros_mi
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
 // ═══════════════════════════════════════════════════════════════
-function showSc(id){const el=document.getElementById(id);if(!el)return;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el.classList.add('active');}
+function showSc(id){const el=document.getElementById(id);if(!el)return;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el.classList.add('active');if(id==='screen-admin'||id==='screen-personal')initInstallBanner();}
+
+// ── Banner "Instalar app" (inicio; no volver a mostrar al cerrar) ──
+var INSTALL_BANNER_KEY='caballeros_install_banner_dismissed';
+function isMobileDevice(){return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)||('ontouchstart' in window)||window.innerWidth<=768;}
+function isStandalone(){return !!navigator.standalone||window.matchMedia('(display-mode: standalone)').matches;}
+function getInstallBannerSteps(){
+  var ua=navigator.userAgent||'';
+  if(/iPad|iPhone|iPod/.test(ua))return 'En Safari: toca el botón compartir (□↑) abajo y luego «Añadir a pantalla de inicio».';
+  if(/Android/i.test(ua))return 'En Chrome: menú ⋮ (arriba) → «Instalar app» o «Añadir a la pantalla de inicio».';
+  return 'En el navegador: menú ⋮ → «Instalar app» o «Añadir a la pantalla de inicio».';
+}
+function dismissInstallBanner(){try{localStorage.setItem(INSTALL_BANNER_KEY,'1');}catch(e){}var a=document.getElementById('install-banner-admin');var b=document.getElementById('install-banner-personal');if(a)a.style.display='none';if(b)b.style.display='none';}
+function initInstallBanner(){
+  var dismissed=false;try{dismissed=localStorage.getItem(INSTALL_BANNER_KEY)==='1';}catch(e){}
+  if(dismissed||!isMobileDevice()||isStandalone()){dismissInstallBanner();return;}
+  var steps=getInstallBannerSteps();
+  var admin=document.getElementById('install-banner-admin');var adminSteps=document.getElementById('install-banner-steps-admin');
+  var personal=document.getElementById('install-banner-personal');var personalSteps=document.getElementById('install-banner-steps-personal');
+  if(adminSteps)adminSteps.textContent=steps;if(personalSteps)personalSteps.textContent=steps;
+  if(admin){admin.style.display=document.getElementById('screen-admin').classList.contains('active')?'block':'none';}
+  if(personal){personal.style.display=document.getElementById('screen-personal').classList.contains('active')?'block':'none';}
+}
 function showTab(id,el){
   const tabEl=document.getElementById(id);
   if(!tabEl)return;
