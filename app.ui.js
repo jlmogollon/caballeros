@@ -1,4 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
+// DB compartido: _db() y escAttr están en app.js
+// ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
 // ═══════════════════════════════════════════════════════════════
 function showSc(id){const el=document.getElementById(id);if(!el)return;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el.classList.add('active');}
@@ -22,24 +26,25 @@ function initAdmin(){
   buildSel();renderDash();renderCabs();
   if(typeof renderEventosAdmin==='function')renderEventosAdmin();
   const wrap=document.getElementById('admin-perfil-wrap');
-  const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
-  const tieneFoto=!!DB.adminPhoto;
+  const db=_db();
+  const tieneNombre=db.adminNombre&&String(db.adminNombre).trim();
+  const tieneFoto=!!db.adminPhoto;
   if(wrap)wrap.style.display=(tieneNombre&&tieneFoto)?'none':'block';
   const nombreInp=document.getElementById('admin-nombre-inp');
   const photoInp=document.getElementById('admin-photo-inp');
   const photoPreview=document.getElementById('admin-photo-preview');
   const photoPlaceholder=document.getElementById('admin-photo-placeholder');
-  if(nombreInp){nombreInp.value=DB.adminNombre||'';nombreInp.oninput=nombreInp.onblur=async function(){DB.adminNombre=nombreInp.value.trim();await saveDB();if(DB.adminNombre&&DB.adminPhoto&&wrap)wrap.style.display='none';};}
+  if(nombreInp){nombreInp.value=db.adminNombre||'';nombreInp.oninput=nombreInp.onblur=async function(){var d=_db();d.adminNombre=nombreInp.value.trim();await saveDB();if(d.adminNombre&&d.adminPhoto&&wrap)wrap.style.display='none';};}
   if(photoPreview&&photoPlaceholder){
-    if(DB.adminPhoto){photoPreview.src=DB.adminPhoto;photoPreview.style.display='';photoPlaceholder.style.display='none';} else {photoPreview.style.display='none';photoPlaceholder.style.display='flex';}
+    if(db.adminPhoto){photoPreview.src=db.adminPhoto;photoPreview.style.display='';photoPlaceholder.style.display='none';} else {photoPreview.style.display='none';photoPlaceholder.style.display='flex';}
   }
   if(photoInp)photoInp.onchange=async function(e){
     const f=e.target.files[0];if(!f)return;
     const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
-    DB.adminPhoto=data;await saveDB();
+    var d=_db();d.adminPhoto=data;await saveDB();
     if(photoPreview&&photoPlaceholder){photoPreview.src=data;photoPreview.style.display='';photoPlaceholder.style.display='none';}
     photoInp.value='';
-    if(DB.adminNombre&&String(DB.adminNombre).trim()&&wrap)wrap.style.display='none';
+    if(d.adminNombre&&String(d.adminNombre).trim()&&wrap)wrap.style.display='none';
   };
 }
 
@@ -61,21 +66,19 @@ function renderDash(){
   if(typeof renderVersoDelDia==='function')renderVersoDelDia('dash-verso-dia-wrap');
   const dashProximos=document.getElementById('dash-proximos-wrap');
   if(dashProximos&&typeof getProximosEventosHTMLParaDashboard==='function')dashProximos.innerHTML=getProximosEventosHTMLParaDashboard(2);
-  const cabs=Array.isArray(DB.caballeros)?DB.caballeros:[];
-  const clasesArr=Array.isArray(DB.clases)?DB.clases:[];
+  const db=_db();
+  const cabs=Array.isArray(db.caballeros)?db.caballeros:[];
+  const clasesArr=Array.isArray(db.clases)?db.clases:[];
   const statsEl=document.getElementById('stats-grid');
   if(statsEl)statsEl.innerHTML=`
     <div class="stat-card stat-click" onclick="goToStatCard('caballeros')"><div class="stat-num">${cabs.length}</div><div class="stat-lbl">Caballeros</div></div>
     <div class="stat-card stat-click" onclick="goToStatCard('hermanos')"><div class="stat-num">${cabs.filter(c=>c.dist==='Hermano').length}</div><div class="stat-lbl">Hermanos</div></div>
     <div class="stat-card stat-click" onclick="goToStatCard('amigos')"><div class="stat-num">${cabs.filter(c=>c.dist==='Amigo').length}</div><div class="stat-lbl">Amigos</div></div>
-    <div class="stat-card stat-click gold" onclick="goToStatCard('clases')"><div class="stat-num">${clasesArr.filter(cl=>claseAvg(cl)>0).length}</div><div class="stat-lbl">Clases</div></div>
+    <div class="stat-card stat-click gold" onclick="goToStatCard('clases')"><div class="stat-num">${clasesArr.filter(cl=>claseAvg(cl)>0).length}</div><div class="stat-lbl">Estudios</div></div>
   `;
   const list=ranking();
   const top5El=document.getElementById('top5');
   if(top5El)top5El.innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
-  const calificadas=[...clasesArr].filter(cl=>claseAvg(cl)>0).sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,2);
-  const recentEl=document.getElementById('recent-cl');
-  if(recentEl)recentEl.innerHTML=calificadas.length?calificadas.map(mkClaseCard).join(''):'<p style="color:var(--text3);font-size:13px">Sin clases calificadas aún.</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -105,7 +108,7 @@ function renderCabs(){
   }
 
   const q=(document.getElementById('search-inp').value||'').toLowerCase();
-  let list=[...DB.caballeros];
+  let list=[..._db().caballeros];
   if(fGrupo!=='TODOS')list=list.filter(c=>c.grupo===fGrupo);
   if(fBadge==='Hermano'||fBadge==='Amigo')list=list.filter(c=>c.dist===fBadge);
   else if(CHECKS.includes(fBadge))list=list.filter(c=>c[fBadge]);
@@ -141,7 +144,7 @@ function mkCabCard(c,rank,hideGrupo){
 // CAB DETAIL MODAL
 // ═══════════════════════════════════════════════════════════════
 function openCabDetail(id){
-  const c=DB.caballeros.find(x=>x.id===id);if(!c)return;
+  const c=_db().caballeros.find(x=>x.id===id);if(!c)return;
   const cal=calcCab(id);const rank=getRank(id);
   const avH2=c.photo?`<img src="${c.photo}">`:(ini(nombreCorto(c)||c.nombre));
   const val=autoVal(c);
@@ -150,7 +153,7 @@ function openCabDetail(id){
   const bars=barK.map(({k,l})=>{const v=cal[k];const pct=Math.min(100,((v||0)/10)*100);const txt=(v===10?'10':(Number(v)||0).toFixed(1));return`<div class="bw"><div class="bl"><span>${l}</span><span>${txt}/10</span></div><div class="bt"><div class="bf" style="width:${pct}%"></div></div></div>`;}).join('');
   const esAdmin=document.getElementById('screen-admin')&&document.getElementById('screen-admin').classList.contains('active');
   const esMismo=typeof currentCabId!=='undefined'&&currentCabId===id;
-  const hist=DB.clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:typeof classScoreForCab==='function'?classScoreForCab(cl,id):rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const hist=_db().clases.filter(cl=>cl.cal[id]).map(cl=>({fecha:cl.fecha,tema:cl.tema,...cl.cal[id],t:typeof classScoreForCab==='function'?classScoreForCab(cl,id):rowTotal(cl.cal[id])})).sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const histH=mkHistoryTable(id);
   let evalBlock='';
   if((esAdmin||esMismo)&&typeof getEvalSummaryForCab==='function'){
@@ -206,7 +209,7 @@ function openCabDetail(id){
     </div>
     <div class="dsec"><div class="dhead">Puntuación — <span style="color:var(--teal)">${cal.total===10?'10':cal.total.toFixed(1)} pts</span> · Asistencia: ${cal.asist}/${cal.totalClases}</div>${bars}</div>
     ${evalBlock}
-    <div class="dsec"><div class="dhead">Historial de Clases</div>${histH}</div>
+    <div class="dsec"><div class="dhead">Historial de estudios</div>${histH}</div>
     ${btnRow}
   `);
 }
@@ -217,7 +220,7 @@ function openListaCaballerosPV(){
   openSheet('👥','Caballeros',`${list.length} caballeros · por puntuación`,'<div class="card-list" style="max-height:70vh;overflow-y:auto">'+html+'</div>');
 }
 function openListaGruposPV(){
-  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  const map={};_db().caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
   let h='';
   (GRUPOS||[]).forEach(g=>{
     const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
@@ -228,31 +231,32 @@ function openListaGruposPV(){
   openSheet('📊','Grupos',`${(GRUPOS||[]).length} grupos · integrantes por puntaje`,'<div style="max-height:70vh;overflow-y:auto">'+(h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>')+'</div>');
 }
 function openGrupoIntegrantes(nombreGrupo){
-  const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  const map={};_db().caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
   const ms=(map[nombreGrupo]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
   const avg=ms.length?(ms.reduce((s,c)=>s+calcCab(c.id).total,0)/ms.length).toFixed(1):'0.0';
   const html=ms.length?ms.map((c,i)=>mkCabCard(c,i+1,true)).join(''):'<p style="color:var(--text3);font-size:13px">No hay integrantes en este grupo.</p>';
   openSheet('👥',nombreGrupo,`${ms.length} integrantes · Prom: ${avg}`,'<div class="card-list" style="max-height:70vh;overflow-y:auto">'+html+'</div>');
 }
 function confirmDelCab(id){
-  const c=DB.caballeros.find(x=>x.id===id);
+  const c=_db().caballeros.find(x=>x.id===id);
   document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdel"><p>¿Eliminar a <strong>${c.nombre}</strong>? Se borrarán todas sus calificaciones.</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdel').remove()">Cancelar</button><button class="btn bred" onclick="doDelCab('${id}')">Eliminar</button></div></div>`;
 }
 async function doDelCab(id){
-  DB.caballeros=DB.caballeros.filter(c=>c.id!==id);
-  DB.clases.forEach(cl=>delete cl.cal[id]);
+  _db().caballeros=_db().caballeros.filter(c=>c.id!==id);
+  _db().clases.forEach(cl=>delete cl.cal[id]);
+  if(typeof invalidateCache==='function')invalidateCache();
   closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
   await saveDB();toast('Caballero eliminado','ok');
 }
 
 // Escapar para atributos HTML (evita rotura con ", &, < en nombres)
-function escAttr(s){if(s==null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// escAttr definida en app.js (compartida por todos los módulos)
 // ═══════════════════════════════════════════════════════════════
 // FORM CABALLERO — Fixed checkboxes + auto stars
 // ═══════════════════════════════════════════════════════════════
 function openFormCab(id){
   const isNew=!id;
-  const c=id?DB.caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:'',fechaBautizado:'',fechaSellado:'',telefono:'',nombreMostrar:''};
+  const c=id?_db().caballeros.find(x=>x.id===id):{nombre:'',grupo:'CABALLEROS DEL CIELO',dist:'Hermano',bautizado:0,sellado:0,servidor:0,directivo:0,predicador:0,evangelista:0,devoto:0,photo:'',fnac:'',fechaBautizado:'',fechaSellado:'',telefono:'',nombreMostrar:''};
   if(id&&!c){toast('Caballero no encontrado','err');return;}
   const gOpts=GRUPOS.map(g=>`<option value="${g}"${c.grupo===g?' selected':''}>${g}</option>`).join('');
   const telefonoEsc=escAttr(c.telefono||'');const nombreMostrarEsc=escAttr(c.nombreMostrar||'');
@@ -347,7 +351,8 @@ function handlePhoto(e,ctx){
   toast('📷 Procesando foto...','info');
   compressPhoto(file, async function(data){
     if(ctx==='pv'){
-      const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+      const c=_db().caballeros.find(x=>x.id===currentCabId);if(!c)return;
+      // Foto en base64 en DB; si hay muchas/grandes, valorar guardar solo URL (p. ej. Firebase Storage)
       c.photo=data;
       const av=document.getElementById('pv-av');
       av.innerHTML=`<img src="${data}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`;
@@ -356,7 +361,7 @@ function handlePhoto(e,ctx){
     }else{
       const cabId=document.getElementById('photo-input-modal').dataset.cabId;
       if(cabId){
-        const c=DB.caballeros.find(x=>x.id===cabId);
+        const c=_db().caballeros.find(x=>x.id===cabId);
         if(c){c.photo=data;const ok=await saveDB();if(ok)toast('📷 Foto guardada','ok');else toast('Foto no se pudo guardar','err');}
         else toast('Caballero no encontrado','err');
       }else toast('Abre de nuevo el formulario del caballero e intenta añadir la foto otra vez.','err');
@@ -380,19 +385,21 @@ function readForm(){
 }
 async function doAddCab(){
   const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
-  DB.caballeros.push({id:'c'+Date.now(),photo:'',pw:'',...d});
+  _db().caballeros.push({id:'c'+Date.now(),photo:'',pw:'',...d});
+  if(typeof invalidateCache==='function')invalidateCache();
   closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
   await saveDB();toast('✅ Caballero agregado','ok');
 }
 async function doSaveCab(id){
   const d=readForm();if(!d.nombre){toast('Ingresa el nombre','err');return;}
-  const c=DB.caballeros.find(x=>x.id===id);
-  if(!c){toast('Caballero no encontrado (id: '+id+')','err');return;}
+  const c=_db().caballeros.find(x=>x.id===id);
+  if(!c){toast('No se encontró este caballero','err');return;}
   const keepPhoto=c.photo;const keepPw=c.pw||'';
   Object.assign(c,d);
   c.photo=keepPhoto;if(keepPw!==undefined)c.pw=keepPw;
-  toast('💾 Guardando...','info');
-  const ok=await saveDB();if(!ok){toast('Error al guardar. Revisa espacio o conexión.','err');return;}
+  if(typeof invalidateCache==='function')invalidateCache();
+  closeModal();initAdmin();buildSel();toast('💾 Guardando...','info');
+  const ok=await saveDB();if(!ok){toast('No se pudo guardar. Comprueba tu conexión.','err');return;}
   toast('✅ Guardado','ok');
   initAdmin();buildSel();
   closeModal();
@@ -405,7 +412,7 @@ async function doSaveCab(id){
 function renderGrupos(){
   const el=document.getElementById('grupos-pg');
   if(!el)return;
-  const map={};(DB.caballeros||[]).forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+  const map={};(_db().caballeros||[]).forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
   let h='<div class="sec-ttl">Grupos</div>';
   (GRUPOS||[]).forEach(g=>{
     const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
@@ -423,7 +430,7 @@ function renderGrupos(){
 // ═══════════════════════════════════════════════════════════════
 // CLASES
 // ═══════════════════════════════════════════════════════════════
-function mkClaseCard(cl){
+function mkClaseCard(cl,esProximo,materialDisponible){
   const{d,m}=fmtBox(cl.fecha);
   const avg=claseAvg(cl);
   const sc=avg>=7?'#15803d':avg>=4?'var(--gold2)':'var(--text3)';
@@ -431,14 +438,22 @@ function mkClaseCard(cl){
   const today=new Date().toISOString().split('T')[0];
   const realizada=cl.fecha<=today;
   const calificada=claseAvg(cl)>0;
-  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':'<span class="cl-badge cl-proxima">Próxima</span>';
+  const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':(esProximo?'<span class="cl-badge cl-proxima">Próximo</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>');
   const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
-  return`<div class="cl-card" onclick="openClaseDetail('${cl.fecha}')">
-    <div class="cl-date"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
+  const soloPendiente=!realizada&&!esProximo&&!calificada;
+  const badgesHtml=soloPendiente?'<span class="cl-badge cl-pendiente">Pendiente</span>':(`${estadoRealizada} ${estadoCalif}`).trim();
+  const materialLine=esProximo&&materialDisponible?'<div class="cl-material-disp" style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#0e7490 0%,#0d9488 100%);color:#fff;font-size:11px;font-weight:800;letter-spacing:0.3px;padding:5px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(14,116,144,0.35);">📖 Material disponible</div>':'';
+  const cardStyle=esProximo?'border:2px solid #f59e0b;box-shadow:0 0 0 1px #fbbf24,0 4px 20px rgba(245,158,11,0.25);background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);':'';
+  const dateStyle=esProximo?'background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 2px 8px rgba(245,158,11,0.4);':'';
+  const claseId=(cl.id||cl.fecha)+'';
+  const claseIdEsc=claseId.replace(/'/g,"\\'");
+  return`<div class="cl-card" onclick="openEstudioDetallePV('${claseIdEsc}',true)" style="${cardStyle}">
+    <div class="cl-date" style="${dateStyle}"><div class="cl-day">${d}</div><div class="cl-mon">${m}</div></div>
     <div class="cl-inf">
-      <div class="cl-nm">${cl.tema||'Estudio de las Dispensaciones'}</div>
-      <div class="cl-mt">${cl.grupoResp||'Sin asignar'} · ${asist} asistentes</div>
-      <div class="cl-badges">${estadoRealizada} ${estadoCalif}</div>
+      <div class="cl-nm">${(cl.tema||'Estudio de las Dispensaciones').replace(/</g,'&lt;')}</div>
+      <div class="cl-mt">${(cl.grupoResp||'Sin asignar').replace(/</g,'&lt;')} · ${asist} asistentes</div>
+      ${materialLine}
+      <div class="cl-badges">${badgesHtml}</div>
     </div>
     <div class="cl-avg" style="color:${sc}">${avg>0?(avg===10?'10':avg.toFixed(1)):'—'}</div>
   </div>`;
@@ -469,41 +484,40 @@ function mkClaseCardAdmin(cl,esProximo,materialDisponible){
   </div>`;
 }
 function renderClases(){
-  const clases=Array.isArray(DB.clases)?DB.clases:[];
+  const clases=Array.isArray(_db().clases)?_db().clases:[];
   const sorted=[...clases].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
   const todayStr=new Date().toISOString().split('T')[0];
   const proximoClase=sorted.find(cl=>(cl.fecha||'')>todayStr);
-  const proximoClaseId=proximoClase?(proximoClase.id||proximoClase.fecha):null;
-  const evaluaciones=DB.evaluaciones||[];
-  const materialEstudio=DB.materialEstudio||[];
-  const tieneMaterial=(cl)=>{
-    const cid=cl.id||cl.fecha;
-    const mFromClase=cl.materialId?materialEstudio.find(x=>x.id===cl.materialId):null;
-    if(mFromClase&&typeof getMaterialUrl==='function'&&!!getMaterialUrl(mFromClase))return true;
-    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&(e.claseId===cid));
-    if(!ev||!ev.materialId)return false;
-    const m=materialEstudio.find(x=>x.id===ev.materialId);
-    return !!(m&&typeof getMaterialUrl==='function'&&getMaterialUrl(m));
-  };
+  const proximoId=proximoClase?(proximoClase.id||proximoClase.fecha):null;
   const porAnio={};
   sorted.forEach(cl=>{
     const y=(cl.fecha||'').substring(0,4);
     if(!porAnio[y])porAnio[y]=[];
     porAnio[y].push(cl);
   });
+  const materialEstudio=_db().materialEstudio||[];
+  const evaluaciones=_db().evaluaciones||[];
+  const tieneMaterial=(c)=>{
+    const cid=c.id||c.fecha;
+    const mFromClase=c.materialId?materialEstudio.find(x=>x.id===c.materialId):null;
+    if(mFromClase&&typeof getMaterialUrl==='function'&&!!getMaterialUrl(mFromClase))return true;
+    const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&(e.claseId===cid));
+    if(!ev||!ev.materialId)return false;
+    const m=materialEstudio.find(x=>x.id===ev.materialId);
+    return m&&typeof getMaterialUrl==='function'&&!!getMaterialUrl(m);
+  };
   const anos=Object.keys(porAnio).sort();
   let html='';
   anos.forEach(y=>{
     html+=`<div class="cl-year-ttl">${y}</div>`;
-    porAnio[y].forEach(cl=>{
-      const claseId=cl.id||cl.fecha;
-      const esProximo=claseId===proximoClaseId;
+    html+=porAnio[y].map(cl=>{
+      const esProximo=!!proximoId&&((cl.id||cl.fecha)===proximoId);
       const materialDisponible=tieneMaterial(cl);
-      html+=mkClaseCardAdmin(cl,esProximo,materialDisponible);
-    });
+      return mkClaseCard(cl,esProximo,materialDisponible);
+    }).join('');
   });
   const el=document.getElementById('clases-list');
-  if(el)el.innerHTML=sorted.length?html:'<p style="color:var(--text3);font-size:13px">Sin clases. ¡Crea la primera!</p>';
+  if(el)el.innerHTML=sorted.length?html:'<p style="color:var(--text3);font-size:13px">Sin estudios. ¡Crea el primero!</p>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -511,26 +525,46 @@ function renderClases(){
 // ═══════════════════════════════════════════════════════════════
 function getClaseByKey(key){
   if(!key)return null;
-  const clases=Array.isArray(DB.clases)?DB.clases:[];
+  const clases=Array.isArray(_db().clases)?_db().clases:[];
   const byFecha=/^\d{4}-\d{2}-\d{2}$/.test(String(key));
   return clases.find(x=>byFecha?x.fecha===key:x.id===key)||null;
 }
+function isEstudioTabActive(){
+  const tab=document.getElementById('t-estudio-admin');
+  return !!(tab&&tab.classList.contains('active'));
+}
 function openClaseDetail(key){
   const cl=getClaseByKey(key);if(!cl)return;
-  const caballeros=Array.isArray(DB.caballeros)?DB.caballeros:[];
+  const caballeros=Array.isArray(_db().caballeros)?_db().caballeros:[];
   const rows=caballeros.filter(c=>cl.cal&&cl.cal[c.id]).map(c=>{
     const ev=typeof getEvalScoreForClassAndCab==='function'?getEvalScoreForClassAndCab(cl.id||cl.fecha,c.id):null;
     return{nom:c.nombre,...cl.cal[c.id],ev,t:typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(cl.cal[c.id])};
   }).sort((a,b)=>b.t-a.t);
   const th=`<table class="dtable"><thead><tr><th>Nombre</th><th>Int</th><th>Pun</th><th>Dom</th><th>Par</th><th>A</th><th>Eval</th><th>Total</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="font-size:12px">${r.nom.split(' ').slice(0,2).join(' ')}</td><td>${r.a?r.i:'—'}</td><td>${r.a?r.p:'—'}</td><td>${r.a?r.d:'—'}</td><td>${r.a?r.pa:'—'}</td><td>${r.a?'✅':'❌'}</td><td>${r.a&&r.ev!=null?fmtScore(r.ev):'—'}</td><td class="sc ${scCls(r.t)}">${r.a?fmtScore(r.t):'—'}</td></tr>`).join('')}</tbody></table>`;
+  const soloVer=!isEstudioTabActive();
+  if(soloVer){
+    const temaEsc=(cl.tema||'').replace(/</g,'&lt;');
+    const mat=cl.materialId?(_db().materialEstudio||[]).find(m=>m.id===cl.materialId):null;
+    const materialTxt=mat?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(mat.titulo||'Sin título').replace(/</g,'&lt;')}</span><br><span style="font-size:11px;color:var(--text3);word-break:break-all;">${(mat.url||'').replace(/</g,'&lt;').substring(0,60)}…</span></div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin material.</p>';
+    const evVinculada=(_db().evaluaciones||[]).find(e=>e.claseId===(cl.id||cl.fecha));
+    const evaluacionTxt=evVinculada?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(evVinculada.titulo||'Cuestionario').replace(/</g,'&lt;')}</span> · ${(evVinculada.preguntas||[]).length} preguntas</div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario.</p>';
+    openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${claseAvg(cl).toFixed(2)}`,`
+    <div class="dsec"><div class="dhead">Datos del estudio</div><div style="display:flex;flex-wrap:wrap;gap:12px;font-size:13px;"><div><span style="color:var(--text3);">Tema</span><div style="font-weight:600;">${temaEsc}</div></div><div><span style="color:var(--text3);">Grupo responsable</span><div style="font-weight:600;">${(cl.grupoResp||'—').replace(/</g,'&lt;')}</div></div></div></div>
+    <div class="dsec"><div class="dhead">📚 Material de estudio</div>${materialTxt}</div>
+    <div class="dsec"><div class="dhead">📝 Cuestionario</div>${evaluacionTxt}</div>
+    <div class="dsec"><div class="dhead">Registro de Calificaciones</div>${th}</div>
+    <p style="font-size:12px;color:var(--text3);margin-top:10px;">Para editar o eliminar este estudio, ve a la pestaña <strong>📚 Estudio</strong>.</p>
+    `);
+    return;
+  }
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}" ${cl.grupoResp===g?'selected':''}>${g}</option>`)].join('');
   const temaEsc=(cl.tema||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   const clave=String(cl.fecha||'');
   const claseIdRef=String(cl.id||cl.fecha||'');
   const esc=(s)=>(String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'"));
-  const mat=cl.materialId?(DB.materialEstudio||[]).find(m=>m.id===cl.materialId):null;
+  const mat=cl.materialId?(_db().materialEstudio||[]).find(m=>m.id===cl.materialId):null;
   const materialBlock=mat?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(mat.titulo||'Sin título').replace(/</g,'&lt;')}</span><br><span style="font-size:11px;color:var(--text3);word-break:break-all;">${(mat.url||'').replace(/</g,'&lt;').substring(0,60)}…</span></div><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormMaterialUrlForClase('${esc(clave)}')">Editar URL</button>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin material.</p><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormMaterialUrlForClase(\''+esc(clave)+'\')">+ Añadir URL</button>';
-  const evVinculada=(DB.evaluaciones||[]).find(e=>e.claseId===claseIdRef);
+  const evVinculada=(_db().evaluaciones||[]).find(e=>e.claseId===claseIdRef);
   const evaluacionBlock=evVinculada?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(evVinculada.titulo||'Cuestionario').replace(/</g,'&lt;')}</span> · ${(evVinculada.preguntas||[]).length} preguntas</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion('${esc(evVinculada.id)}')">Editar</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON('${esc(clave)}')">Importar .json (reemplazar)</button></div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario.</p><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion(null,\''+esc(claseIdRef)+'\')">Crear cuestionario</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON(\''+esc(clave)+'\')">Importar desde .json</button></div>';
   const promCl=claseAvg(cl);
   openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${promCl===10?'10':promCl.toFixed(2)}`,`
@@ -558,12 +592,12 @@ async function doSaveClaseInfo(key){
   cl.tema=tema;cl.fecha=fecha;cl.grupoResp=grupoResp;
   closeModal();toast('💾 Guardando...','info');
   const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
-  toast('✅ Clase actualizada','ok');
+  toast('✅ Estudio actualizado','ok');
   renderClases();renderDash();
 }
 function openFormMaterialUrlForClase(clave){
   const cl=getClaseByKey(clave);if(!cl)return;
-  const mat=cl.materialId?(DB.materialEstudio||[]).find(m=>m.id===cl.materialId):null;
+  const mat=cl.materialId?(_db().materialEstudio||[]).find(m=>m.id===cl.materialId):null;
   let urlVal=mat?(mat.url||''):'';
   if(!urlVal&&mat&&mat.contenido)urlVal=typeof extractUrlFromMaterialInput==='function'?extractUrlFromMaterialInput(mat.contenido)||mat.contenido:mat.contenido;
   const tituloVal=mat?(mat.titulo||''):'';
@@ -573,19 +607,19 @@ function openFormMaterialUrlForClase(clave){
 async function saveMaterialUrlForClase(clave){
   const urlEl=document.getElementById('material-url-inp');
   const tituloEl=document.getElementById('material-titulo-inp');
-  if(!urlEl){toast('Error en el formulario','err');return;}
+  if(!urlEl){toast('Completa los datos del formulario','err');return;}
   let url=typeof extractUrlFromMaterialInput==='function'?extractUrlFromMaterialInput(urlEl.value):(urlEl.value||'').trim();
   if(!url){toast('Escribe o pega la URL.','err');return;}
   if(!url.startsWith('http://')&&!url.startsWith('https://'))url='https://'+url;
   const titulo=(tituloEl&&tituloEl.value?tituloEl.value.trim():'')||url.replace(/^https?:\/\//,'').split('/')[0]||'Material';
   const cl=getClaseByKey(clave);if(!cl)return;
-  if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
+  if(!Array.isArray(_db().materialEstudio))_db().materialEstudio=[];
   if(cl.materialId){
-    const m=DB.materialEstudio.find(x=>x.id===cl.materialId);
+    const m=_db().materialEstudio.find(x=>x.id===cl.materialId);
     if(m){m.url=url;m.titulo=titulo;}
   }else{
     const newId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
-    DB.materialEstudio.push({id:newId,titulo,url,orden:DB.materialEstudio.length});
+    _db().materialEstudio.push({id:newId,titulo,url,orden:_db().materialEstudio.length});
     cl.materialId=newId;
   }
   closeModal();toast('💾 Guardando...','info');
@@ -624,10 +658,10 @@ function triggerImportCuestionarioJSON(clave){
   });
   if(!preguntas.length){toast('No se encontraron preguntas en el JSON','err');return;}
   const evId='evq'+Date.now();
-  (DB.evaluaciones||[]).forEach(ev=>{if(ev.claseId===claseIdRef)ev.claseId=undefined;});
+  (_db().evaluaciones||[]).forEach(ev=>{if(ev.claseId===claseIdRef)ev.claseId=undefined;});
   const ev={id:evId,titulo,descripcion,activo:true,claseId:claseIdRef,preguntas};
-  DB.evaluaciones=DB.evaluaciones||[];
-  DB.evaluaciones.push(ev);
+  _db().evaluaciones=_db().evaluaciones||[];
+  _db().evaluaciones.push(ev);
   toast('💾 Guardando...','info');
   const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
   toast('✅ Cuestionario creado desde JSON','ok');
@@ -637,55 +671,95 @@ function triggerImportCuestionarioJSON(clave){
   document.body.appendChild(input);input.click();document.body.removeChild(input);
 }
 function confirmDelClase(key){
+  if(!isEstudioTabActive()){toast('Ve a la pestaña 📚 Estudio para eliminar estudios','info');return;}
   const cl=getClaseByKey(key);if(!cl)return;
-  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar la clase del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${cl.fecha}')">Eliminar</button></div></div>`;
+  document.getElementById('m-body').innerHTML+=`<div class="confirm-box" id="cdcl"><p>¿Eliminar el estudio del <strong>${fmtDate(cl.fecha)}</strong>?</p><div class="btn-row"><button class="btn boutline" onclick="document.getElementById('cdcl').remove()">Cancelar</button><button class="btn bred" onclick="doDelClase('${cl.fecha}')">Eliminar</button></div></div>`;
 }
 async function doDelClase(key){
+  if(!isEstudioTabActive()){toast('Ve a la pestaña 📚 Estudio para eliminar estudios','info');return;}
   const cl=getClaseByKey(key);if(!cl)return;
-  DB.clases=DB.clases.filter(c=>c.id!==cl.id);
+  _db().clases=_db().clases.filter(c=>c.id!==cl.id);
+  if(typeof invalidateCache==='function')invalidateCache();
   closeModal();renderClases();renderDash();toast('💾 Guardando...','info');
-  const ok=await saveDB();if(ok)toast('Clase eliminada','ok');else toast('Error al guardar','err');
+  const ok=await saveDB();if(ok)toast('Estudio eliminado','ok');else toast('Error al guardar','err');
 }
 
 // ═══════════════════════════════════════════════════════════════
-// NUEVA CLASE
+// NUEVO ESTUDIO — Mismo formulario que editar (tema, fecha, grupo, material, cuestionario)
 // ═══════════════════════════════════════════════════════════════
 function openNuevaClase(){
+  if(!isEstudioTabActive()){toast('Ve a la pestaña 📚 Estudio para crear o editar estudios','info');showTab('t-estudio-admin',document.querySelector('.ntab[onclick*="t-estudio-admin"]'));return;}
   const today=new Date().toISOString().split('T')[0];
   const gOpts=['<option value="">Sin asignar</option>',...GRUPOS.map(g=>`<option value="${g}">${g}</option>`)].join('');
-  openSheet('📅','Nueva Clase','Registrar sesión de estudios',`
-    <div class="fr"><label>Fecha de la clase</label><input type="date" id="nc-fecha" value="${today}"></div>
-    <div class="fr"><label>Tema del estudio</label><input id="nc-tema" value="Estudio de las Dispensaciones" placeholder="Ej: Estudio de las Dispensaciones"></div>
-    <div class="fr"><label>Grupo Responsable</label><select id="nc-grupo" class="select-grupo">${gOpts}</select></div>
-    <div class="info-box">💡 Después podrás marcar asistencia y calificar a cada caballero del 0 al 10.</div>
-    <button class="btn bteal bfull" onclick="doCrearClase()">📋 Ir a Calificar →</button>
+  openSheet('📅','Nuevo estudio','Mismos parámetros que al editar un estudio',`
+    <div class="dsec"><div class="dhead">Datos del estudio</div>
+      <div class="fr"><label>Nombre / Tema</label><input id="nc-tema" value="Estudio de las Dispensaciones" placeholder="Ej: Estudio de las Dispensaciones"></div>
+      <div class="fr"><label>Fecha</label><input type="date" id="nc-fecha" value="${today}"></div>
+      <div class="fr"><label>Grupo responsable</label><select id="nc-grupo" class="select-grupo">${gOpts}</select></div>
+    </div>
+    <div class="dsec"><div class="dhead">📚 Material de estudio</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Opcional. Si lo dejas vacío podrás añadirlo después desde el detalle del estudio.</p>
+      <div class="fr" style="margin-bottom:8px;"><label>URL del material</label><textarea id="nc-material-url" rows="2" placeholder="Ej: https://gamma.app/embed/..." style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;"></textarea></div>
+      <div class="fr"><label>Título (opcional)</label><input type="text" id="nc-material-titulo" placeholder="Ej: Estudio de las dispensaciones" style="width:100%;padding:10px;border:1.5px solid #e5e7eb;border-radius:10px;"></div>
+    </div>
+    <div class="dsec"><div class="dhead">📝 Cuestionario</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario. Podrás crear uno desde el detalle del estudio después de guardar.</p>
+    </div>
+    <div class="info-box">💡 Al guardar podrás marcar asistencia y calificar a cada caballero del 0 al 10.</div>
+    <div class="btn-row">
+      <button class="btn bteal" style="flex:1" onclick="doCrearClase(true)">📋 Crear e ir a calificar</button>
+      <button class="btn boutline" onclick="doCrearClase(false)">💾 Solo crear estudio</button>
+    </div>
   `);
 }
-async function doCrearClase(){
+async function doCrearClase(irACalificar){
   const fechaEl=document.getElementById('nc-fecha');
   const temaEl=document.getElementById('nc-tema');
   const grupoEl=document.getElementById('nc-grupo');
+  const urlMatEl=document.getElementById('nc-material-url');
+  const tituloMatEl=document.getElementById('nc-material-titulo');
   const fecha=window._ncForce&&window._ncFormData?window._ncFormData.fecha:(fechaEl?fechaEl.value:'');
   if(!fecha){toast('Selecciona la fecha','err');return;}
-  const dup=DB.clases.find(c=>c.fecha===fecha);
+  const dup=_db().clases.find(c=>c.fecha===fecha);
   if(dup&&!window._ncForce){
-    window._ncFormData={fecha,tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones',grupo:grupoEl?grupoEl.value:''};
-    openSheet('⚠️','Clase ya existente','',`
-      <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Ya hay una clase el <strong>${fmtDate(fecha)}</strong>.</p>
-      <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Si continúas, se añadirá otra clase para la misma fecha.</p>
+    window._ncFormData={
+      fecha,
+      tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones',
+      grupo:grupoEl?grupoEl.value:'',
+      materialUrl:urlMatEl?urlMatEl.value.trim():'',
+      materialTitulo:tituloMatEl?tituloMatEl.value.trim():''
+    };
+    openSheet('⚠️','Estudio ya existente','',`
+      <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Ya hay un estudio el <strong>${fmtDate(fecha)}</strong>.</p>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Si continúas, se añadirá otro estudio para la misma fecha.</p>
       <div class="btn-row">
         <button class="btn boutline" onclick="closeModal()">Cancelar</button>
-        <button class="btn bteal" onclick="closeModal();window._ncForce=true;doCrearClase();window._ncForce=false;">Continuar</button>
+        <button class="btn bteal" onclick="closeModal();window._ncForce=true;doCrearClase(${irACalificar});window._ncForce=false;">Continuar</button>
       </div>
     `);
     return;
   }
   const tema=window._ncForce&&window._ncFormData?window._ncFormData.tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones';
   const grupoResp=window._ncForce&&window._ncFormData?window._ncFormData.grupo:(grupoEl?grupoEl.value:'');
+  let materialUrl=(window._ncForce&&window._ncFormData&&window._ncFormData.materialUrl)!==undefined?window._ncFormData.materialUrl:(urlMatEl?urlMatEl.value.trim():'');
+  let materialTitulo=(window._ncForce&&window._ncFormData&&window._ncFormData.materialTitulo)!==undefined?window._ncFormData.materialTitulo:(tituloMatEl?tituloMatEl.value.trim():'');
   const id='cl'+Date.now();
-  DB.clases.push({id,fecha,tema,grupoResp,cal:{}});
+  const newCl={id,fecha,tema,grupoResp,cal:{}};
+  _db().clases.push(newCl);
+  if(materialUrl){
+    if(typeof extractUrlFromMaterialInput==='function')materialUrl=extractUrlFromMaterialInput(materialUrl)||materialUrl;
+    if(!materialUrl.startsWith('http://')&&!materialUrl.startsWith('https://'))materialUrl='https://'+materialUrl;
+    if(!Array.isArray(_db().materialEstudio))_db().materialEstudio=[];
+    const newMatId='mat_'+(Date.now().toString(36))+'_'+(Math.random().toString(36).slice(2,8));
+    const titulo=materialTitulo||materialUrl.replace(/^https?:\/\//,'').split('/')[0]||'Material';
+    _db().materialEstudio.push({id:newMatId,titulo,url:materialUrl,orden:_db().materialEstudio.length});
+    newCl.materialId=newMatId;
+  }
   window._ncFormData=null;window._ncForce=false;
-  await saveDB();closeModal();openGrade(id);
+  if(typeof invalidateCache==='function')invalidateCache();
+  await saveDB();closeModal();
+  renderClases();renderDash();
+  if(irACalificar){openGrade(id);}else{openClaseDetail(fecha);}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -697,7 +771,7 @@ function openGrade(key){
   document.getElementById('gs-ttl').textContent=cl.tema||'Estudio de las Dispensaciones';
   document.getElementById('gs-sub').textContent=fmtDate(cl.fecha)+' · Toca ○ para marcar asistencia · Notas del 0 al 10';
 
-  const sorted=[...DB.caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
+  const sorted=[..._db().caballeros].sort((a,b)=>a.grupo.localeCompare(b.grupo)||a.nombre.localeCompare(b.nombre));
   let html='';let lastG='';
   const getEvalSc=typeof getEvalScoreForClassAndCab==='function'?(cabId)=>getEvalScoreForClassAndCab(cl.id||cl.fecha,cabId):()=>null;
   sorted.forEach(c=>{
@@ -782,13 +856,13 @@ function closeGrade(){document.getElementById('grade-screen').classList.remove('
 
 async function doSaveGrade(){
   if(!gradeClaseId)return;
-  const cl=DB.clases.find(x=>x.id===gradeClaseId);if(!cl)return;
+  const cl=_db().clases.find(x=>x.id===gradeClaseId);if(!cl)return;
   const beforeTotals={};
-  DB.caballeros.forEach(c=>{
+  _db().caballeros.forEach(c=>{
     beforeTotals[c.id]=calcCab(c.id).total;
   });
   const missing=[];const newCal={};let saved=0;
-  DB.caballeros.forEach(c=>{
+  _db().caballeros.forEach(c=>{
     const btn=document.getElementById('att-'+c.id);if(!btn)return;
     const pres=btn.classList.contains('yes');
     if(pres){
@@ -807,7 +881,7 @@ async function doSaveGrade(){
   if(missing.length){toast(`⚠️ Faltan notas: ${missing.slice(0,3).join(', ')}${missing.length>3?'...':''}`,'err');return;}
   cl.cal=newCal;closeGrade();
   invalidateCache();
-  DB.caballeros.forEach(c=>{
+  _db().caballeros.forEach(c=>{
     const before=beforeTotals[c.id]||0;
     const after=calcCab(c.id).total;
     const delta=+(after-before).toFixed(2);
@@ -831,7 +905,7 @@ function renderCalGr(targetId){
   const esPv=targetId==='pv-calgr-pg';
   // Pestaña Grupos caballero: solo tarjetas de grupos; tap = integrantes por puntaje
   if(esPv){
-    const map={};DB.caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
+    const map={};_db().caballeros.forEach(c=>{if(!map[c.grupo])map[c.grupo]=[];map[c.grupo].push(c);});
     let h='<div class="sec-ttl" style="margin-bottom:14px;">👥 Grupos</div><p style="font-size:12px;color:var(--text3);margin-bottom:16px;">Toca un grupo para ver sus integrantes ordenados por puntuación.</p>';
     (GRUPOS||[]).forEach(g=>{
       const ms=(map[g]||[]).sort((a,b)=>calcCab(b.id).total-calcCab(a.id).total);
@@ -847,8 +921,8 @@ function renderCalGr(targetId){
     el.innerHTML=h||'<p style="color:var(--text3);font-size:13px">No hay grupos.</p>';
     return;
   }
-  const sorted=[...DB.clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
-  if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin clases.</p>';return;}
+  const sorted=[..._db().clases].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(!sorted.length){el.innerHTML='<div class="sec-ttl">Cal. por Grupo</div><p style="color:var(--text3);font-size:13px">Sin estudios.</p>';return;}
   const porAnio={};
   sorted.forEach(cl=>{const y=cl.fecha.substring(0,4);if(!porAnio[y])porAnio[y]=[];porAnio[y].push(cl);});
   const anos=Object.keys(porAnio).sort();
@@ -856,7 +930,7 @@ function renderCalGr(targetId){
   anos.forEach(y=>{
     h+=`<div class="cl-year-ttl" style="margin-top:${h.includes('cl-year-ttl')?16:0}px">${y}</div>`;
     porAnio[y].forEach(cl=>{
-      const gs={};DB.caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=(typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(q));gs[c.grupo].n++;}});
+      const gs={};_db().caballeros.forEach(c=>{const q=cl.cal[c.id];if(q&&q.a){if(!gs[c.grupo])gs[c.grupo]={s:0,n:0};gs[c.grupo].s+=(typeof classScoreForCab==='function'?classScoreForCab(cl,c.id):rowTotal(q));gs[c.grupo].n++;}});
       h+=`<div class="cgc"><div class="cgc-ttl">📅 ${fmtDate(cl.fecha)} — ${cl.tema||'Estudio de las Dispensaciones'}</div>
         ${GRUPOS.map(g=>{const d=gs[g];if(!d||!d.n)return`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:var(--text3)"><span>${g}</span><span>Sin datos</span></div>`;
         const avg=(d.s/d.n).toFixed(2);const pct=Math.min(100,(+avg/10)*100);
@@ -869,8 +943,25 @@ function renderCalGr(targetId){
 }
 
 function renderPersonal(cabId){
-  const c=DB.caballeros.find(x=>x.id===cabId);if(!c)return;
+  const c=_db().caballeros.find(x=>x.id===cabId);if(!c)return;
   const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
+
+  // Banner: recordatorio cambiar contraseña y completar perfil (visible al entrar)
+  const recordatorioEl=document.getElementById('pv-recordatorio-perfil-pw');
+  if(recordatorioEl){
+    const cerrado=typeof sessionStorage!=='undefined'&&sessionStorage.getItem('pv_recordatorio_cerrado')==='1';
+    if(!cerrado){
+      recordatorioEl.style.display='block';
+      recordatorioEl.innerHTML=`
+        <div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:1.5px solid #f59e0b;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(245,158,11,0.2);position:relative;">
+          <button type="button" onclick="document.getElementById('pv-recordatorio-perfil-pw').style.display='none';try{sessionStorage.setItem('pv_recordatorio_cerrado','1');}catch(e){}" style="position:absolute;top:8px;right:8px;background:transparent;border:none;font-size:18px;cursor:pointer;opacity:0.7;line-height:1;">×</button>
+          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:6px;">🔑 Te recomendamos</div>
+          <div style="font-size:13px;color:#78350f;margin-bottom:12px;line-height:1.4;">Cambia tu contraseña y completa tu perfil para mayor seguridad y para que te conozcan mejor los hermanos.</div>
+          <button type="button" onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:white;border:none;border-radius:10px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(58,171,186,0.4);">👤 Ir a mi perfil</button>
+        </div>`;
+    }else recordatorioEl.style.display='none';
+  }
+
   // Avatar
   const av=document.getElementById('pv-av');
   av.innerHTML=c.photo?`<img src="${c.photo}" style="width:76px;height:76px;object-fit:cover;border-radius:50%">`:`<span style="font-family:Montserrat;font-size:26px;font-weight:900;color:white">${ini(c.nombre)}</span>`;
@@ -879,8 +970,8 @@ function renderPersonal(cabId){
   document.getElementById('pv-name').textContent=c.nombre;
   document.getElementById('pv-meta').textContent=c.grupo?'Grupo '+(c.grupo||''):'';
   document.getElementById('pv-bdg').innerHTML=mkBadges(c);
-  document.getElementById('pv-total').textContent=cal.total===10?'10':cal.total.toFixed(1);
-  document.getElementById('pv-rank').textContent=`Posición #${rank} de ${DB.caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
+  document.getElementById('pv-total').textContent=typeof fmtScore==='function'?fmtScore(cal.total):(cal.total===10?'10':cal.total.toFixed(1));
+  document.getElementById('pv-rank').textContent=`Posición #${rank} de ${_db().caballeros.length} · Asistencias: ${cal.asist}/${cal.totalClases}`;
   document.getElementById('pv-stars').innerHTML=Array(7).fill(0).map((_,i)=>`<span class="star ${i<val?'lit':''}">★</span>`).join('');
   const completionEl=document.getElementById('pv-profile-completion');
   if(completionEl){
@@ -932,10 +1023,10 @@ function renderPersonal(cabId){
       const absDelta=Math.abs(d).toFixed(1);
       const mejoro=d>0;
       const color=mejoro?'#16a34a':'#b91c1c';
-      const fechaTxt=c.lastDeltaClase?fmtDate(c.lastDeltaClase):'la última clase';
+      const fechaTxt=c.lastDeltaClase?fmtDate(c.lastDeltaClase):'el último estudio';
       const txt=mejoro
         ?`En ${fechaTxt} tu media subió <strong style="color:${color}">+${absDelta} pts</strong>. ¡Sigue así!`
-        :`En ${fechaTxt} tu media bajó <strong style="color:${color}">-${absDelta} pts</strong>. ¡La próxima clase puedes recuperar terreno!`;
+        :`En ${fechaTxt} tu media bajó <strong style="color:${color}">-${absDelta} pts</strong>. ¡En el próximo estudio puedes recuperar terreno!`;
       lastMsgEl.innerHTML=`<div class="panel" style="margin-top:8px;border-color:${color}33;"><div class="panel-desc" style="color:${color};margin-bottom:0;">${txt}</div></div>`;
     }else{
       lastMsgEl.innerHTML='';
@@ -966,8 +1057,8 @@ function renderPersonal(cabId){
 function renderEvalPendienteBanner(cabId){
   const wrap=document.getElementById('pv-eval-pendiente-wrap');
   if(!wrap)return;
-  const list=(DB.evaluaciones||[]).filter(e=>!!e.titulo&&e.activo!==false);
-  const respuestas=DB.evaluacionRespuestas||[];
+  const list=(_db().evaluaciones||[]).filter(e=>!!e.titulo&&e.activo!==false);
+  const respuestas=_db().evaluacionRespuestas||[];
   const pendientes=list.filter(ev=>{
     const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
     return !miResp||!!(miResp&&miResp.puedeRepetir);
@@ -976,8 +1067,8 @@ function renderEvalPendienteBanner(cabId){
   wrap.style.display='block';
   const n=pendientes.length;
   const sortedPendientes=[...pendientes].sort((a,b)=>{
-    const clA=a.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===a.claseId):null;
-    const clB=b.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===b.claseId):null;
+    const clA=a.claseId?(_db().clases||[]).find(c=>(c.id||c.fecha)===a.claseId):null;
+    const clB=b.claseId?(_db().clases||[]).find(c=>(c.id||c.fecha)===b.claseId):null;
     const fa=clA?clA.fecha||'':''; const fb=clB?clB.fecha||'':'';
     return fa.localeCompare(fb);
   });
@@ -1087,13 +1178,16 @@ function mkClaseCardPV(cl,cabId,esProximo,materialDisponible){
     estadoRealizada='<span class="cl-badge cl-realizada">✓ Realizada</span>';
   }else{
     if(esProximo)estadoRealizada='<span class="cl-badge cl-proxima">Próximo</span>';
+    else estadoRealizada='<span class="cl-badge cl-pendiente">Pendiente</span>';
   }
   const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
-  const materialLine=materialDisponible?'<div style="font-size:10px;color:#0e7490;font-weight:700;margin-top:4px;">Material disponible</div>':'';
+  const soloPendiente=!realizada&&!esProximo&&!calificada;
+  const badgesHtml=soloPendiente?'<span class="cl-badge cl-pendiente">Pendiente</span>':(`${estadoRealizada} ${estadoCalif}`).trim();
+  const materialLine=esProximo&&materialDisponible?'<div class="cl-material-disp" style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#0e7490 0%,#0d9488 100%);color:#fff;font-size:11px;font-weight:800;letter-spacing:0.3px;padding:5px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(14,116,144,0.35);">📖 Material disponible</div>':'';
   let avgGrupo=0;
-  const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
+  const cabObj=(_db().caballeros||[]).find(c=>c.id===cabId);
   const grupoCab=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
-  const caballerosConCal=DB.caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
+  const caballerosConCal=_db().caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
   const enMiGrupo=caballerosConCal.filter(c=>(c.grupo||'Sin grupo')===grupoCab);
   if(enMiGrupo.length){
     let s=0;
@@ -1109,18 +1203,18 @@ function mkClaseCardPV(cl,cabId,esProximo,materialDisponible){
       <div class="cl-nm">${(cl.tema||'Estudio de las Dispensaciones').replace(/</g,'&lt;')}</div>
       <div class="cl-mt">${(cl.grupoResp||'Sin asignar').replace(/</g,'&lt;')}${calificada?' · '+asist+' asistentes':''}</div>
       ${materialLine}
-      <div class="cl-badges">${estadoRealizada} ${estadoCalif}</div>
+      <div class="cl-badges">${badgesHtml}</div>
     </div>
-    <div class="cl-avg" style="color:${sc}">${avgGrupo>0?(avgGrupo===10?'10':avgGrupo.toFixed(1)):'—'}</div>
+    <div class="cl-avg" style="color:${sc}">${avgGrupo>0?(typeof fmtScore==='function'?fmtScore(avgGrupo):(avgGrupo===10?'10':avgGrupo.toFixed(1))):'—'}</div>
   </div>`;
 }
-// Estudio (vista caballero): lista de estudios desde DB.clases ordenada por año. El próximo estudio (primera fecha futura) lleva "Próximo" y se indica si tiene material disponible; el resto de futuros solo "Pendiente".
+// Estudio (vista caballero): lista de estudios desde _db().clases ordenada por año. El próximo estudio (primera fecha futura) lleva "Próximo" y se indica si tiene material disponible; el resto de futuros solo "Pendiente".
 function renderEstudioPV(){
   const el=document.getElementById('pv-estudio-lista');
   if(!el)return;
   const cabId=typeof currentCabId!=='undefined'?currentCabId:'';
-  const clases=(Array.isArray(DB.clases)?DB.clases:[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-  if(clases.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay estudios (clases) registrados.</p>';return;}
+  const clases=(Array.isArray(_db().clases)?_db().clases:[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  if(clases.length===0){el.innerHTML='<p style="color:var(--text3);font-size:13px">Aún no hay estudios registrados.</p>';return;}
   const todayStr=new Date().toISOString().split('T')[0];
   const todasOrdenadas=[];
   const byYear={};
@@ -1133,8 +1227,8 @@ function renderEstudioPV(){
   years.forEach(y=>{ byYear[y].sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).forEach(cl=>todasOrdenadas.push(cl)); });
   const proximoClase=todasOrdenadas.find(cl=>(cl.fecha||'')>todayStr);
   const proximoClaseId=proximoClase?(proximoClase.id||proximoClase.fecha):null;
-  const evaluaciones=DB.evaluaciones||[];
-  const materialEstudio=DB.materialEstudio||[];
+  const evaluaciones=_db().evaluaciones||[];
+  const materialEstudio=_db().materialEstudio||[];
   const tieneMaterial=(cl)=>{
     const claseId=cl.id||cl.fecha;
     const mFromClase=cl.materialId?materialEstudio.find(x=>x.id===cl.materialId):null;
@@ -1158,14 +1252,14 @@ function renderEstudioPV(){
 }
 // Construye el HTML del detalle de un estudio (material + cuestionario sin título + calificación con colores por grupo). Usado por openEstudioDetallePV y por la vista Estudio.
 function getEstudioDetalleHTML(claseId,cabId){
-  const cl=(DB.clases||[]).find(c=>(c.id||c.fecha)===claseId);
+  const cl=(_db().clases||[]).find(c=>(c.id||c.fecha)===claseId);
   if(!cl)return'<p style="color:var(--text3);font-size:13px;">Estudio no encontrado.</p>';
-  const evaluaciones=DB.evaluaciones||[];
-  const respuestas=DB.evaluacionRespuestas||[];
+  const evaluaciones=_db().evaluaciones||[];
+  const respuestas=_db().evaluacionRespuestas||[];
   const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.claseId===claseId);
-  const materialEstudioArr=DB.materialEstudio||[];
+  const materialEstudioArr=_db().materialEstudio||[];
   const m=(cl.materialId?materialEstudioArr.find(x=>x.id===cl.materialId):null)||(ev&&ev.materialId?materialEstudioArr.find(x=>x.id===ev.materialId):null);
-  const cabObj=(DB.caballeros||[]).find(c=>c.id===cabId);
+  const cabObj=(_db().caballeros||[]).find(c=>c.id===cabId);
   const grupoCaballero=cabObj?(cabObj.grupo||'Sin grupo'):'Sin grupo';
   const gcol=g=>{if(typeof GCOL==='undefined')return 'var(--teal)';const key=Object.keys(GCOL||{}).find(k=>String(k).toUpperCase()===(String(g||'')).toUpperCase());return key?GCOL[key]:'var(--teal)';};
   let html='';
@@ -1195,7 +1289,7 @@ function getEstudioDetalleHTML(claseId,cabId){
     </div>`;
   }
   if(cl.cal&&Object.keys(cl.cal).length){
-    const caballerosConCal=DB.caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
+    const caballerosConCal=_db().caballeros.filter(c=>cl.cal[c.id]&&cl.cal[c.id].a);
     const grupos={};
     caballerosConCal.forEach(c=>{
       const g=c.grupo||'Sin grupo';
@@ -1228,12 +1322,16 @@ function getEstudioDetalleHTML(claseId,cabId){
   }
   return html||'<p style="color:var(--text3);font-size:13px;">Sin material ni evaluación para este estudio.</p>';
 }
-function openEstudioDetallePV(claseId){
-  const cl=(DB.clases||[]).find(c=>(c.id||c.fecha)===claseId);
+function openEstudioDetallePV(claseId,fromAdmin){
+  const cl=(_db().clases||[]).find(c=>(c.id||c.fecha)===claseId);
   if(!cl){toast('Estudio no encontrado.','err');return;}
   const titulo=(cl.tema||'Estudio').replace(/</g,'&lt;');
   const subt=(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' · '+(cl.grupoResp?'Expone: '+cl.grupoResp:'');
-  const body=getEstudioDetalleHTML(claseId,typeof currentCabId!=='undefined'?currentCabId:'');
+  let body=getEstudioDetalleHTML(claseId,typeof currentCabId!=='undefined'?currentCabId:'');
+  if(fromAdmin&&typeof openClaseDetail==='function'){
+    const esc=String(claseId).replace(/'/g,"\\'");
+    body+='<p style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb;"><button type="button" class="btn boutline" style="font-size:12px;" onclick="closeModal();openClaseDetail(\''+esc+'\')">✏️ Editar estudio</button></p>';
+  }
   if(typeof openSheet==='function')openSheet('📚',titulo,subt,body);
 }
 function getMaterialUrl(m){
@@ -1245,7 +1343,7 @@ function getMaterialUrl(m){
   return '';
 }
 function openMaterialViewer(id){
-  const m=(DB.materialEstudio||[]).find(x=>x.id===id);
+  const m=(_db().materialEstudio||[]).find(x=>x.id===id);
   if(!m)return;
   const url=getMaterialUrl(m);
   if(!url){toast('Este material no tiene URL.','err');return;}
@@ -1271,14 +1369,14 @@ function closeMaterialViewer(){
 // CAMBIAR CONTRASEÑA
 // ═══════════════════════════════════════════════════════════════
 function openChangePw(){
-  const nombre=DB.adminNombre||'';
-  const tieneFoto=!!DB.adminPhoto;
+  const nombre=_db().adminNombre||'';
+  const tieneFoto=!!_db().adminPhoto;
   openSheet('🔑','Contraseña y perfil admin','Editar nombre, foto y contraseña',`
     <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #e5e7eb;">
       <div class="fr" style="margin-bottom:10px;"><label>Nombre del administrador</label><input type="text" id="pw-admin-nombre" placeholder="Nombre" value="${nombre.replace(/"/g,'&quot;')}"></div>
       <div style="margin-bottom:8px;"><label style="font-size:12px;color:#6b7280;">Foto</label></div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <div id="pw-admin-photo-preview" style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#e5e7eb;flex-shrink:0;">${tieneFoto?`<img src="${DB.adminPhoto}" style="width:100%;height:100%;object-fit:cover;">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>'}</div>
+        <div id="pw-admin-photo-preview" style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#e5e7eb;flex-shrink:0;">${tieneFoto?`<img src="${_db().adminPhoto}" style="width:100%;height:100%;object-fit:cover;">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>'}</div>
         <input type="file" id="pw-admin-photo-inp" accept="image/*" style="font-size:11px;">
       </div>
       <button class="btn bteal" style="font-size:11px;padding:6px 12px;" onclick="saveAdminPerfilFromSheet()">💾 Guardar nombre y foto</button>
@@ -1296,8 +1394,8 @@ function openChangePw(){
   };
 }
 async function saveAdminPerfilFromSheet(){
-  const nombreInp=document.getElementById('pw-admin-nombre');if(nombreInp)DB.adminNombre=nombreInp.value.trim();
-  if(window._pwAdminPhotoPending){DB.adminPhoto=window._pwAdminPhotoPending;window._pwAdminPhotoPending=null;}
+  const nombreInp=document.getElementById('pw-admin-nombre');if(nombreInp)_db().adminNombre=nombreInp.value.trim();
+  if(window._pwAdminPhotoPending){_db().adminPhoto=window._pwAdminPhotoPending;window._pwAdminPhotoPending=null;}
   await saveDB();toast('✅ Nombre y foto guardados','ok');
 }
 async function doChangePw(){
@@ -1305,10 +1403,10 @@ async function doChangePw(){
   const nw=document.getElementById('pw-new').value;
   const conf=document.getElementById('pw-conf').value;
   const err=document.getElementById('pw-err');err.style.display='none';
-  if(curr!==DB.adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
+  if(curr!==_db().adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
   if(nw.length<4){err.textContent='Mínimo 4 caracteres.';err.style.display='block';return;}
   if(nw!==conf){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
-  DB.adminPw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña actualizada','ok');
+  _db().adminPw=nw;closeModal();toast('💾 Guardando...','info');await saveDB();toast('✅ Contraseña actualizada','ok');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1353,7 +1451,7 @@ function confirmarMarcarDevoto(){
   `);
 }
 async function doMarcarDevoto(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const c=_db().caballeros.find(x=>x.id===currentCabId);if(!c)return;
   c.devoto=1;
   document.getElementById('pv-bdg').innerHTML=mkBadges(c);
   const val=autoVal(c);
@@ -1385,7 +1483,7 @@ function renderFbautCard(c){
         <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input type="date" id="pv-fbaut-inp" value="${c.fechaBautizado||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #bfdbfe;border-radius:10px;font-size:13px;">
           <button onclick="guardarFbaut()" style="background:#2563eb;border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
-          ${tieneFecha?'<button onclick="window._pvFbautEditMode=false;restablecerFbaut()" style="background:transparent;border:1px solid #93c5fd;color:#1e40af;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Restablecer</button><button onclick="window._pvFbautEditMode=false;renderFbautCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
+          ${tieneFecha?'<button onclick="window._pvFbautEditMode=false;restablecerFbaut()" style="background:transparent;border:1px solid #93c5fd;color:#1e40af;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Restablecer</button><button onclick="window._pvFbautEditMode=false;renderFbautCard(_db().caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
         </div>
       </div>
     </div>
@@ -1406,14 +1504,14 @@ function renderFsellCard(c){
         <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input type="date" id="pv-fsell-inp" value="${c.fechaSellado||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #ddd6fe;border-radius:10px;font-size:13px;">
           <button onclick="guardarFsell()" style="background:#6d28d9;border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
-          ${tieneFecha?'<button onclick="window._pvFsellEditMode=false;restablecerFsell()" style="background:transparent;border:1px solid #c4b5fd;color:#5b21b6;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Restablecer</button><button onclick="window._pvFsellEditMode=false;renderFsellCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
+          ${tieneFecha?'<button onclick="window._pvFsellEditMode=false;restablecerFsell()" style="background:transparent;border:1px solid #c4b5fd;color:#5b21b6;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Restablecer</button><button onclick="window._pvFsellEditMode=false;renderFsellCard(_db().caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
         </div>
       </div>
     </div>
   </div>`;
 }
 async function guardarFbaut(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c){toast('Error: no se encontró el caballero','err');return;}
   const inp=document.getElementById('pv-fbaut-inp');
   if(!inp)return;
@@ -1428,7 +1526,7 @@ async function guardarFbaut(){
   toast('💧 Fecha de bautizado guardada','ok');
 }
 async function guardarFsell(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c){toast('Error: no se encontró el caballero','err');return;}
   const inp=document.getElementById('pv-fsell-inp');
   if(!inp)return;
@@ -1464,7 +1562,7 @@ function renderFnacCard(c){
         <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input type="date" id="pv-fnac-inp" value="${c.fnac||''}" style="flex:1;min-width:120px;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;">
           <button onclick="guardarFnac()" style="background:var(--teal);border:none;color:white;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;">Guardar</button>
-          ${tiene?'<button onclick="window._pvFnacEditMode=false;renderFnacCard(DB.caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
+          ${tiene?'<button onclick="window._pvFnacEditMode=false;renderFnacCard(_db().caballeros.find(x=>x.id===currentCabId))" style="background:transparent;border:1px solid #d1d5db;color:#6b7280;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;">Cancelar</button>':''}
         </div>
       </div>
     </div>
@@ -1485,7 +1583,7 @@ function renderTelefonoCard(c){
   </div>`;
 }
 async function guardarTelefonoPV(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c){toast('Error: no se encontró el caballero','err');return;}
   const v=(document.getElementById('pv-telefono-inp')?.value||'').trim();
   if(!v){toast('Escribe tu número de teléfono','err');return;}
@@ -1498,7 +1596,7 @@ async function guardarTelefonoPV(){
   toast('✅ Teléfono guardado','ok');
 }
 function openFnacEditFromCumple(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
   const el=document.getElementById('pv-fnac-card');
   if(el){el.style.display='block';}
@@ -1507,21 +1605,21 @@ function openFnacEditFromCumple(){
   showPvTab('perfil');
 }
 function openFbautEditFromCumple(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
   window._pvFbautEditMode=true;
   renderFbautCard(c);
   showPvTab('perfil');
 }
 function openFsellEditFromCumple(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
   window._pvFsellEditMode=true;
   renderFsellCard(c);
   showPvTab('perfil');
 }
 async function restablecerFbaut(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
   c.fechaBautizado='';
   toast('💾 Guardando...','info');
@@ -1532,7 +1630,7 @@ async function restablecerFbaut(){
   toast('💧 Fecha de bautizado restablecida','ok');
 }
 async function restablecerFsell(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c)return;
   c.fechaSellado='';
   toast('💾 Guardando...','info');
@@ -1543,7 +1641,7 @@ async function restablecerFsell(){
   toast('🕊️ Fecha de sellado restablecida','ok');
 }
 async function guardarFnac(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c){toast('Error: no se encontró el caballero','err');return;}
   const inp=document.getElementById('pv-fnac-inp');
   if(!inp){toast('Error al guardar','err');return;}
@@ -1560,7 +1658,7 @@ async function guardarFnac(){
 }
 
 async function quitarDevotoDesdePerfil(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);
+  const c=_db().caballeros.find(x=>x.id===currentCabId);
   if(!c||!c.devoto)return;
   closeModal();
   c.devoto=0;
@@ -1624,12 +1722,12 @@ function renderGrupoSection(c){
   // Calcular stats por grupo (solo grupos activos)
   const grupoStats={};
   GRUPOS_ACTIVOS.forEach(g=>{
-    const miembros=DB.caballeros.filter(x=>x.grupo===g);
+    const miembros=_db().caballeros.filter(x=>x.grupo===g);
     const totalPts=miembros.reduce((s,x)=>s+calcCab(x.id).total,0);
     const avgPts=miembros.length?+(totalPts/miembros.length).toFixed(1):0;
     // Asistencia total / clases posibles
     const asistTot=miembros.reduce((s,x)=>s+calcCab(x.id).asist,0);
-    const posTot=miembros.length*DB.clases.length;
+    const posTot=miembros.length*_db().clases.length;
     const pctAsist=posTot?Math.round((asistTot/posTot)*100):0;
     grupoStats[g]={miembros,totalPts:+totalPts.toFixed(1),avgPts,asistTot,pctAsist};
   });
@@ -1643,7 +1741,7 @@ function renderGrupoSection(c){
   const col=GCOL[miGrupo]||'var(--teal)';
 
   // Clases con calificaciones del grupo
-  const clasesGrupo=DB.clases
+  const clasesGrupo=_db().clases
     .filter(cl=>misMiembros.some(m=>cl.cal[m.id]&&cl.cal[m.id].a))
     .sort((a,b)=>b.fecha.localeCompare(a.fecha));
 
@@ -1754,7 +1852,7 @@ function renderGrupoSection(c){
 
 
 function openChangeCabPw(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const c=_db().caballeros.find(x=>x.id===currentCabId);if(!c)return;
   const tienePass=!!c.pw;
   const nombreEsc=escAttr(c.nombre||'');
   const nombreMostrarEsc=escAttr(c.nombreMostrar||'');
@@ -1879,7 +1977,7 @@ function openChangeCabPw(){
   }
 }
 async function doSaveCabPerfilPV(){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const c=_db().caballeros.find(x=>x.id===currentCabId);if(!c)return;
   c.nombre=(document.getElementById('cpw-nombre')?.value||'').trim();
   c.nombreMostrar=(document.getElementById('cpw-nombreMostrar')?.value||'').trim();
   c.telefono=(document.getElementById('cpw-telefono')?.value||'').trim();
@@ -1927,12 +2025,12 @@ async function doSaveCabPerfilPV(){
   await saveDB();if(typeof logAppHistorial==='function')logAppHistorial(c.id,'perfil','Datos de perfil');toast('✅ Datos guardados','ok');
 }
 async function doChangeCabPw(tienePass){
-  const c=DB.caballeros.find(x=>x.id===currentCabId);if(!c)return;
+  const c=_db().caballeros.find(x=>x.id===currentCabId);if(!c)return;
   const err=document.getElementById('cpw-err');err.style.display='none';
   if(tienePass){
     const curr=document.getElementById('cpw-curr').value;
     // Acepta contraseña propia O contraseña maestra
-    if(curr!==c.pw&&curr!==DB.adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
+    if(curr!==c.pw&&curr!==_db().adminPw){err.textContent='Contraseña actual incorrecta.';err.style.display='block';return;}
   }
   const nw=document.getElementById('cpw-new').value;
   const conf=document.getElementById('cpw-conf').value;
@@ -2021,7 +2119,7 @@ function importData(e){
       if(!data.caballeros||!data.clases)throw new Error('Formato incorrecto');
       window._importData=data;
       openSheet('📥','Importar datos','',`
-        <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Se reemplazarán todos los datos actuales (caballeros, clases, eventos, finanzas, etc.).</p>
+        <p style="font-size:14px;color:var(--text);margin-bottom:10px;">Se reemplazarán todos los datos actuales (caballeros, estudios, eventos, finanzas, etc.).</p>
         <p style="font-size:12px;color:var(--text3);margin-bottom:14px;">Te recomendamos tener una copia exportada antes de continuar.</p>
         <div class="btn-row">
           <button class="btn boutline" onclick="closeModal();window._importData=null">Cancelar</button>

@@ -3,17 +3,19 @@
 // Admin: crear/editar/eliminar evaluaciones y preguntas
 // Caballeros: responder y ver puntuación
 // ═══════════════════════════════════════════════════════════════
+// _db() definido en app.js
 
 function renderEvaluacionesAdmin(){
   const el=document.getElementById('evaluaciones-admin-lista');
   if(!el)return;
-  const list=(DB.evaluaciones||[]).filter(e=>!!e.titulo);
+  const db=_db();
+  const list=(db.evaluaciones||[]).filter(e=>!!e.titulo);
   const html=list.length?list.map(ev=>{
     const nPreg=(ev.preguntas||[]).length;
-    const nResp=(DB.evaluacionRespuestas||[]).filter(r=>r.evaluacionId===ev.id).length;
-    const cl=ev.claseId?(DB.clases||[]).find(c=>(c.id||c.fecha)===ev.claseId):null;
+    const nResp=(db.evaluacionRespuestas||[]).filter(r=>r.evaluacionId===ev.id).length;
+    const cl=ev.claseId?(db.clases||[]).find(c=>(c.id||c.fecha)===ev.claseId):null;
     const claseLbl=cl?(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' — '+(cl.tema||'').substring(0,25):'';
-    const mat=ev.materialId?(DB.materialEstudio||[]).find(m=>m.id===ev.materialId):null;
+    const mat=ev.materialId?(db.materialEstudio||[]).find(m=>m.id===ev.materialId):null;
     const matLbl=mat?(mat.titulo||'').substring(0,30):'';
     return`<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:0;">
@@ -31,7 +33,7 @@ function renderEvaluacionesAdmin(){
 }
 
 function openFormEvaluacion(id,preselectedClaseId){
-  const ev=id?(DB.evaluaciones||[]).find(e=>e.id===id):null;
+  const ev=id?(_db().evaluaciones||[]).find(e=>e.id===id):null;
   const titulo=ev?(ev.titulo||''):'';
   const descripcion=ev?(ev.descripcion||''):'';
   const claseId=preselectedClaseId!==undefined&&preselectedClaseId!==''?preselectedClaseId:(ev&&ev.claseId?ev.claseId:'');
@@ -132,10 +134,10 @@ function guardarEvaluacion(){
   });
   const evClaseId=(document.getElementById('evq-clase')?.value||'').trim();
   const evId=id||'evq'+Date.now();
-  const existing=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  const existing=(_db().evaluaciones||[]).find(e=>e.id===evId);
   const materialId=existing&&existing.materialId?existing.materialId:undefined;
   const ev={id:evId,titulo,descripcion,activo:true,claseId:evClaseId||undefined,materialId,preguntas:existing&&existing.preguntas?preguntas.length?preguntas:existing.preguntas:preguntas};
-  if(existing)Object.assign(existing,ev);else (DB.evaluaciones=DB.evaluaciones||[]).push(ev);
+  if(existing)Object.assign(existing,ev);else (_db().evaluaciones=_db().evaluaciones||[]).push(ev);
   window._evqClasePreseleccionada=undefined;
   closeModal();
   toast('Cuestionario guardado','ok');
@@ -143,7 +145,7 @@ function guardarEvaluacion(){
 }
 
 function confirmarDelEvaluacion(id){
-  const ev=(DB.evaluaciones||[]).find(e=>e.id===id);
+  const ev=(_db().evaluaciones||[]).find(e=>e.id===id);
   if(!ev)return;
   openSheet('🗑','Eliminar cuestionario','',`
     <p style="font-size:14px;color:var(--text);margin-bottom:14px;">¿Eliminar <strong>${escAttr(ev.titulo)}</strong>? Se perderán también las respuestas guardadas.</p>
@@ -155,18 +157,18 @@ function confirmarDelEvaluacion(id){
 }
 
 function doDelEvaluacion(id){
-  DB.evaluaciones=(DB.evaluaciones||[]).filter(e=>e.id!==id);
-  DB.evaluacionRespuestas=(DB.evaluacionRespuestas||[]).filter(r=>r.evaluacionId!==id);
+  _db().evaluaciones=(_db().evaluaciones||[]).filter(e=>e.id!==id);
+  _db().evaluacionRespuestas=(_db().evaluacionRespuestas||[]).filter(r=>r.evaluacionId!==id);
   toast('Cuestionario eliminado','ok');
   saveDB().then(()=>renderEvaluacionesAdmin());
 }
 
 function openRespuestasEvaluacionAdmin(evId){
-  const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  const ev=(_db().evaluaciones||[]).find(e=>e.id===evId);
   if(!ev){toast('Cuestionario no encontrado','err');return;}
-  const list=(DB.evaluacionRespuestas||[]).filter(r=>r.evaluacionId===evId);
+  const list=(_db().evaluacionRespuestas||[]).filter(r=>r.evaluacionId===evId);
   const rows=list.map(r=>{
-    const c=(DB.caballeros||[]).find(x=>x.id===r.cabId);
+    const c=(_db().caballeros||[]).find(x=>x.id===r.cabId);
     const nom=nombreCorto?nombreCorto(c):(c?c.nombre:r.cabId);
     const puedeRepetir=!!r.puedeRepetir;
     const fecha=r.fecha?(r.fecha.split('T')[0]):'—';
@@ -176,7 +178,7 @@ function openRespuestasEvaluacionAdmin(evId){
   openSheet('📋','Respuestas: '+ev.titulo,'Solo el admin puede permitir repetir el cuestionario.',tbl);
 }
 function permiterRepetirEvaluacion(evId,cabId){
-  const r=(DB.evaluacionRespuestas||[]).find(x=>x.evaluacionId===evId&&x.cabId===cabId);
+  const r=(_db().evaluacionRespuestas||[]).find(x=>x.evaluacionId===evId&&x.cabId===cabId);
   if(!r)return;
   r.puedeRepetir=!r.puedeRepetir;
   saveDB().then(()=>{toast(r.puedeRepetir?'Puede repetir el cuestionario':'Ya no puede repetir','ok');openRespuestasEvaluacionAdmin(evId);});
@@ -186,9 +188,9 @@ function permiterRepetirEvaluacion(evId,cabId){
 function renderEvaluacionesPV(){
   const el=document.getElementById('evaluaciones-pv-lista');
   if(!el)return;
-  const list=(DB.evaluaciones||[]).filter(e=>!!e.titulo&&e.activo!==false);
+  const list=(_db().evaluaciones||[]).filter(e=>!!e.titulo&&e.activo!==false);
   const cabId=currentCabId;
-  const respuestas=DB.evaluacionRespuestas||[];
+  const respuestas=_db().evaluacionRespuestas||[];
   const html=list.length?list.map(ev=>{
     const miResp=respuestas.find(r=>r.evaluacionId===ev.id&&r.cabId===cabId);
     const nPreg=(ev.preguntas||[]).length;
@@ -216,17 +218,20 @@ function renderEvaluacionesPV(){
 }
 
 function verResultadoEvaluacionPV(evId){
-  const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  const ev=(_db().evaluaciones||[]).find(e=>e.id===evId);
   if(!ev)return;
   const cabId=currentCabId;
-  const r=(DB.evaluacionRespuestas||[]).find(x=>x.evaluacionId===evId&&x.cabId===cabId);
+  const r=(_db().evaluacionRespuestas||[]).find(x=>x.evaluacionId===evId&&x.cabId===cabId);
   if(!r){toast('No tienes respuestas guardadas para este cuestionario','err');return;}
   mostrarResultadoEvaluacionPV(ev,r);
 }
 
-function mostrarResultadoEvaluacionPV(ev,registro){
+function getResultadoEvaluacionHTML(ev,registro){
   const preguntas=ev.preguntas||[];
-  let html='<div style="margin-bottom:16px;"><div class="evq-titulo" style="font-size:16px;margin-bottom:6px;" title="'+escAttr(ev.titulo)+'">'+escAttr(ev.titulo)+'</div><div style="font-size:13px;color:var(--text3);">Resultado: '+registro.puntuacion+' de '+registro.totalPreguntas+' correctas</div></div>';
+  const nota10=registro.totalPreguntas>0?(registro.puntuacion/registro.totalPreguntas*10):0;
+  const notaTxt=typeof fmtScore==='function'?fmtScore(nota10):nota10.toFixed(1);
+  const banner='<div style="margin-bottom:20px;padding:16px 18px;background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%);border-radius:14px;border:2px solid #2dd4bf;"><div class="evq-titulo" style="font-size:17px;font-weight:900;color:#0f766e;" title="'+escAttr(ev.titulo)+'">'+escAttr(ev.titulo)+'</div><div style="font-size:14px;color:#115e59;margin-top:8px;font-weight:700;">Resultado: '+registro.puntuacion+' de '+registro.totalPreguntas+' correctas · Nota: '+notaTxt+'/10</div></div>';
+  let html=banner;
   preguntas.forEach((p,i)=>{
     const correctIdx=(p.opciones||[]).findIndex(o=>o.correcta);
     const correctaTxt=correctIdx>=0?(p.opciones||[])[correctIdx].texto:'—';
@@ -241,14 +246,21 @@ function mostrarResultadoEvaluacionPV(ev,registro){
     </div>`;
   });
   html+='<button type="button" class="btn bteal bfull" onclick="closeModal();">Cerrar</button>';
-  openSheet('📋','Resultado: '+ev.titulo,'',html);
+  return html;
+}
+
+function mostrarResultadoEvaluacionPV(ev,registro){
+  const html=getResultadoEvaluacionHTML(ev,registro);
+  const nota10=registro.totalPreguntas>0?(registro.puntuacion/registro.totalPreguntas*10):0;
+  const notaTxt=typeof fmtScore==='function'?fmtScore(nota10):nota10.toFixed(1);
+  openSheet('📋','Resultado: '+ev.titulo,registro.puntuacion+' de '+registro.totalPreguntas+' correctas · Nota: '+notaTxt+'/10',html);
 }
 
 function iniciarCuestionarioPV(evId){
-  const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  const ev=(_db().evaluaciones||[]).find(e=>e.id===evId);
   if(!ev||!(ev.preguntas||[]).length){toast('Cuestionario no disponible','err');return;}
   const cabId=currentCabId;
-  const prev=(DB.evaluacionRespuestas||[]).find(r=>r.evaluacionId===evId&&r.cabId===cabId);
+  const prev=(_db().evaluacionRespuestas||[]).find(r=>r.evaluacionId===evId&&r.cabId===cabId);
   if(prev&&!prev.puedeRepetir){verResultadoEvaluacionPV(evId);return;}
   const preguntas=ev.preguntas;
   let html='<div style="margin-bottom:20px;padding:16px 18px;background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%);border-radius:14px;border:2px solid #2dd4bf;"><div class="evq-titulo" style="font-size:17px;font-weight:900;color:#0f766e;" title="'+escAttr(ev.titulo)+'">'+escAttr(ev.titulo)+'</div>';
@@ -274,7 +286,7 @@ function iniciarCuestionarioPV(evId){
 }
 
 function enviarRespuestasPV(evId){
-  const ev=(DB.evaluaciones||[]).find(e=>e.id===evId);
+  const ev=(_db().evaluaciones||[]).find(e=>e.id===evId);
   if(!ev){closeModal();toast('Cuestionario no encontrado','err');return;}
   const cabId=currentCabId;
   const preguntas=ev.preguntas||[];
@@ -290,17 +302,26 @@ function enviarRespuestasPV(evId){
   });
   const totalPreguntas=preguntas.length;
   const puntuacion=correctas;
-  DB.evaluacionRespuestas=DB.evaluacionRespuestas||[];
-  const prev=DB.evaluacionRespuestas.find(r=>r.evaluacionId===evId&&r.cabId===cabId);
+  _db().evaluacionRespuestas=_db().evaluacionRespuestas||[];
+  const prev=_db().evaluacionRespuestas.find(r=>r.evaluacionId===evId&&r.cabId===cabId);
   const registro={evaluacionId:evId,cabId,fecha:new Date().toISOString(),respuestas,puntuacion,totalPreguntas,puedeRepetir:false};
-  if(prev){const idx=DB.evaluacionRespuestas.indexOf(prev);DB.evaluacionRespuestas[idx]=registro;}else DB.evaluacionRespuestas.push(registro);
+  if(prev){const idx=_db().evaluacionRespuestas.indexOf(prev);_db().evaluacionRespuestas[idx]=registro;}else _db().evaluacionRespuestas.push(registro);
   if(typeof invalidateCache==='function')invalidateCache();
   if(typeof logAppHistorial==='function')logAppHistorial(cabId,'cuestionario',(ev.titulo||evId||'').toString());
-  closeModal();
+  const nota10=totalPreguntas>0?(puntuacion/totalPreguntas*10):0;
+  const notaTxt=typeof fmtScore==='function'?fmtScore(nota10):nota10.toFixed(1);
+  const body=getResultadoEvaluacionHTML(ev,registro);
+  const mBody=document.getElementById('m-body');
+  const mTtl=document.getElementById('m-ttl');
+  const mSub=document.getElementById('m-sub');
+  if(mBody)mBody.innerHTML=body;
+  if(mTtl)mTtl.textContent='Resultado: '+ev.titulo;
+  if(mSub)mSub.textContent=puntuacion+' de '+totalPreguntas+' correctas · Nota: '+notaTxt+'/10';
+  const sheet=document.getElementById('sheet');
+  if(sheet)sheet.scrollTop=0;
   toast('Respuestas guardadas','ok');
   saveDB().then(()=>{
     if(typeof renderEvaluacionesPV==='function')renderEvaluacionesPV();
     if(typeof renderEstudioPV==='function')renderEstudioPV();
-    mostrarResultadoEvaluacionPV(ev,registro);
   });
 }

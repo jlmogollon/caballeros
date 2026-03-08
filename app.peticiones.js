@@ -18,12 +18,13 @@ function toggleAnon(){
 async function enviarPeticion(){
   const texto=document.getElementById('pet-texto').value.trim();
   if(!texto){toast('Escribe tu petición primero','err');return;}
-  const cab=DB.caballeros.find(x=>x.id===currentCabId);
+  const db=_db();
+  const cab=(db.caballeros||[]).find(x=>x.id===currentCabId);
   const nombre=petAnon?'Anónimo':(cab?cab.nombre:'Hermano');
   const id='pet_'+Date.now();
   const peticion={id,texto,nombre,cabId:currentCabId,ts:Date.now(),fecha:new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'})};
-  if(!DB.peticiones)DB.peticiones=[];
-  DB.peticiones.push(peticion);
+  if(!Array.isArray(db.peticiones))db.peticiones=[];
+  db.peticiones.push(peticion);
   try{
     toast('💾 Enviando...','info');
     await saveDB();
@@ -32,7 +33,7 @@ async function enviarPeticion(){
     toast('🙏 Petición enviada. Los hermanos orarán por ti','ok');
     cargarPeticiones();
   }catch(e){
-    DB.peticiones=DB.peticiones.filter(p=>p.id!==id);
+    var d=_db();d.peticiones=(d.peticiones||[]).filter(p=>p.id!==id);
     toast('⚠️ Error al enviar. Intenta de nuevo.','err');
     console.error(e);
   }
@@ -59,7 +60,8 @@ function borrarPeticion(id){
 }
 
 async function confirmarBorrarPeticion(id){
-  DB.peticiones=(DB.peticiones||[]).filter(p=>p.id!==id);
+  const db=_db();
+  db.peticiones=(db.peticiones||[]).filter(p=>p.id!==id);
   try{
     toast('💾 Guardando...','info');
     await saveDB();
@@ -75,7 +77,7 @@ function cargarPeticiones(esAdmin=false){
   if(!lista)return;
   const badge=document.getElementById('peticiones-count-badge');
   const adminBadge=document.getElementById('admin-pet-badge');
-  const items=[...(DB.peticiones||[])].sort((a,b)=>b.ts-a.ts);
+  const items=[...(_db().peticiones||[])].sort((a,b)=>b.ts-a.ts);
   const count=items.length;
   if(badge)badge.textContent=`${count} petición${count!==1?'es':''}`;
   if(adminBadge)adminBadge.textContent=`${count} petición${count!==1?'es':''}`;
@@ -89,7 +91,7 @@ function cargarPeticiones(esAdmin=false){
   }
   lista.innerHTML=items.map(p=>{
     const isAnon=p.nombre==='Anónimo';
-    const nombreMostrar=esAdmin&&isAnon&&p.cabId?(DB.caballeros||[]).find(c=>c.id===p.cabId)?.nombre||p.nombre:p.nombre;
+    const nombreMostrar=esAdmin&&isAnon&&p.cabId?(_db().caballeros||[]).find(c=>c.id===p.cabId)?.nombre||p.nombre:p.nombre;
     const avColor=isAnon&&!esAdmin?'#9ca3af':'#8b5cf6';
     const avIcon=isAnon&&!esAdmin?'🤍':'🙏';
     const puedeborrar=esAdmin||(p.cabId&&p.cabId===currentCabId);
