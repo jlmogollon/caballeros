@@ -54,7 +54,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 /* ── NAV ── */
 .app-nav{background:var(--dark2);display:flex;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid rgba(58,171,186,0.2);flex-shrink:0;}
 .app-nav::-webkit-scrollbar{display:none;}
-.ntab{padding:10px 12px;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;white-space:normal;word-break:break-word;border-bottom:2.5px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;flex-shrink:0;text-align:center;line-height:1.25;}
+.ntab{padding:10px 12px;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);cursor:pointer;white-space:nowrap;border-bottom:2.5px solid transparent;transition:all .2s;font-family:'Montserrat',sans-serif;font-weight:700;flex-shrink:0;text-align:center;line-height:1.25;}
 .ntab.active{color:var(--teal);border-bottom-color:var(--teal);}
 
 /* ── TAB CONTENT ── */
