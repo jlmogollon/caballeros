@@ -325,7 +325,9 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 /* Personal view tabs (tab bar) */
 .pv-nav{background:var(--dark2);display:flex;border-bottom:3px solid rgba(0,0,0,0.15);flex-shrink:0;padding:0 8px 0;gap:0;}
 .pv-nav-single-row{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;}
-.pv-nav-single-row .pv-ntab{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;}
+.pv-nav-single-row .pv-ntab{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;}
+.pv-nav-single-row .pv-ntab-ico{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:1em;}
+.pv-nav-single-row .pv-ntab-txt{display:inline-block;}
 .pv-nav-row{display:flex;flex:1;min-width:0;gap:4px;}
 .pv-nav-row .pv-ntab{flex:1;min-width:0;}
 .pv-nav::-webkit-scrollbar{display:none;}

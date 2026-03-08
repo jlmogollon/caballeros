@@ -944,11 +944,14 @@ function renderPersonal(cabId){
   const c=_db().caballeros.find(x=>x.id===cabId);if(!c)return;
   const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
 
-  // Banner: recordatorio cambiar contraseña y completar perfil (visible al entrar)
+  // Banner: recordatorio cambiar contraseña y completar perfil (solo una vez por sesión, como admin)
   const recordatorioEl=document.getElementById('pv-recordatorio-perfil-pw');
   if(recordatorioEl){
     const cerrado=typeof sessionStorage!=='undefined'&&sessionStorage.getItem('pv_recordatorio_cerrado')==='1';
-    if(!cerrado){
+    var recordatorioYaMostrado=false;
+    try{recordatorioYaMostrado=sessionStorage.getItem('caballeros_cab_recordatorio_shown')==='1';}catch(e){}
+    if(!cerrado&&!recordatorioYaMostrado){
+      try{sessionStorage.setItem('caballeros_cab_recordatorio_shown','1');}catch(e){}
       recordatorioEl.style.display='block';
       recordatorioEl.innerHTML=`
         <div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:1.5px solid #f59e0b;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(245,158,11,0.2);position:relative;">
@@ -1320,17 +1323,53 @@ function getEstudioDetalleHTML(claseId,cabId){
   }
   return html||'<p style="color:var(--text3);font-size:13px;">Sin material ni evaluación para este estudio.</p>';
 }
+// Vista admin del detalle de estudio: material, cuestionario y tabla de respuestas (quién respondió, calificación, permitir repetir). Sin datos de caballero.
+function getEstudioDetalleHTMLAdmin(claseId){
+  const cl=(_db().clases||[]).find(c=>(c.id||c.fecha)===claseId);
+  if(!cl)return'<p style="color:var(--text3);font-size:13px;">Estudio no encontrado.</p>';
+  const evaluaciones=_db().evaluaciones||[];
+  const respuestas=_db().evaluacionRespuestas||[];
+  const ev=evaluaciones.find(e=>!!e.titulo&&e.activo!==false&&e.claseId===claseId);
+  const materialEstudioArr=_db().materialEstudio||[];
+  const m=(cl.materialId?materialEstudioArr.find(x=>x.id===cl.materialId):null)||(ev&&ev.materialId?materialEstudioArr.find(x=>x.id===ev.materialId):null);
+  let html='';
+  if(m&&typeof getMaterialUrl==='function'&&getMaterialUrl(m)){
+    html+=`<div onclick="openMaterialViewer('${m.id}');" style="background:linear-gradient(145deg,#f0f9ff 0%,#e0f2fe 50%,#bae6fd 100%);border:1.5px solid rgba(14,165,233,0.35);border-radius:14px;padding:18px 20px;cursor:pointer;box-shadow:0 4px 16px rgba(14,165,233,0.12);margin-bottom:12px;">
+      <div style="font-size:10px;font-weight:800;color:#0369a1;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Material de estudio</div>
+      <div style="font-weight:800;color:var(--dark);font-size:15px;">${(m.titulo||'Sin título').replace(/</g,'&lt;')}</div>
+      <div style="font-size:12px;color:#0c4a6e;margin-top:6px;opacity:0.9;">Toca para abrir la página</div>
+    </div>`;
+  }
+  if(ev){
+    const list=(respuestas||[]).filter(r=>r.evaluacionId===ev.id);
+    const caballeros=_db().caballeros||[];
+    const rows=list.map(r=>{
+      const c=caballeros.find(x=>x.id===r.cabId);
+      const nom=typeof nombreCorto==='function'?nombreCorto(c):(c?c.nombre:r.cabId);
+      const puedeRepetir=!!r.puedeRepetir;
+      const fecha=r.fecha?(r.fecha.split('T')[0]):'—';
+      const total=r.totalPreguntas||0;
+      const nota10=total>0?+(r.puntuacion/total*10).toFixed(2):'—';
+      const notaTxt=typeof fmtScore==='function'&&nota10!=='—'?fmtScore(nota10):(nota10==='—'?'—':nota10+'/10');
+      return`<tr><td>${escAttr(nom||'—')}</td><td>${escAttr(fecha)}</td><td>${r.puntuacion}/${total}</td><td>${notaTxt}</td><td><button type="button" class="btn boutline" style="font-size:11px;padding:4px 10px;" onclick="permiterRepetirEvaluacion('${ev.id}','${r.cabId}')">${puedeRepetir?'✓ Permitido repetir':'Permitir repetir'}</button></td></tr>`;
+    }).join('');
+    const tbl=list.length?`<table class="dtable" style="width:100%;"><thead><tr><th>Caballero</th><th>Fecha</th><th>Puntuación</th><th>Nota</th><th>Acción</th></tr></thead><tbody>${rows}</tbody></table>`:'<p style="color:var(--text3);font-size:13px;">Aún no hay respuestas a este cuestionario.</p>';
+    html+=`<div style="margin-bottom:12px;"><div style="font-size:11px;font-weight:800;color:var(--teal2);letter-spacing:0.5px;margin-bottom:8px;">📋 ${(ev.titulo||'Cuestionario').replace(/</g,'&lt;')}</div><div style="font-size:12px;color:#6b7280;margin-bottom:8px;">Quiénes han respondido</div>${tbl}</div>`;
+  }
+  return html||'<p style="color:var(--text3);font-size:13px;">Sin material ni evaluación para este estudio.</p>';
+}
 function openEstudioDetallePV(claseId,fromAdmin){
   const cl=(_db().clases||[]).find(c=>(c.id||c.fecha)===claseId);
   if(!cl){toast('Estudio no encontrado.','err');return;}
   const titulo=(cl.tema||'Estudio').replace(/</g,'&lt;');
   const subt=(typeof fmtDate==='function'?fmtDate(cl.fecha):cl.fecha)+' · '+(cl.grupoResp?'Expone: '+cl.grupoResp:'');
-  let body=getEstudioDetalleHTML(claseId,typeof currentCabId!=='undefined'?currentCabId:'');
+  const body=fromAdmin?getEstudioDetalleHTMLAdmin(claseId):getEstudioDetalleHTML(claseId,typeof currentCabId!=='undefined'?currentCabId:'');
+  let bodyFinal=body;
   if(fromAdmin&&typeof openClaseDetail==='function'){
     const esc=String(claseId).replace(/'/g,"\\'");
-    body+='<p style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb;"><button type="button" class="btn boutline" style="font-size:12px;" onclick="closeModal();openClaseDetail(\''+esc+'\')">✏️ Editar estudio</button></p>';
+    bodyFinal=body+'<p style="margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb;"><button type="button" class="btn boutline" style="font-size:12px;" onclick="closeModal();openClaseDetail(\''+esc+'\')">✏️ Editar estudio</button></p>';
   }
-  if(typeof openSheet==='function')openSheet('📚',titulo,subt,body);
+  if(typeof openSheet==='function')openSheet('📚',titulo,subt,bodyFinal);
 }
 function getMaterialUrl(m){
   if(m.url)return m.url.startsWith('http')?m.url:'https://'+m.url;

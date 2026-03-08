@@ -973,6 +973,11 @@ function setMode(m){
   document.getElementById('btn-miembro').classList.toggle('active',m==='miembro');
   document.getElementById('admin-fields').style.display=m==='admin'?'':'none';
   document.getElementById('miembro-fields').style.display=m==='miembro'?'':'none';
+  if(m==='admin'){
+    currentCabId=null;
+    var pw=document.getElementById('admin-pw');
+    if(pw){setTimeout(function(){pw.focus();},50);}
+  }
 }
 function buildSel(){
   const sel=document.getElementById('miembro-sel');
@@ -1010,13 +1015,20 @@ function doLogin(){
   const err=document.getElementById('login-err');err.style.display='none';
   if(loginMode==='admin'){
     if(document.getElementById('admin-pw').value===DB.adminPw){
+      currentCabId=null;
+      try{sessionStorage.removeItem('caballeros_miembro');}catch(e){}
       showSc('screen-admin');initAdmin();
-      // Primera vez o contraseña por defecto: pedir que la cambien
+      // Contraseña por defecto: pedir que la cambien solo una vez por sesión (no repetir si no la cambia)
       if(DB.adminPw==='1234'){
-        setTimeout(function(){
-          toast('Por seguridad, cambia la contraseña por defecto.','info');
-          if(typeof openChangePw==='function')openChangePw();
-        },500);
+        var yaMostrado=false;
+        try{yaMostrado=sessionStorage.getItem('caballeros_admin_pw_prompt_shown')==='1';}catch(e){}
+        if(!yaMostrado){
+          try{sessionStorage.setItem('caballeros_admin_pw_prompt_shown','1');}catch(e){}
+          setTimeout(function(){
+            toast('Por seguridad, cambia la contraseña por defecto.','info');
+            if(typeof openChangePw==='function')openChangePw();
+          },500);
+        }
       }
     }else{err.textContent='Contraseña incorrecta.';err.style.display='block';}
   }else{
@@ -1037,16 +1049,21 @@ function doLogin(){
     currentCabId=v;
     try{sessionStorage.setItem('caballeros_miembro',v);}catch(e){}
     showSc('screen-personal');renderPersonal(v);
-    // Primera vez: mensaje y abrir perfil para que puedan cambiar la contraseña (igual que en admin)
+    // Primera vez: mensaje y abrir perfil solo una vez por sesión (como en admin)
     if(primeraVezCaballero){
-      setTimeout(function(){
-        toast('Por seguridad, puedes cambiar tu contraseña en tu perfil (👤).','info');
-        if(typeof showPvTab==='function')showPvTab('perfil');
-      },500);
+      var toastCabYa=false;
+      try{toastCabYa=sessionStorage.getItem('caballeros_cab_pw_toast_shown')==='1';}catch(e){}
+      if(!toastCabYa){
+        try{sessionStorage.setItem('caballeros_cab_pw_toast_shown','1');}catch(e){}
+        setTimeout(function(){
+          toast('Por seguridad, puedes cambiar tu contraseña en tu perfil (👤).','info');
+          if(typeof showPvTab==='function')showPvTab('perfil');
+        },500);
+      }
     }
   }
 }
-function logout(){try{sessionStorage.removeItem('caballeros_miembro');sessionStorage.removeItem('pv_recordatorio_cerrado');}catch(e){}document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
+function logout(){currentCabId=null;try{sessionStorage.removeItem('caballeros_miembro');sessionStorage.removeItem('pv_recordatorio_cerrado');sessionStorage.removeItem('caballeros_admin_pw_prompt_shown');sessionStorage.removeItem('caballeros_cab_pw_toast_shown');sessionStorage.removeItem('caballeros_cab_recordatorio_shown');}catch(e){}document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
