@@ -64,8 +64,6 @@ function goToStatCard(tipo){
 function renderDash(){
   if(typeof renderCumpleBanners==='function')renderCumpleBanners(null,'dash-cumple-banner-wrap');
   if(typeof renderVersoDelDia==='function')renderVersoDelDia('dash-verso-dia-wrap');
-  const dashProximos=document.getElementById('dash-proximos-wrap');
-  if(dashProximos&&typeof getProximosEventosHTMLParaDashboard==='function')dashProximos.innerHTML=getProximosEventosHTMLParaDashboard(2);
   const db=_db();
   const cabs=Array.isArray(db.caballeros)?db.caballeros:[];
   const clasesArr=Array.isArray(db.clases)?db.clases:[];
