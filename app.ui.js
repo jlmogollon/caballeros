@@ -944,18 +944,17 @@ function renderPersonal(cabId){
   const c=_db().caballeros.find(x=>x.id===cabId);if(!c)return;
   const cal=calcCab(cabId);const rank=getRank(cabId);const val=autoVal(c);
 
-  // Banner: recordatorio cambiar contraseña y completar perfil (solo una vez por sesión, como admin)
+  // Banner: recordatorio cambiar contraseña y completar perfil (solo una vez por caballero; no volver a mostrar)
   const recordatorioEl=document.getElementById('pv-recordatorio-perfil-pw');
   if(recordatorioEl){
-    const cerrado=typeof sessionStorage!=='undefined'&&sessionStorage.getItem('pv_recordatorio_cerrado')==='1';
-    var recordatorioYaMostrado=false;
-    try{recordatorioYaMostrado=sessionStorage.getItem('caballeros_cab_recordatorio_shown')==='1';}catch(e){}
-    if(!cerrado&&!recordatorioYaMostrado){
-      try{sessionStorage.setItem('caballeros_cab_recordatorio_shown','1');}catch(e){}
+    var recordatorioYaVisto=false;
+    try{recordatorioYaVisto=typeof localStorage!=='undefined'&&localStorage.getItem('caballeros_cab_recordatorio_'+cabId)==='1';}catch(e){}
+    if(!recordatorioYaVisto){
+      try{localStorage.setItem('caballeros_cab_recordatorio_'+cabId,'1');}catch(e){}
       recordatorioEl.style.display='block';
       recordatorioEl.innerHTML=`
         <div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:1.5px solid #f59e0b;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(245,158,11,0.2);position:relative;">
-          <button type="button" onclick="document.getElementById('pv-recordatorio-perfil-pw').style.display='none';try{sessionStorage.setItem('pv_recordatorio_cerrado','1');}catch(e){}" style="position:absolute;top:8px;right:8px;background:transparent;border:none;font-size:18px;cursor:pointer;opacity:0.7;line-height:1;">×</button>
+          <button type="button" onclick="document.getElementById('pv-recordatorio-perfil-pw').style.display='none';try{localStorage.setItem('caballeros_cab_recordatorio_'+currentCabId,'1');sessionStorage.setItem('pv_recordatorio_cerrado','1');}catch(e){}" style="position:absolute;top:8px;right:8px;background:transparent;border:none;font-size:18px;cursor:pointer;opacity:0.7;line-height:1;">×</button>
           <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:6px;">🔑 Te recomendamos</div>
           <div style="font-size:13px;color:#78350f;margin-bottom:12px;line-height:1.4;">Cambia tu contraseña y completa tu perfil para mayor seguridad y para que te conozcan mejor los hermanos.</div>
           <button type="button" onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:white;border:none;border-radius:10px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(58,171,186,0.4);">👤 Ir a mi perfil</button>

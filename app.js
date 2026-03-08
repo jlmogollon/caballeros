@@ -1063,7 +1063,7 @@ function doLogin(){
     }
   }
 }
-function logout(){currentCabId=null;try{sessionStorage.removeItem('caballeros_miembro');sessionStorage.removeItem('pv_recordatorio_cerrado');sessionStorage.removeItem('caballeros_admin_pw_prompt_shown');sessionStorage.removeItem('caballeros_cab_pw_toast_shown');sessionStorage.removeItem('caballeros_cab_recordatorio_shown');}catch(e){}document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
+function logout(){currentCabId=null;try{sessionStorage.removeItem('caballeros_miembro');sessionStorage.removeItem('pv_recordatorio_cerrado');sessionStorage.removeItem('caballeros_admin_pw_prompt_shown');sessionStorage.removeItem('caballeros_cab_pw_toast_shown');}catch(e){}document.getElementById('admin-pw').value='';document.getElementById('miembro-pw').value='';document.getElementById('miembro-sel').value='';document.getElementById('miembro-pw-wrap').style.display='none';document.getElementById('login-err').style.display='none';showSc('screen-login');}
 
 // ═══════════════════════════════════════════════════════════════
 // SCREENS / TABS
