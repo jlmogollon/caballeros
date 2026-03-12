@@ -89,8 +89,9 @@
         return;
       }
       window.millonarioTotalPreguntasDb = todas.length;
-      var idsAcertadas = cab ? (cab.honorPreguntasAcertadasIds || []) : [];
-      var disponibles = todas.filter(function(p){ return idsAcertadas.indexOf(p.id) === -1; });
+      var setAcertadas = new Set(cab ? (cab.honorPreguntasAcertadasIds || []) : []);
+      (window.millonarioPreguntasIdsCorrectas || []).forEach(function(id){ setAcertadas.add(id); });
+      var disponibles = todas.filter(function(p){ return !setAcertadas.has(p.id); });
       if (disponibles.length < 15) disponibles = todas;
       var preguntas = elegir15(disponibles);
       window.millonarioPuntosObtenidos = 0;
@@ -111,19 +112,19 @@
           window.millonarioPuntosObtenidos = correctas;
           window.millonarioMejorPuntos = Math.max(window.millonarioMejorPuntos || 0, correctas);
           var racha = getRacha();
+          if (typeof completarDesafioCaballeroHoy === 'function') completarDesafioCaballeroHoy(correctas);
           el.innerHTML = '<div class="juego-mill-wrap juego-mill-result">' +
             '<h3>🎉 Desafío completado</h3>' +
             '<div class="score-line">Puntuación: <strong>' + correctas + '</strong> de 15</div>' +
             '<div style="font-size:14px;color:var(--text2);margin-bottom:8px;">Puntuación máxima: <strong style="color:var(--teal2);">' + (window.millonarioMejorPuntos || correctas) + '</strong></div>' +
-            '<div style="font-size:13px;color:var(--text2);">Días de racha: <strong>' + racha + '</strong></div>' +
-            '<p class="hint">Pulsa "He cumplido el desafío de hoy" más abajo para guardar tu puntuación.</p></div>';
+            '<div style="font-size:13px;color:var(--text2);">Días de racha: <strong>' + racha + '</strong></div></div>';
           return;
         }
         var q = preguntas[idx];
         var puntuacionActual = respuestas.filter(function(r, i){ return r === preguntas[i].correcta; }).length;
         var pct = preguntas.length ? Math.round(((idx + 1) / preguntas.length) * 100) : 0;
         var opHtml = q.opciones.map(function(op, i){
-          return '<button type="button" class="juego-mill-op" data-i="' + i + '">' + esc(op) + '</button>';
+          return '<div role="button" tabindex="0" class="juego-mill-op" data-i="' + i + '">' + esc(op) + '</div>';
         }).join('');
         el.innerHTML = '<div class="juego-mill-wrap" tabindex="-1">' +
           '<div class="juego-mill-progress"><span>Pregunta ' + (idx + 1) + ' de 15</span><span class="score">Puntuación: ' + puntuacionActual + '</span></div>' +
@@ -142,31 +143,26 @@
         var opcionesDiv = el.querySelector('.juego-mill-opciones');
         var btns = el.querySelectorAll('.juego-mill-op');
 
-        btns.forEach(function(btn){
-          btn.addEventListener('click', function(){
-            if (btn.disabled) return;
-            var i = parseInt(btn.getAttribute('data-i'), 10);
-            var correcta = q.correcta;
-            btns.forEach(function(b){ b.disabled = true; });
+        function elegir(i){
+          var correcta = q.correcta;
+          btns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); b.style.pointerEvents = 'none'; });
             if (i === correcta) {
               if (Array.isArray(window.millonarioPreguntasIdsCorrectas) && q.id != null) window.millonarioPreguntasIdsCorrectas.push(q.id);
-              btn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)';
-              btn.style.borderColor = '#22c55e';
-              btn.style.color = '#166534';
+              var btn = el.querySelector('.juego-mill-op[data-i="' + i + '"]');
+              if (btn) { btn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)'; btn.style.borderColor = '#22c55e'; btn.style.color = '#166534'; }
               setTimeout(function(){ respuestas.push(i); idx++; pintar(); }, 800);
             } else {
-              btn.style.background = 'linear-gradient(135deg,#fca5a5,#ef4444)';
-              btn.style.borderColor = '#dc2626';
-              btn.style.color = '#fff';
-              var correctasFail = respuestas.filter(function(r, i){ return r === preguntas[i].correcta; }).length;
-              window.millonarioPuntosObtenidos = correctasFail;
-              window.millonarioMejorPuntos = Math.max(window.millonarioMejorPuntos || 0, correctasFail);
+              var btnErr = el.querySelector('.juego-mill-op[data-i="' + i + '"]');
+              if (btnErr) { btnErr.style.background = 'linear-gradient(135deg,#fca5a5,#ef4444)'; btnErr.style.borderColor = '#dc2626'; btnErr.style.color = '#fff'; }
               var correctBtn = el.querySelector('.juego-mill-op[data-i="' + correcta + '"]');
               if (correctBtn) {
                 correctBtn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)';
                 correctBtn.style.borderColor = '#22c55e';
                 correctBtn.style.color = '#166534';
               }
+              var correctasFail = respuestas.filter(function(r, ix){ return r === preguntas[ix].correcta; }).length;
+              window.millonarioPuntosObtenidos = correctasFail;
+              window.millonarioMejorPuntos = Math.max(window.millonarioMejorPuntos || 0, correctasFail);
               var msg = document.createElement('div');
               msg.className = 'juego-mill-fail-msg';
               msg.textContent = 'La respuesta correcta era: ' + q.opciones[correcta];
@@ -193,6 +189,20 @@
                 if (typeof completarDesafioCaballeroHoy === 'function') completarDesafioCaballeroHoy(window.millonarioPuntosObtenidos);
               }
             }
+        }
+
+        btns.forEach(function(btn){
+          btn.addEventListener('click', function(){
+            if (btn.getAttribute('aria-disabled') === 'true') return;
+            var i = parseInt(btn.getAttribute('data-i'), 10);
+            elegir(i);
+          });
+          btn.addEventListener('keydown', function(ev){
+            if (ev.key !== 'Enter' && ev.key !== ' ') return;
+            ev.preventDefault();
+            if (btn.getAttribute('aria-disabled') === 'true') return;
+            var i = parseInt(btn.getAttribute('data-i'), 10);
+            elegir(i);
           });
         });
       }

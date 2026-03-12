@@ -729,7 +729,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 }
 .juego-mill-bar-fill{
   height:100%;
-  background:linear-gradient(90deg,var(--teal),var(--teal2));
+  background:linear-gradient(90deg,#d97706,#b45309);
   border-radius:999px;
   transition:width .35s ease;
 }
@@ -769,7 +769,7 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
   background:rgba(58,171,186,0.06);
   box-shadow:0 2px 8px rgba(58,171,186,0.15);
 }
-.juego-mill-op:disabled{cursor:default;}
+.juego-mill-op[aria-disabled="true"]{cursor:default;}
 .juego-mill-result{
   background:linear-gradient(160deg,#f0fdf4 0%,#dcfce7 100%);
   border-radius:18px;

@@ -327,7 +327,7 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
   }catch(e){
     if(typeof toast==='function')toast('No se pudo guardar el progreso.','err');
   }
-  renderDesafioCaballero('pv-desafio-dia-wrap');
+  if(!esJuego&&typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
 }
 
 function renderDesafioAdminDash(wrapId){
@@ -1403,9 +1403,8 @@ function renderDesafioCaballero(wrapId){
     el.innerHTML=`
     <div class="pv-desafio-card-interno">
       <div class="titulo">📅 Desafío diario</div>
-      <div class="instruccion">${esc(des.instruccion||'Juega y cuando termines marca como cumplido.')}</div>
-      <div id="pv-desafio-juego-interno" style="margin-bottom:16px;"></div>
-      <button type="button" class="pv-desafio-btn-cumplido" onclick="completarDesafioCaballeroHoy()">✅ He cumplido el desafío de hoy</button>
+      <div class="instruccion">${esc(des.instruccion||'Juega las 15 preguntas. Al terminar se guarda tu puntuación automáticamente.')}</div>
+      <div id="pv-desafio-juego-interno" style="margin-bottom:0;"></div>
     </div>
   `;
     var gameEl=document.getElementById('pv-desafio-juego-interno');
