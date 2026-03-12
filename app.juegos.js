@@ -131,6 +131,7 @@
           '<div class="juego-mill-pregunta">' + esc(q.pregunta) + '</div>' +
           '<div class="juego-mill-opciones">' + opHtml + '</div></div>';
 
+        if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
         var opcionesDiv = el.querySelector('.juego-mill-opciones');
         var btns = el.querySelectorAll('.juego-mill-op');
 
@@ -180,8 +181,9 @@
               } else {
                 var aviso = document.createElement('div');
                 aviso.className = 'juego-mill-aviso';
-                aviso.textContent = 'Has usado tus 2 oportunidades de empezar de nuevo. Guarda tu puntuación pulsando "He cumplido el desafío de hoy" más abajo.';
+                aviso.textContent = 'Has usado tus 2 oportunidades de empezar de nuevo. Se ha marcado el desafío como cumplido con tu puntuación.';
                 opcionesDiv.appendChild(aviso);
+                if (typeof completarDesafioCaballeroHoy === 'function') completarDesafioCaballeroHoy(window.millonarioPuntosObtenidos);
               }
             }
           });
