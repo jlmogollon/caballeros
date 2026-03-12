@@ -748,6 +748,13 @@ function ensureDbShape(){
     if(c.numHijos===undefined)c.numHijos='';
     if(c.infoHijos===undefined)c.infoHijos='';
     if(!Array.isArray(c.ocultarAOtros))c.ocultarAOtros=[];
+    if(c.honorPuntos===undefined)c.honorPuntos=0;
+    if(c.honorRacha===undefined)c.honorRacha=0;
+    if(c.honorLastFecha===undefined)c.honorLastFecha='';
+    if(c.honorDesafioIntentosHoy===undefined)c.honorDesafioIntentosHoy=0;
+    if(c.honorDesafioFechaIntentos===undefined)c.honorDesafioFechaIntentos='';
+    if(c.honorDesafioMejorPuntosHoy===undefined)c.honorDesafioMejorPuntosHoy=0;
+    if(!Array.isArray(c.honorPreguntasAcertadasIds))c.honorPreguntasAcertadasIds=[];
   });
   if(!Array.isArray(DB.peticiones))DB.peticiones=[];
   if(!Array.isArray(DB.eventos))DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
@@ -773,6 +780,7 @@ function ensureDbShape(){
   if(DB.adminPhoto===undefined)DB.adminPhoto='';
   if(!Array.isArray(DB.materialEstudio))DB.materialEstudio=[];
   if(!Array.isArray(DB.appHistorial))DB.appHistorial=[];
+  if(!Array.isArray(DB.desafiosDiarios))DB.desafiosDiarios=[];
   addClasesFaltantes();
   // Anexar material al primer estudio (13 feb / cl1) si no tiene
   const cl1=Array.isArray(DB.clases)?DB.clases.find(c=>c.id==='cl1'||c.fecha==='2026-02-13'):null;

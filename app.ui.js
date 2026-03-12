@@ -64,6 +64,7 @@ function goToStatCard(tipo){
 function renderDash(){
   if(typeof renderCumpleBanners==='function')renderCumpleBanners(null,'dash-cumple-banner-wrap');
   if(typeof renderVersoDelDia==='function')renderVersoDelDia('dash-verso-dia-wrap');
+  if(typeof renderDesafioAdminDash==='function')renderDesafioAdminDash('dash-desafio-wrap');
   const db=_db();
   const cabs=Array.isArray(db.caballeros)?db.caballeros:[];
   const clasesArr=Array.isArray(db.clases)?db.clases:[];
@@ -77,6 +78,323 @@ function renderDash(){
   const list=ranking();
   const top5El=document.getElementById('top5');
   if(top5El)top5El.innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DESAFÍOS DIARIOS — PERSONAJES BÍBLICOS
+// ═══════════════════════════════════════════════════════════════
+
+const DESAFIO_PERSONAJES=[
+  {
+    id:'david_goliat',
+    nombre:'David',
+    ref:'1 Samuel 17',
+    resumen:'David era un joven pastor que confiaba en Dios más que en sus propias fuerzas. Mientras otros veían a Goliat como un problema imposible, David miró al Señor que lo había librado antes del león y del oso. No se dejó paralizar por el miedo ni por las opiniones ajenas, sino que dio un paso de obediencia con lo que tenía en la mano.',
+    preguntaQuiz:'¿Qué mostró David ese día que debería marcar también la vida de un caballero cristiano?',
+    opcionesQuiz:[
+      'Confianza en Dios por encima del miedo.',
+      'Confianza solo en sus habilidades y experiencia.',
+      'Deseo de ser famoso delante del pueblo.'
+    ],
+    preguntaAplicacion:'¿En qué situación concreta de tu vida necesitas hoy confiar en Dios como David, y no dejarte dominar por el miedo?',
+    versosSimilares:[
+      {ref:'Salmo 27:1',refCode:'PSA.27.1',text:'Jehová es mi luz y mi salvación; ¿de quién temeré? Jehová es la fortaleza de mi vida; ¿de quién he de atemorizarme?'},
+      {ref:'Isaías 41:10',refCode:'ISA.41.10',text:'No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo; siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia.'},
+      {ref:'2 Timoteo 1:7',refCode:'2TI.1.7',text:'Porque no nos ha dado Dios espíritu de cobardía, sino de poder, de amor y de dominio propio.'}
+    ]
+  },
+  {
+    id:'jose_integridad',
+    nombre:'José',
+    ref:'Génesis 39',
+    resumen:'José fue tentado en secreto a hacer algo que ofendía a Dios y traicionaba la confianza de su señor. Nadie lo estaba mirando, pero José decidió honrar al Señor antes que buscar un placer momentáneo. Prefirió perder comodidad y posición antes que perder su integridad delante de Dios.',
+    preguntaQuiz:'¿Qué nos enseña José sobre la vida de un caballero cristiano?',
+    opcionesQuiz:[
+      'Que la integridad importa aun cuando nadie nos ve.',
+      'Que lo importante es quedar bien con las personas influyentes.',
+      'Que las decisiones secretas no afectan nuestra relación con Dios.'
+    ],
+    preguntaAplicacion:'¿En qué área privada de tu vida necesitas cuidar más tu integridad delante del Señor?',
+    versosSimilares:[
+      {ref:'Proverbios 11:3',refCode:'PRO.11.3',text:'La integridad de los rectos los encaminará; mas destrucción de los pecadores los desviará.'},
+      {ref:'Salmo 101:2',refCode:'PSA.101.2',text:'Me portaré prudentemente en camino íntegro. ¿Cuándo vendrás a mí? Andaré en la integridad de mi corazón en medio de mi casa.'},
+      {ref:'Job 31:1',refCode:'JOB.31.1',text:'Hice pacto con mis ojos; ¿cómo, pues, había de mirar yo a una virgen?'}
+    ]
+  },
+  {
+    id:'cornelio_oracion',
+    nombre:'Cornelio',
+    ref:'Hechos 10:1-4',
+    resumen:'Cornelio era un hombre que oraba constantemente y ayudaba a otros con generosidad. La Biblia dice que sus oraciones y limosnas subieron a la presencia de Dios como un memorial. Su vida diaria mostraba un temor reverente al Señor que impactaba su casa y a los que le rodeaban.',
+    preguntaQuiz:'¿Qué rasgo destaca la Biblia en la vida de Cornelio?',
+    opcionesQuiz:[
+      'Su vida de oración y generosidad constante.',
+      'Su fuerza física y capacidad militar.',
+      'Su habilidad para discutir y ganar debates.'
+    ],
+    preguntaAplicacion:'¿Cómo podrías hoy, de manera sencilla, mostrar más oración y generosidad en tu día como caballero?',
+    versosSimilares:[
+      {ref:'1 Tesalonicenses 5:17',refCode:'1TH.5.17',text:'Orad sin cesar.'},
+      {ref:'Santiago 5:16',refCode:'JAS.5.16',text:'La oración eficaz del justo puede mucho.'},
+      {ref:'Hebreos 13:16',refCode:'HEB.13.16',text:'De hacer bien y de la ayuda mutua no os olvidéis; porque de tales sacrificios se agrada Dios.'}
+    ]
+  }
+];
+
+function pickPersonajeDelDia(){
+  if(!DESAFIO_PERSONAJES.length)return null;
+  const d=new Date();
+  const dayOfYear=Math.floor((d-new Date(d.getFullYear(),0,0))/86400000);
+  return DESAFIO_PERSONAJES[dayOfYear % DESAFIO_PERSONAJES.length];
+}
+
+function pickPersonajeAleatorio(){
+  if(!DESAFIO_PERSONAJES.length)return null;
+  return DESAFIO_PERSONAJES[Math.floor(Math.random()*DESAFIO_PERSONAJES.length)];
+}
+
+function pickVersoParaPersonaje(pj){
+  if(pj&&Array.isArray(pj.versosSimilares)&&pj.versosSimilares.length){
+    const i=Math.floor(Math.random()*pj.versosSimilares.length);
+    return pj.versosSimilares[i];
+  }
+  return typeof getVersoDelDia==='function'?getVersoDelDia():{ref:'',refCode:'GEN.1.1',text:''};
+}
+
+function hoyStr(){
+  return new Date().toISOString().split('T')[0];
+}
+
+function getDesafioParaFecha(fecha){
+  const arr=_db().desafiosDiarios||[];
+  const activos=arr.filter(d=>d.fecha===fecha&&d.status!=='descartado');
+  if(activos.length){
+    const last=activos[activos.length-1];
+    return JSON.parse(JSON.stringify(last));
+  }
+  const todos=arr.filter(d=>d.fecha===fecha);
+  if(todos.length){
+    const last=todos[todos.length-1];
+    return JSON.parse(JSON.stringify(last));
+  }
+  return null;
+}
+
+var JUEGOS_DESAFIO=[
+  {id:'millonario',titulo:'Desafío diario',instruccion:'Responde 15 preguntas. Cada acierto suma 1 punto. Puedes repetir hasta 3 veces al día. Cuando termines, marca como cumplido.',url:''}
+];
+function pickJuegoDesafio(){
+  if(!JUEGOS_DESAFIO.length)return null;
+  return JUEGOS_DESAFIO[Math.floor(Math.random()*JUEGOS_DESAFIO.length)];
+}
+function generarDesafioSugeridoParaHoy(){
+  const db=_db();
+  if(!Array.isArray(db.desafiosDiarios))db.desafiosDiarios=[];
+  const fecha=hoyStr();
+  const yaPub=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='publicado');
+  if(yaPub)return yaPub;
+  const juego=pickJuegoDesafio();
+  const titulo=juego?juego.titulo:'Desafío diario';
+  const instruccion=juego?juego.instruccion:'Juega y marca como cumplido cuando termines.';
+  const nuevo={
+    id:'des_'+fecha+'_'+Date.now(),
+    fecha,
+    status:'borrador',
+    tipo:'juego',
+    juegoId:juego?juego.id:'',
+    gameUrl:juego?juego.url:'',
+    titulo,
+    instruccion,
+    generadoAuto:true,
+    createdAt:new Date().toISOString(),
+    approvedAt:null,
+    approvedBy:null
+  };
+  db.desafiosDiarios.push(nuevo);
+  if(typeof saveDB==='function')saveDB();
+  return JSON.parse(JSON.stringify(nuevo));
+}
+
+function aprobarDesafioHoy(overrideFields){
+  const db=_db();
+  if(!Array.isArray(db.desafiosDiarios))db.desafiosDiarios=[];
+  const fecha=hoyStr();
+  let des=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='borrador');
+  if(!des)return null;
+  overrideFields=overrideFields||{};
+  Object.keys(overrideFields).forEach(k=>{if(overrideFields[k]!==undefined)des[k]=overrideFields[k];});
+  des.status='publicado';
+  des.approvedAt=new Date().toISOString();
+  des.approvedBy=db.adminNombre||'';
+  if(typeof saveDB==='function')saveDB();
+  return JSON.parse(JSON.stringify(des));
+}
+
+function getDesafioPublicadoHoy(){
+  const db=_db();
+  if(!Array.isArray(db.desafiosDiarios))db.desafiosDiarios=[];
+  const fecha=hoyStr();
+  let des=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='publicado');
+  if(!des){
+    generarDesafioSugeridoParaHoy();
+    const borrador=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='borrador');
+    if(borrador){borrador.status='publicado';borrador.approvedAt=new Date().toISOString();borrador.approvedBy=db.adminNombre||'Desafío diario';if(typeof saveDB==='function')saveDB();}
+  }
+  des=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='publicado');
+  return des?JSON.parse(JSON.stringify(des)):null;
+}
+
+function calcularPHPorRacha(racha){
+  if(!racha||racha<=0)return 0;
+  if(racha<=3)return 10;
+  if(racha<=7)return 15;
+  if(racha<=14)return 20;
+  return 25;
+}
+
+async function completarDesafioCaballeroHoy(puntosObtenidos){
+  if(typeof puntosObtenidos!=='number')puntosObtenidos=typeof window.millonarioPuntosObtenidos==='number'?window.millonarioPuntosObtenidos:0;
+  const db=_db();
+  const hoy=hoyStr();
+  if(typeof currentCabId==='undefined'||!currentCabId){
+    if(typeof toast==='function')toast('No se pudo identificar al caballero actual.','err');
+    return;
+  }
+  const cab=(db.caballeros||[]).find(c=>c.id===currentCabId);
+  if(!cab){
+    if(typeof toast==='function')toast('Caballero no encontrado.','err');
+    return;
+  }
+  const des=getDesafioPublicadoHoy();
+  if(!des){
+    if(typeof toast==='function')toast('Hoy no hay un desafío publicado.','err');
+    return;
+  }
+  const esJuego=des.tipo==='juego'||!!des.juegoId;
+  if(!esJuego){
+    const wrap=document.getElementById('pv-desafio-dia-wrap');
+    if(wrap){
+      const sel=wrap.querySelector('input[name="pv-desafio-opcion"]:checked');
+      const notaEl=wrap.querySelector('#pv-desafio-nota');
+      const nota=notaEl&&typeof notaEl.value==='string'?notaEl.value.trim():'';
+      if(!sel&&!nota){
+        if(typeof toast==='function')toast('Primero responde la pregunta o escribe algo breve.','err');
+        return;
+      }
+    }
+  }
+  if(cab.honorDesafioFechaIntentos!==hoy){
+    cab.honorDesafioIntentosHoy=0;
+    cab.honorDesafioFechaIntentos=hoy;
+    cab.honorDesafioMejorPuntosHoy=0;
+  }
+  if((cab.honorDesafioIntentosHoy||0)>=3){
+    if(typeof toast==='function')toast('Has usado tus 3 intentos de hoy. Vuelve mañana.','info');
+    return;
+  }
+  const puntosGame=typeof puntosObtenidos==='number'&&puntosObtenidos>=0?puntosObtenidos:0;
+  const prevMejor=cab.honorDesafioMejorPuntosHoy||0;
+  const newMejor=Math.max(prevMejor,puntosGame);
+  cab.honorDesafioMejorPuntosHoy=newMejor;
+  const deltaPuntos=newMejor-prevMejor;
+  let nuevaRacha=1;
+  if(cab.honorLastFecha){
+    try{
+      const last=new Date(cab.honorLastFecha);
+      const hoyDate=new Date(hoy);
+      const diffMs=hoyDate-last;
+      const diffDias=Math.round(diffMs/86400000);
+      if(diffDias===1)nuevaRacha=(cab.honorRacha||0)+1;
+      else nuevaRacha=1;
+    }catch(e){
+      nuevaRacha=1;
+    }
+  }
+  cab.honorDesafioIntentosHoy=(cab.honorDesafioIntentosHoy||0)+1;
+  cab.honorRacha=nuevaRacha;
+  cab.honorLastFecha=hoy;
+  cab.honorPuntos=(cab.honorPuntos||0)+deltaPuntos;
+  if(esJuego&&Array.isArray(window.millonarioPreguntasIdsCorrectas)&&window.millonarioPreguntasIdsCorrectas.length>0){
+    if(!Array.isArray(cab.honorPreguntasAcertadasIds))cab.honorPreguntasAcertadasIds=[];
+    const set=new Set(cab.honorPreguntasAcertadasIds);
+    window.millonarioPreguntasIdsCorrectas.forEach(id=>{ if(id!=null&&!set.has(id)){ set.add(id); cab.honorPreguntasAcertadasIds.push(id); } });
+    const totalDb=typeof window.millonarioTotalPreguntasDb==='number'?window.millonarioTotalPreguntasDb:0;
+    if(totalDb>0&&cab.honorPreguntasAcertadasIds.length>=totalDb)cab.honorPreguntasAcertadasIds=[];
+  }
+  try{
+    if(typeof saveDB==='function')await saveDB();
+    if(typeof toast==='function')toast('Puntuación máx. hoy: '+newMejor+' · Racha: '+nuevaRacha+' día'+(nuevaRacha===1?'':'s'),'ok');
+  }catch(e){
+    if(typeof toast==='function')toast('No se pudo guardar el progreso.','err');
+  }
+  renderDesafioCaballero('pv-desafio-dia-wrap');
+}
+
+function renderDesafioAdminDash(wrapId){
+  const el=document.getElementById(wrapId||'dash-desafio-wrap');
+  if(!el)return;
+  const db=_db();
+  const hoy=typeof hoyStr==='function'?hoyStr():'';
+  const todos=db.caballeros||[];
+  const cabs=todos.filter(function(c){
+    const intentos=c.honorDesafioFechaIntentos===hoy?(c.honorDesafioIntentosHoy||0):0;
+    return intentos>0;
+  }).sort((a,b)=>(b.honorPuntos||0)-(a.honorPuntos||0));
+  const esc=s=>String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const rows=cabs.map(function(c){
+    const intentos=c.honorDesafioFechaIntentos===hoy?(c.honorDesafioIntentosHoy||0):0;
+    return '<tr style="border-bottom:1px solid #e5e7eb;">'+
+      '<td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1e293b;">'+esc(c.nombre||'')+'</td>'+
+      '<td style="padding:10px 12px;font-size:13px;font-weight:800;color:#059669;">'+(c.honorPuntos||0)+'</td>'+
+      '<td style="padding:10px 12px;font-size:13px;font-weight:700;">'+(c.honorRacha||0)+' día'+(c.honorRacha===1?'':'s')+'</td>'+
+      '<td style="padding:10px 12px;font-size:12px;">'+intentos+'</td>'+
+      '</tr>';
+  }).join('');
+  el.innerHTML='<div class="panel panel-inicio">'+
+    '<div class="panel-title" style="margin-bottom:12px;">📅 Desafío diario</div>'+
+    '<p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Solo caballeros que han hecho el desafío hoy.</p>'+
+    '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+    '<thead><tr style="background:#f1f5f9;text-align:left;">'+
+    '<th style="padding:10px 12px;font-weight:800;color:#475569;">Caballero</th>'+
+    '<th style="padding:10px 12px;font-weight:800;color:#475569;">Puntos</th>'+
+    '<th style="padding:10px 12px;font-weight:800;color:#475569;">Racha</th>'+
+    '<th style="padding:10px 12px;font-weight:800;color:#475569;">Intentos</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    (cabs.length===0?'<p style="font-size:12px;color:var(--text3);margin-top:12px;">Nadie ha hecho el desafío hoy.</p>':'')+'</div>';
+}
+
+function desafioAdminGenerarOtro(){
+  const db=_db();
+  if(!Array.isArray(db.desafiosDiarios))db.desafiosDiarios=[];
+  const fecha=hoyStr();
+  db.desafiosDiarios.forEach(d=>{if(d.fecha===fecha)d.status='descartado';});
+  if(typeof saveDB==='function')saveDB();
+  generarDesafioSugeridoParaHoy();
+  renderDesafioAdminDash('dash-desafio-wrap');
+}
+
+function desafioAdminPublicar(){
+  const juegoSel=document.getElementById('adm-des-juego');
+  if(juegoSel){
+    const titulo=(document.getElementById('adm-des-titulo')?.value||'').trim();
+    const instruccion=(document.getElementById('adm-des-instruccion')?.value||'').trim();
+    const juegoId=(juegoSel.value||'').trim();
+    const juego=Array.isArray(JUEGOS_DESAFIO)?JUEGOS_DESAFIO.find(j=>j.id===juegoId):null;
+    const gameUrl=juego?.url||'';
+    const des=aprobarDesafioHoy({tipo:'juego',titulo:titulo||juego?.titulo||'Juego bíblico',instruccion:instruccion||'Juega y cuando termines marca como cumplido.',juegoId,gameUrl});
+    if(des){toast('✅ Desafío publicado para hoy','ok');renderDesafioAdminDash('dash-desafio-wrap');}
+    else toast('No se encontró desafío para hoy.','err');
+    return;
+  }
+  const t=document.getElementById('adm-des-titulo')?.value||'';
+  const r=document.getElementById('adm-des-reflexion')?.value||'';
+  const hRef=(document.getElementById('adm-des-historia-ref')?.value||'').trim();
+  const p=document.getElementById('adm-des-pregunta')?.value||'';
+  const o=(document.getElementById('adm-des-opciones')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const c=document.getElementById('adm-des-compromiso')?.value||'';
+  const des=aprobarDesafioHoy({titulo:t,reflexion:r,historiaRef:hRef,pregunta:p,opciones:o,compromiso:c});
+  if(des){toast('✅ Desafío publicado para hoy','ok');renderDesafioAdminDash('dash-desafio-wrap');}
+  else toast('No se encontró desafío para hoy.','err');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -953,11 +1271,11 @@ function renderPersonal(cabId){
       try{localStorage.setItem('caballeros_cab_recordatorio_'+cabId,'1');}catch(e){}
       recordatorioEl.style.display='block';
       recordatorioEl.innerHTML=`
-        <div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:1.5px solid #f59e0b;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(245,158,11,0.2);position:relative;">
-          <button type="button" onclick="document.getElementById('pv-recordatorio-perfil-pw').style.display='none';try{localStorage.setItem('caballeros_cab_recordatorio_'+currentCabId,'1');sessionStorage.setItem('pv_recordatorio_cerrado','1');}catch(e){}" style="position:absolute;top:8px;right:8px;background:transparent;border:none;font-size:18px;cursor:pointer;opacity:0.7;line-height:1;">×</button>
-          <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#92400e;margin-bottom:6px;">🔑 Te recomendamos</div>
-          <div style="font-size:13px;color:#78350f;margin-bottom:12px;line-height:1.4;">Cambia tu contraseña y completa tu perfil para mayor seguridad y para que te conozcan mejor los hermanos.</div>
-          <button type="button" onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()" style="width:100%;padding:10px 14px;background:linear-gradient(135deg,#3aabba,#2d8f9c);color:white;border:none;border-radius:10px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(58,171,186,0.4);">👤 Ir a mi perfil</button>
+        <div class="pv-recordatorio-box">
+          <button type="button" class="pv-recordatorio-close" onclick="document.getElementById('pv-recordatorio-perfil-pw').style.display='none';try{localStorage.setItem('caballeros_cab_recordatorio_'+currentCabId,'1');sessionStorage.setItem('pv_recordatorio_cerrado','1');}catch(e){}">×</button>
+          <div class="pv-recordatorio-ttl">🔑 Te recomendamos</div>
+          <div class="pv-recordatorio-txt">Cambia tu contraseña y completa tu perfil para mayor seguridad y para que te conozcan mejor los hermanos.</div>
+          <button type="button" class="pv-desafio-btn-cumplido" onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()">👤 Ir a mi perfil</button>
         </div>`;
     }else recordatorioEl.style.display='none';
   }
@@ -1001,7 +1319,7 @@ function renderPersonal(cabId){
     const msg=pct>=100?'Perfil completo ✅':'Perfil '+pct+'% completo';
     let subt;
     if(pct>=100){
-      completionEl.innerHTML=`<div onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()" style="cursor:pointer;background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #22c55e;border-radius:10px;padding:8px 12px;text-align:center;"><span style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:900;color:#166534;">Perfil completo ✅</span><span style="font-size:10px;color:#15803d;margin-left:6px;">· Toca para ver/editar</span></div>`;
+      completionEl.innerHTML=`<div class="pv-desafio-aviso pv-profile-complete" onclick="typeof openChangeCabPw==='function'&&openChangeCabPw()" style="cursor:pointer;text-align:center;"><span class="pv-desafio-aviso-ttl">Perfil completo ✅</span><span class="pv-desafio-aviso-txt" style="margin-left:6px;">· Toca para ver/editar</span></div>`;
     }else{
       if(pct>80)subt='Para llegar al 100% te falta: '+faltan.join(', ')+'. Toca aquí para completar.';
       else subt='Toca aquí para abrir tu perfil y rellenar lo que falte.';
@@ -1048,11 +1366,97 @@ function renderPersonal(cabId){
   renderEncuestaCampamento(c);
   renderCumpleBanners(cabId);
   renderEvalPendienteBanner(cabId);
+  if(typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
   // Top 5 caballeros general en el inicio
   renderTop5Caballeros();
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
+}
+
+function renderDesafioCaballero(wrapId){
+  const el=document.getElementById(wrapId||'pv-desafio-dia-wrap');
+  if(!el)return;
+  const des=typeof getDesafioPublicadoHoy==='function'?getDesafioPublicadoHoy():null;
+  if(!des){el.innerHTML='';return;}
+  const db=_db();
+  const cabId=typeof currentCabId!=='undefined'?currentCabId:null;
+  const cab=cabId?(db.caballeros||[]).find(c=>c.id===cabId):null;
+  const hoy=typeof hoyStr==='function'?hoyStr():'';
+  if(cab&&hoy&&cab.honorDesafioFechaIntentos===hoy&&(cab.honorDesafioIntentosHoy||0)>=3){
+    el.innerHTML=`
+    <div class="pv-desafio-aviso">
+      <div class="pv-desafio-aviso-ttl">✅ Has usado tus 3 intentos de hoy</div>
+      <div class="pv-desafio-aviso-txt">Vuelve mañana para un nuevo desafío.</div>
+    </div>`;
+    return;
+  }
+  const racha=cab?(cab.honorRacha||0):0;
+  const puntos=cab?(cab.honorPuntos||0):0;
+  const puntuacionMaxHoy=(cab&&hoy&&cab.honorDesafioFechaIntentos===hoy)?(cab.honorDesafioMejorPuntosHoy??puntos):null;
+  const esc=s=>String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const esJuego=des.tipo==='juego'||!!des.juegoId;
+  const gameUrl=(des.gameUrl||'').trim();
+  const gameTitulo=des.titulo||'Juego bíblico';
+  const esInterno=typeof esJuegoInterno==='function'&&esJuegoInterno(des.juegoId);
+  if(esJuego&&esInterno){
+    el.innerHTML=`
+    <div class="pv-desafio-card-interno">
+      <div class="titulo">📅 Desafío diario</div>
+      <div class="instruccion">${esc(des.instruccion||'Juega y cuando termines marca como cumplido.')}</div>
+      <div id="pv-desafio-juego-interno" style="margin-bottom:16px;"></div>
+      <button type="button" class="pv-desafio-btn-cumplido" onclick="completarDesafioCaballeroHoy()">✅ He cumplido el desafío de hoy</button>
+    </div>
+  `;
+    var gameEl=document.getElementById('pv-desafio-juego-interno');
+    if(gameEl&&typeof renderJuegoInterno==='function')renderJuegoInterno('pv-desafio-juego-interno',des.juegoId);
+    return;
+  }
+  if(esJuego&&gameUrl){
+    el.innerHTML=`
+    <div class="pv-desafio-card">
+      <div class="titulo">📅 Desafío diario</div>
+      <div class="instruccion">${esc(des.instruccion||'')}</div>
+      <button type="button" class="pv-desafio-btn-jugar" onclick="openJuegoBiblico('${gameUrl.replace(/'/g,"\\'")}','${esc(gameTitulo).replace(/'/g,"\\'")}')">▶ Jugar ahora (en pantalla completa)</button>
+      <div class="pv-desafio-meta">
+        <span>Racha: <strong>${racha} día${racha===1?'':'s'}</strong></span>
+        <span>Puntuación: <strong>${puntos}</strong></span>
+        ${puntuacionMaxHoy!==null?'<span>Puntuación máx. hoy: <strong>'+puntuacionMaxHoy+'</strong></span>':''}
+      </div>
+      <button type="button" class="pv-desafio-btn-cumplido" onclick="completarDesafioCaballeroHoy()">✅ He cumplido el desafío de hoy</button>
+    </div>
+  `;
+    return;
+  }
+  const ops=(des.opciones||[]).map((o,i)=>`
+        <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text2);">
+          <input type="radio" name="pv-desafio-opcion" value="${esc(o)}" style="margin-right:6px;">${esc(o)}
+        </label>`).join('');
+  el.innerHTML=`
+    <div class="pv-desafio-card">
+      <div class="titulo">📅 Desafío diario</div>
+      <div class="texto" style="font-weight:600;color:#0f172a;margin-bottom:4px;">${esc(des.titulo||'')}</div>
+      <div class="texto">${esc(des.reflexion||'')}</div>
+      ${(des.historiaRef||'').trim()?`<div style="font-size:11px;color:var(--teal);font-weight:700;margin-bottom:8px;">📖 Lee la historia en: ${esc(des.historiaRef)}</div>`:''}
+      <div class="texto" style="margin-bottom:4px;"><strong>Pregunta:</strong> ${esc(des.pregunta||'')}</div>
+      ${ops?`<div style="margin-bottom:8px;">${ops}</div>`:''}
+      <div class="texto" style="margin-bottom:8px;"><strong>Para terminar:</strong> ${esc(des.compromiso||'')}</div>
+      <textarea id="pv-desafio-nota" class="pv-desafio-nota" rows="1" placeholder="Escribe en una frase cómo piensas aplicarlo hoy" oninput="ajustarAlturaDesafioNota(this)"></textarea>
+      <div class="pv-desafio-meta">
+        <span>Racha: <strong>${racha} día${racha===1?'':'s'}</strong></span>
+        <span>Puntuación: <strong>${puntos}</strong></span>
+        ${puntuacionMaxHoy!==null?'<span>Puntuación máx. hoy: <strong>'+puntuacionMaxHoy+'</strong></span>':''}
+      </div>
+      <button type="button" class="pv-desafio-btn-cumplido" onclick="completarDesafioCaballeroHoy()">✅ He cumplido el desafío de hoy</button>
+    </div>
+  `;
+  var ta=el.querySelector('#pv-desafio-nota');
+  if(ta)ajustarAlturaDesafioNota(ta);
+}
+function ajustarAlturaDesafioNota(ta){
+  if(!ta||ta.nodeName!=='TEXTAREA')return;
+  ta.style.height='auto';
+  ta.style.height=Math.max(40,ta.scrollHeight)+'px';
 }
 function renderEvalPendienteBanner(cabId){
   const wrap=document.getElementById('pv-eval-pendiente-wrap');
@@ -1164,6 +1568,60 @@ function showPvTab(tab){
   if(tab==='oracion')  cargarPeticiones();
   if(tab==='finanzas') renderFinanzas();
   if(tab==='estudio') renderEstudioPV();
+}
+
+var JUEGOS_BIBLICOS=[
+  {id:'trivia',titulo:'Trivia Bíblica',desc:'Preguntas de diferentes niveles. ¡Compite contra el reloj!',icono:'❓',url:'https://www.cristoestodo.org/juegos/trivia.html',duracion:'5 min'},
+  {id:'crucigrama',titulo:'Crucigrama Bíblico',desc:'Vocabulario bíblico: personajes, lugares y eventos.',icono:'📝',url:'https://www.cristoestodo.org/juegos/crucigrama.html',duracion:'10-20 min'},
+  {id:'sopa',titulo:'Sopa de Letras Bíblica',desc:'Encuentra palabras relacionadas con temas bíblicos.',icono:'🔤',url:'https://www.cristoestodo.org/juegos/sopa-letras.html',duracion:'5-15 min'},
+  {id:'millonario',titulo:'Desafío diario',desc:'15 preguntas, comodines 50/50 y más.',icono:'📅',url:'',duracion:'15-30 min'}
+];
+function renderJuegosBiblicos(){
+  const el=document.getElementById('pv-juegos-grid');
+  if(!el)return;
+  el.innerHTML=JUEGOS_BIBLICOS.map(g=>`
+    <div onclick="openJuegoBiblico('${(g.url||'').replace(/'/g,"\\'")}','${(g.titulo||'').replace(/'/g,"\\'")}')" style="background:linear-gradient(135deg,#fff 0%,#f8fafc 100%);border-radius:14px;padding:16px 18px;border:1px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,0.06);cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .2s;">
+      <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#3aabba 0%,#2d8f9c 100%);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${g.icono||'🎮'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:Montserrat,sans-serif;font-size:14px;font-weight:800;color:#1e293b;">${(g.titulo||'').replace(/</g,'&lt;')}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">${(g.desc||'').replace(/</g,'&lt;')}</div>
+        <div style="font-size:11px;color:var(--teal);font-weight:700;margin-top:4px;">${g.duracion||''}</div>
+      </div>
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(58,171,186,0.15);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:18px;">▶</div>
+    </div>
+  `).join('');
+}
+function openJuegoBiblico(url,titulo){
+  if(!url||!titulo)return;
+  var overlay=document.getElementById('juego-biblico-overlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='juego-biblico-overlay';
+    overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:#1a1f2e;display:flex;flex-direction:column;';
+    overlay.innerHTML=`
+      <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#0f172a;border-bottom:1px solid #334155;">
+        <span id="juego-biblico-titulo" style="font-family:Montserrat,sans-serif;font-size:14px;font-weight:800;color:#fff;"></span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <a id="juego-biblico-external" href="#" target="_blank" rel="noopener" style="font-size:11px;color:#7dd3fc;font-weight:700;">Abrir en pestaña</a>
+          <button type="button" onclick="cerrarJuegoBiblico()" style="width:36px;height:36px;border-radius:8px;border:none;background:#334155;color:#fff;font-size:18px;cursor:pointer;line-height:1;">×</button>
+        </div>
+      </div>
+      <iframe id="juego-biblico-iframe" style="flex:1;width:100%;border:none;background:#fff;"></iframe>
+    `;
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('juego-biblico-titulo').textContent=titulo;
+  var iframe=document.getElementById('juego-biblico-iframe');
+  var link=document.getElementById('juego-biblico-external');
+  if(iframe){iframe.src=url;}
+  if(link){link.href=url;}
+  overlay.style.display='flex';
+}
+function cerrarJuegoBiblico(){
+  var overlay=document.getElementById('juego-biblico-overlay');
+  if(overlay)overlay.style.display='none';
+  var iframe=document.getElementById('juego-biblico-iframe');
+  if(iframe)iframe.src='about:blank';
 }
 
 // Tarjeta de clase/estudio para vista personal. esProximo=true solo para el siguiente estudio (próximo por fecha). materialDisponible=si tiene material de estudio con URL.
