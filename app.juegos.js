@@ -125,13 +125,20 @@
         var opHtml = q.opciones.map(function(op, i){
           return '<button type="button" class="juego-mill-op" data-i="' + i + '">' + esc(op) + '</button>';
         }).join('');
-        el.innerHTML = '<div class="juego-mill-wrap">' +
+        el.innerHTML = '<div class="juego-mill-wrap" tabindex="-1">' +
           '<div class="juego-mill-progress"><span>Pregunta ' + (idx + 1) + ' de 15</span><span class="score">Puntuación: ' + puntuacionActual + '</span></div>' +
           '<div class="juego-mill-bar"><div class="juego-mill-bar-fill" style="width:' + pct + '%"></div></div>' +
           '<div class="juego-mill-pregunta">' + esc(q.pregunta) + '</div>' +
           '<div class="juego-mill-opciones">' + opHtml + '</div></div>';
 
-        if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+        var wrap = el.querySelector('.juego-mill-wrap');
+        function quitarMarcado(){
+          if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+          if (wrap && typeof wrap.focus === 'function') wrap.focus();
+        }
+        quitarMarcado();
+        if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(quitarMarcado);
+        else setTimeout(quitarMarcado, 0);
         var opcionesDiv = el.querySelector('.juego-mill-opciones');
         var btns = el.querySelectorAll('.juego-mill-op');
 
