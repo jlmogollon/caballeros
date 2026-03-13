@@ -40,8 +40,22 @@ function badgeEv(n){
 
 function esEventoPasado(ev,todayStr){
   if(!ev.fecha||ev.fecha==='por_definir'||ev.fecha==='recurrente_ultimo_domingo')return false;
-  const fin=ev.fechaFin||ev.fecha;
-  return fin<todayStr;
+  const finFecha=ev.fechaFin||ev.fecha;
+  const horaFin=(ev.horaFin||'').trim();
+  if(horaFin){
+    const end=new Date(finFecha+'T'+horaFin+(horaFin.length<=5?':00':''));
+    if(!isNaN(end.getTime()))return new Date()>=end;
+  }
+  return finFecha<todayStr;
+}
+
+function esEstudioPasado(cl){
+  const fecha=(cl.fecha||'').substring(0,10);
+  if(!fecha)return false;
+  const horaFin=(cl.horaFin||'').trim();
+  const endStr=fecha+'T'+(horaFin||'23:59')+(horaFin&&horaFin.length<=5?':00':'');
+  const end=new Date(endStr);
+  return !isNaN(end.getTime())&&new Date()>=end;
 }
 
 const TEMAS_CULTO=[
@@ -102,7 +116,8 @@ function getEventosCompletos(){
     const fechaStr=(cl.fecha||'').substring(0,10);
     if(!fechaStr||isNaN(d.getTime()))return;
     if(ocultosEstudio[fechaStr]?.oculto)return;
-    allItems.push({tipo:'estudio',fecha:d,fechaStr,clase:cl,grupo:cl.grupoResp||'',tema:cl.tema||'Estudio'});
+    const yaPasoEstudio=esEstudioPasado(cl);
+    allItems.push({tipo:'estudio',fecha:d,fechaStr,clase:cl,grupo:cl.grupoResp||'',tema:cl.tema||'Estudio',yaPaso:yaPasoEstudio});
   });
   (db.eventos||[]).forEach(ev=>{
     const d=ev.fecha==='recurrente_ultimo_domingo'
@@ -538,12 +553,14 @@ const COLORES_EV=['#3aabba','#ef4444','#22c55e','#f59e0b','#8b5cf6','#6d28d9','#
 
 function openFormEvento(id){
   const isNew=!id;
-  const ev=id?(_db().eventos||[]).find(e=>e.id===id):{nombre:'',fecha:'',fechaFin:'',icono:'📅',color:'#3aabba',nota:''};
+  const ev=id?(_db().eventos||[]).find(e=>e.id===id):{nombre:'',fecha:'',fechaFin:'',hora:'',horaFin:'',icono:'📅',color:'#3aabba',nota:''};
   if(!ev)return;
 
   const tipoFecha=ev.fecha==='recurrente_ultimo_domingo'?'recurrente':ev.fecha==='por_definir'?'por_definir':'fija';
   const fechaVal=tipoFecha==='fija'?ev.fecha:'';
   const fechaFinVal=ev.fechaFin||'';
+  const horaVal=(ev.hora||'').substring(0,5);
+  const horaFinVal=(ev.horaFin||'').substring(0,5);
 
   const iconoOpts=ICONOS_EV.map(i=>`<span onclick="selectEvIcon('${i}')" id="ev-ico-${i}" style="font-size:22px;cursor:pointer;padding:6px;border-radius:8px;border:2px solid ${ev.icono===i?'var(--teal)':'transparent'};background:${ev.icono===i?'var(--teal-bg)':'transparent'};transition:all .15s;">${i}</span>`).join('');
   const colorOpts=COLORES_EV.map(c=>`<div onclick="selectEvColor('${c}')" id="ev-col-${c.replace('#','')}" style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;border:3px solid ${ev.color===c?'#1a1f2e':'transparent'};box-shadow:${ev.color===c?'0 0 0 2px white inset':'none'};transition:all .15s;flex-shrink:0;"></div>`).join('');
@@ -562,6 +579,8 @@ function openFormEvento(id){
     <div id="ev-fecha-wrap" style="display:${tipoFecha==='fija'?'block':'none'}">
       <div class="fr"><label>Fecha</label><input type="date" id="ev-fecha" value="${fechaVal}"></div>
       <div class="fr"><label>Fecha fin (opcional, para eventos de varios días)</label><input type="date" id="ev-fechafin" value="${fechaFinVal}"></div>
+      <div class="fr"><label>Hora inicio (opcional)</label><input type="time" id="ev-hora" value="${horaVal}" style="width:100%;padding:11px 14px;background:var(--off);border:1.5px solid #e9edf2;border-radius:10px;"></div>
+      <div class="fr"><label>Hora fin (para marcar evento como realizado)</label><input type="time" id="ev-horafin" value="${horaFinVal}" style="width:100%;padding:11px 14px;background:var(--off);border:1.5px solid #e9edf2;border-radius:10px;"></div>
     </div>
     <div class="fr"><label>Nota / descripción breve (opcional)</label><input id="ev-nota" value="${ev.nota||''}" placeholder="Ej: Lema: El fruto del Espíritu Santo"></div>
     <input type="hidden" id="ev-icono-val" value="${ev.icono||'📅'}">
@@ -592,13 +611,19 @@ function selectEvColor(col){
 
 function readFormEvento(){
   const tipo=document.getElementById('ev-tipofecha').value;
-  let fecha='',fechaFin='';
-  if(tipo==='fija'){fecha=document.getElementById('ev-fecha').value;fechaFin=document.getElementById('ev-fechafin').value;}
+  let fecha='',fechaFin='',hora='',horaFin='';
+  if(tipo==='fija'){
+    fecha=document.getElementById('ev-fecha').value;
+    fechaFin=document.getElementById('ev-fechafin').value;
+    const h=document.getElementById('ev-hora');const hf=document.getElementById('ev-horafin');
+    if(h&&h.value)hora=h.value.substring(0,5);
+    if(hf&&hf.value)horaFin=hf.value.substring(0,5);
+  }
   else if(tipo==='recurrente')fecha='recurrente_ultimo_domingo';
   else fecha='por_definir';
   return{
     nombre:document.getElementById('ev-nombre').value.trim(),
-    fecha,fechaFin,
+    fecha,fechaFin,hora,horaFin,
     icono:document.getElementById('ev-icono-val').value,
     color:document.getElementById('ev-color-val').value,
     nota:document.getElementById('ev-nota').value.trim()

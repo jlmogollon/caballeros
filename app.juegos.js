@@ -123,88 +123,100 @@
         var q = preguntas[idx];
         var puntuacionActual = respuestas.filter(function(r, i){ return r === preguntas[i].correcta; }).length;
         var pct = preguntas.length ? Math.round(((idx + 1) / preguntas.length) * 100) : 0;
-        var opHtml = q.opciones.map(function(op, i){
+        var opcionesHtml = q.opciones.map(function(op, i){
           return '<div role="button" tabindex="0" class="juego-mill-op" data-i="' + i + '">' + esc(op) + '</div>';
         }).join('');
-        el.innerHTML = '<div class="juego-mill-wrap" tabindex="-1">' +
+        var wrapHtml = '<div class="juego-mill-wrap" tabindex="-1">' +
           '<div class="juego-mill-progress"><span>Pregunta ' + (idx + 1) + ' de 15</span><span class="score">Puntuación: ' + puntuacionActual + '</span></div>' +
           '<div class="juego-mill-bar"><div class="juego-mill-bar-fill" style="width:' + pct + '%"></div></div>' +
           '<div class="juego-mill-pregunta">' + esc(q.pregunta) + '</div>' +
-          '<div class="juego-mill-opciones">' + opHtml + '</div></div>';
-
+          '<div class="juego-mill-opciones"></div></div>';
+        el.innerHTML = wrapHtml;
         var wrap = el.querySelector('.juego-mill-wrap');
         function quitarMarcado(){
           if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
           if (wrap && typeof wrap.focus === 'function') wrap.focus();
         }
         quitarMarcado();
-        if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(quitarMarcado);
-        else setTimeout(quitarMarcado, 0);
         var opcionesDiv = el.querySelector('.juego-mill-opciones');
-        var btns = el.querySelectorAll('.juego-mill-op');
 
         function elegir(i){
           var correcta = q.correcta;
-          btns.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); b.style.pointerEvents = 'none'; });
-            if (i === correcta) {
-              if (Array.isArray(window.millonarioPreguntasIdsCorrectas) && q.id != null) window.millonarioPreguntasIdsCorrectas.push(q.id);
-              var btn = el.querySelector('.juego-mill-op[data-i="' + i + '"]');
-              if (btn) { btn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)'; btn.style.borderColor = '#22c55e'; btn.style.color = '#166534'; }
-              setTimeout(function(){ respuestas.push(i); idx++; pintar(); }, 800);
-            } else {
-              var btnErr = el.querySelector('.juego-mill-op[data-i="' + i + '"]');
-              if (btnErr) { btnErr.style.background = 'linear-gradient(135deg,#fca5a5,#ef4444)'; btnErr.style.borderColor = '#dc2626'; btnErr.style.color = '#fff'; }
-              var correctBtn = el.querySelector('.juego-mill-op[data-i="' + correcta + '"]');
-              if (correctBtn) {
-                correctBtn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)';
-                correctBtn.style.borderColor = '#22c55e';
-                correctBtn.style.color = '#166534';
-              }
-              var correctasFail = respuestas.filter(function(r, ix){ return r === preguntas[ix].correcta; }).length;
-              window.millonarioPuntosObtenidos = correctasFail;
-              window.millonarioMejorPuntos = Math.max(window.millonarioMejorPuntos || 0, correctasFail);
-              var msg = document.createElement('div');
-              msg.className = 'juego-mill-fail-msg';
-              msg.textContent = 'La respuesta correcta era: ' + q.opciones[correcta];
-              opcionesDiv.appendChild(msg);
-              var puntuacionLinea = document.createElement('div');
-              puntuacionLinea.style.cssText = 'margin-top:10px;font-size:13px;color:var(--text2);font-weight:600;';
-              puntuacionLinea.textContent = 'Puntuación: ' + correctasFail + ' de 15 · Puntuación máxima: ' + (window.millonarioMejorPuntos || correctasFail);
-              opcionesDiv.appendChild(puntuacionLinea);
-              if (reiniciosUsados < 2) {
-                var textoBoton = reiniciosUsados === 0 ? 'Empezar de nuevo (te quedan 2 oportunidades)' : 'Empezar de nuevo (última oportunidad)';
-                var btnReintentar = document.createElement('button');
-                btnReintentar.type = 'button';
-                btnReintentar.className = 'juego-mill-reintentar';
-                btnReintentar.textContent = textoBoton;
-                btnReintentar.addEventListener('click', function(){
-                  if (typeof renderMillonario === 'function') renderMillonario(containerId, reiniciosUsados + 1);
-                });
-                opcionesDiv.appendChild(btnReintentar);
-              } else {
-                var aviso = document.createElement('div');
-                aviso.className = 'juego-mill-aviso';
-                aviso.textContent = 'Has usado tus 2 oportunidades de empezar de nuevo. Se ha marcado el desafío como cumplido con tu puntuación.';
-                opcionesDiv.appendChild(aviso);
-                if (typeof completarDesafioCaballeroHoy === 'function') completarDesafioCaballeroHoy(window.millonarioPuntosObtenidos);
-              }
+          var opcionesDivNow = el.querySelector('.juego-mill-opciones');
+          var btnsNow = opcionesDivNow ? opcionesDivNow.querySelectorAll('.juego-mill-op') : [];
+          btnsNow.forEach(function(b){ b.setAttribute('aria-disabled', 'true'); b.style.pointerEvents = 'none'; });
+          if (i === correcta) {
+            if (Array.isArray(window.millonarioPreguntasIdsCorrectas) && q.id != null) window.millonarioPreguntasIdsCorrectas.push(q.id);
+            var btn = el.querySelector('.juego-mill-op[data-i="' + i + '"]');
+            if (btn) { btn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)'; btn.style.borderColor = '#22c55e'; btn.style.color = '#166534'; }
+            setTimeout(function(){ respuestas.push(i); idx++; pintar(); }, 800);
+          } else {
+            var btnErr = el.querySelector('.juego-mill-op[data-i="' + i + '"]');
+            if (btnErr) { btnErr.style.background = 'linear-gradient(135deg,#fca5a5,#ef4444)'; btnErr.style.borderColor = '#dc2626'; btnErr.style.color = '#fff'; }
+            var correctBtn = el.querySelector('.juego-mill-op[data-i="' + correcta + '"]');
+            if (correctBtn) {
+              correctBtn.style.background = 'linear-gradient(135deg,#86efac,#4ade80)';
+              correctBtn.style.borderColor = '#22c55e';
+              correctBtn.style.color = '#166534';
             }
+            var correctasFail = respuestas.filter(function(r, ix){ return r === preguntas[ix].correcta; }).length;
+            window.millonarioPuntosObtenidos = correctasFail;
+            window.millonarioMejorPuntos = Math.max(window.millonarioMejorPuntos || 0, correctasFail);
+            var msg = document.createElement('div');
+            msg.className = 'juego-mill-fail-msg';
+            msg.textContent = 'La respuesta correcta era: ' + q.opciones[correcta];
+            opcionesDivNow.appendChild(msg);
+            var puntuacionLinea = document.createElement('div');
+            puntuacionLinea.style.cssText = 'margin-top:10px;font-size:13px;color:var(--text2);font-weight:600;';
+            puntuacionLinea.textContent = 'Puntuación: ' + correctasFail + ' de 15 · Puntuación máxima: ' + (window.millonarioMejorPuntos || correctasFail);
+            opcionesDivNow.appendChild(puntuacionLinea);
+            if (reiniciosUsados < 2) {
+              var textoBoton = reiniciosUsados === 0 ? 'Empezar de nuevo (te quedan 2 oportunidades)' : 'Empezar de nuevo (última oportunidad)';
+              var btnReintentar = document.createElement('button');
+              btnReintentar.type = 'button';
+              btnReintentar.className = 'juego-mill-reintentar';
+              btnReintentar.textContent = textoBoton;
+              btnReintentar.addEventListener('click', function(){
+                if (typeof renderMillonario === 'function') renderMillonario(containerId, reiniciosUsados + 1);
+              });
+              opcionesDivNow.appendChild(btnReintentar);
+            } else {
+              var aviso = document.createElement('div');
+              aviso.className = 'juego-mill-aviso';
+              aviso.textContent = 'Has usado tus 2 oportunidades de empezar de nuevo. Se ha marcado el desafío como cumplido con tu puntuación.';
+              opcionesDivNow.appendChild(aviso);
+              if (typeof completarDesafioCaballeroHoy === 'function') completarDesafioCaballeroHoy(window.millonarioPuntosObtenidos);
+            }
+          }
         }
 
-        btns.forEach(function(btn){
-          btn.addEventListener('click', function(){
-            if (btn.getAttribute('aria-disabled') === 'true') return;
-            var i = parseInt(btn.getAttribute('data-i'), 10);
-            elegir(i);
+        function pintarOpciones(){
+          if (!opcionesDiv) return;
+          opcionesDiv.innerHTML = opcionesHtml;
+          var btns = opcionesDiv.querySelectorAll('.juego-mill-op');
+          btns.forEach(function(btn){
+            btn.addEventListener('click', function(){
+              if (btn.getAttribute('aria-disabled') === 'true') return;
+              var i = parseInt(btn.getAttribute('data-i'), 10);
+              elegir(i);
+            });
+            btn.addEventListener('keydown', function(ev){
+              if (ev.key !== 'Enter' && ev.key !== ' ') return;
+              ev.preventDefault();
+              if (btn.getAttribute('aria-disabled') === 'true') return;
+              var i = parseInt(btn.getAttribute('data-i'), 10);
+              elegir(i);
+            });
           });
-          btn.addEventListener('keydown', function(ev){
-            if (ev.key !== 'Enter' && ev.key !== ' ') return;
-            ev.preventDefault();
-            if (btn.getAttribute('aria-disabled') === 'true') return;
-            var i = parseInt(btn.getAttribute('data-i'), 10);
-            elegir(i);
-          });
-        });
+          quitarMarcado();
+          if (typeof requestAnimationFrame !== 'undefined') requestAnimationFrame(quitarMarcado);
+          else setTimeout(quitarMarcado, 0);
+        }
+        if (typeof requestAnimationFrame !== 'undefined') {
+          requestAnimationFrame(function(){ requestAnimationFrame(pintarOpciones); });
+        } else {
+          setTimeout(pintarOpciones, 0);
+        }
       }
       pintar();
     });

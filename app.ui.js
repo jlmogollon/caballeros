@@ -857,13 +857,18 @@ function renderGrupos(){
 // ═══════════════════════════════════════════════════════════════
 // CLASES
 // ═══════════════════════════════════════════════════════════════
+function claseRealizada(cl){
+  if(typeof esEstudioPasado==='function')return esEstudioPasado(cl);
+  const today=new Date().toISOString().split('T')[0];
+  return (cl.fecha||'')<=today;
+}
 function mkClaseCard(cl,esProximo,materialDisponible){
   const{d,m}=fmtBox(cl.fecha);
   const avg=claseAvg(cl);
   const sc=avg>=7?'#15803d':avg>=4?'var(--gold2)':'var(--text3)';
   const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
   const today=new Date().toISOString().split('T')[0];
-  const realizada=cl.fecha<=today;
+  const realizada=claseRealizada(cl);
   const calificada=claseAvg(cl)>0;
   const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':(esProximo?'<span class="cl-badge cl-proxima">Próximo</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>');
   const estadoCalif=calificada?'<span class="cl-badge cl-calificada">Calificada</span>':'<span class="cl-badge cl-pendiente">Pendiente</span>';
@@ -888,7 +893,7 @@ function mkClaseCard(cl,esProximo,materialDisponible){
 function mkClaseCardAdmin(cl,esProximo,materialDisponible){
   const{d,m}=fmtBox(cl.fecha);
   const today=new Date().toISOString().split('T')[0];
-  const realizada=cl.fecha<=today;
+  const realizada=claseRealizada(cl);
   const calificada=claseAvg(cl)>0;
   const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
   const estadoRealizada=realizada?'<span class="cl-badge cl-realizada">✓ Realizada</span>':(esProximo?'<span class="cl-badge cl-proxima">Próximo</span>':'');
@@ -994,10 +999,13 @@ function openClaseDetail(key){
   const evVinculada=(_db().evaluaciones||[]).find(e=>e.claseId===claseIdRef);
   const evaluacionBlock=evVinculada?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(evVinculada.titulo||'Cuestionario').replace(/</g,'&lt;')}</span> · ${(evVinculada.preguntas||[]).length} preguntas</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion('${esc(evVinculada.id)}')">Editar</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON('${esc(clave)}')">Importar .json (reemplazar)</button></div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario.</p><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion(null,\''+esc(claseIdRef)+'\')">Crear cuestionario</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON(\''+esc(clave)+'\')">Importar desde .json</button></div>';
   const promCl=claseAvg(cl);
+  const horaEd=(cl.hora||'').substring(0,5);const horaFinEd=(cl.horaFin||'').substring(0,5);
   openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${promCl===10?'10':promCl.toFixed(2)}`,`
     <div class="dsec"><div class="dhead">Editar datos del estudio</div>
       <div class="fr"><label>Nombre / Tema</label><input id="edcl-tema" value="${temaEsc}" placeholder="Ej: Estudio de las Dispensaciones"></div>
       <div class="fr"><label>Fecha</label><input type="date" id="edcl-fecha" value="${cl.fecha}"></div>
+      <div class="fr"><label>Hora inicio (opcional)</label><input type="time" id="edcl-hora" value="${horaEd}" style="width:100%;padding:11px 14px;background:var(--off);border:1px solid rgba(30,41,59,0.12);border-radius:var(--radius);"></div>
+      <div class="fr"><label>Hora fin (para marcar como realizado)</label><input type="time" id="edcl-horafin" value="${horaFinEd}" style="width:100%;padding:11px 14px;background:var(--off);border:1px solid rgba(30,41,59,0.12);border-radius:var(--radius);"></div>
       <div class="fr"><label>Grupo responsable</label><select id="edcl-grupo" class="select-grupo">${gOpts}</select></div>
       <button class="btn bteal" onclick="doSaveClaseInfo('${esc(clave)}')" style="margin-top:6px">💾 Guardar cambios</button>
     </div>
@@ -1015,8 +1023,11 @@ async function doSaveClaseInfo(key){
   const tema=document.getElementById('edcl-tema').value.trim()||'Estudio de las Dispensaciones';
   const fecha=document.getElementById('edcl-fecha').value;
   const grupoResp=document.getElementById('edcl-grupo').value;
+  const horaEl=document.getElementById('edcl-hora');const horaFinEl=document.getElementById('edcl-horafin');
+  const hora=horaEl&&horaEl.value?horaEl.value.substring(0,5):'';const horaFin=horaFinEl&&horaFinEl.value?horaFinEl.value.substring(0,5):'';
   if(!fecha){toast('La fecha es obligatoria','err');return;}
   cl.tema=tema;cl.fecha=fecha;cl.grupoResp=grupoResp;
+  if(hora)cl.hora=hora;else delete cl.hora;if(horaFin)cl.horaFin=horaFin;else delete cl.horaFin;
   closeModal();toast('💾 Guardando...','info');
   const ok=await saveDB();if(!ok){toast('Error al guardar','err');return;}
   toast('✅ Estudio actualizado','ok');
@@ -1122,6 +1133,8 @@ function openNuevaClase(){
     <div class="dsec"><div class="dhead">Datos del estudio</div>
       <div class="fr"><label>Nombre / Tema</label><input id="nc-tema" value="Estudio de las Dispensaciones" placeholder="Ej: Estudio de las Dispensaciones"></div>
       <div class="fr"><label>Fecha</label><input type="date" id="nc-fecha" value="${today}"></div>
+      <div class="fr"><label>Hora inicio (opcional)</label><input type="time" id="nc-hora" style="width:100%;padding:11px 14px;background:var(--off);border:1px solid rgba(30,41,59,0.12);border-radius:var(--radius);"></div>
+      <div class="fr"><label>Hora fin (para marcar estudio como realizado)</label><input type="time" id="nc-horafin" style="width:100%;padding:11px 14px;background:var(--off);border:1px solid rgba(30,41,59,0.12);border-radius:var(--radius);"></div>
       <div class="fr"><label>Grupo responsable</label><select id="nc-grupo" class="select-grupo">${gOpts}</select></div>
     </div>
     <div class="dsec"><div class="dhead">📚 Material de estudio</div>
@@ -1149,10 +1162,12 @@ async function doCrearClase(irACalificar){
   if(!fecha){toast('Selecciona la fecha','err');return;}
   const dup=_db().clases.find(c=>c.fecha===fecha);
   if(dup&&!window._ncForce){
+    const _h=(document.getElementById('nc-hora')||{}).value;const _hf=(document.getElementById('nc-horafin')||{}).value;
     window._ncFormData={
       fecha,
       tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones',
       grupo:grupoEl?grupoEl.value:'',
+      hora:_h?_h.substring(0,5):'',horaFin:_hf?_hf.substring(0,5):'',
       materialUrl:urlMatEl?urlMatEl.value.trim():'',
       materialTitulo:tituloMatEl?tituloMatEl.value.trim():''
     };
@@ -1168,10 +1183,14 @@ async function doCrearClase(irACalificar){
   }
   const tema=window._ncForce&&window._ncFormData?window._ncFormData.tema:(temaEl?temaEl.value.trim():'')||'Estudio de las Dispensaciones';
   const grupoResp=window._ncForce&&window._ncFormData?window._ncFormData.grupo:(grupoEl?grupoEl.value:'');
+  const ncHora=document.getElementById('nc-hora');const ncHorafin=document.getElementById('nc-horafin');
+  const hora=window._ncForce&&window._ncFormData&&window._ncFormData.hora!==undefined?window._ncFormData.hora:((ncHora&&ncHora.value)?ncHora.value.substring(0,5):'');
+  const horaFin=window._ncForce&&window._ncFormData&&window._ncFormData.horaFin!==undefined?window._ncFormData.horaFin:((ncHorafin&&ncHorafin.value)?ncHorafin.value.substring(0,5):'');
   let materialUrl=(window._ncForce&&window._ncFormData&&window._ncFormData.materialUrl)!==undefined?window._ncFormData.materialUrl:(urlMatEl?urlMatEl.value.trim():'');
   let materialTitulo=(window._ncForce&&window._ncFormData&&window._ncFormData.materialTitulo)!==undefined?window._ncFormData.materialTitulo:(tituloMatEl?tituloMatEl.value.trim():'');
   const id='cl'+Date.now();
   const newCl={id,fecha,tema,grupoResp,cal:{}};
+  if(hora)newCl.hora=hora;if(horaFin)newCl.horaFin=horaFin;
   _db().clases.push(newCl);
   if(materialUrl){
     if(typeof extractUrlFromMaterialInput==='function')materialUrl=extractUrlFromMaterialInput(materialUrl)||materialUrl;
@@ -1478,7 +1497,6 @@ function renderPersonal(cabId){
   renderCumpleBanners(cabId);
   renderEvalPendienteBanner(cabId);
   renderEventosReminderBanner(cabId);
-  renderDesafioReminderBanner(cabId);
   if(typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
   // Top 5 caballeros general en el inicio
   renderTop5Caballeros();
@@ -1487,70 +1505,9 @@ function renderPersonal(cabId){
   showPvTab('perfil');
 }
 
-function renderDesafioReminderBanner(cabId){
+function renderDesafioReminderBanner(){
   const wrap=document.getElementById('pv-desafio-reminder-wrap');
-  if(!wrap)return;
-  const db=_db();
-  const hoy=typeof hoyStr==='function'?hoyStr():'';
-  const des=typeof getDesafioPublicadoHoy==='function'?getDesafioPublicadoHoy():null;
-  const cab=(db.caballeros||[]).find(c=>c.id===cabId);
-  if(!wrap||!hoy||!des||!cab){
-    wrap.innerHTML='';
-    wrap.style.display='none';
-    return;
-  }
-  const intentos=cab.honorDesafioFechaIntentos===hoy?(cab.honorDesafioIntentosHoy||0):0;
-  // Mostrar solo si hoy no ha hecho NINGÚN intento
-  if(intentos>0){
-    wrap.innerHTML='';
-    wrap.style.display='none';
-    return;
-  }
-  // Y solo si ya ha pasado una hora "razonable" del día (por ejemplo, después de las 17:00)
-  try{
-    const now=new Date();
-    if(now.getHours()<17){
-      wrap.innerHTML='';
-      wrap.style.display='none';
-      return;
-    }
-  }catch(e){}
-  // Y si lleva al menos 2 días sin registrar desafío (racha rota)
-  try{
-    if(cab.honorLastFecha){
-      const last=new Date(cab.honorLastFecha);
-      const hoyDate=new Date(hoy);
-      const diffDias=Math.round((hoyDate-last)/86400000);
-      if(diffDias<2){
-        wrap.innerHTML='';
-        wrap.style.display='none';
-        return;
-      }
-    }
-  }catch(e){}
-  let yaCerrado=false;
-  const key='caballeros_cab_desafio_rec_'+cabId+'_'+hoy;
-  try{
-    yaCerrado=typeof localStorage!=='undefined'&&localStorage.getItem(key)==='1';
-  }catch(e){}
-  if(yaCerrado){
-    wrap.innerHTML='';
-    wrap.style.display='none';
-    return;
-  }
-  wrap.style.display='block';
-  const msgTitulo='📅 Retoma el desafío diario';
-  const msgTxt='Hace varios días que no registras el desafío. Desplázate abajo para hacerlo hoy.';
-  wrap.innerHTML=`
-    <div onclick="try{localStorage.setItem('${key}','1');}catch(e){} this.style.display='none';"
-         style="background:linear-gradient(135deg,#ecfccb 0%,#d9f99d 50%,#bbf7d0 100%);border-radius:14px;padding:14px 18px;border:2px solid #84cc16;box-shadow:0 4px 16px rgba(132,204,22,0.35);cursor:pointer;display:flex;align-items:center;gap:14px;">
-      <div style="width:40px;height:40px;border-radius:12px;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⏰</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#365314;">${msgTitulo}</div>
-        <div style="font-size:12px;color:#4d7c0f;margin-top:2px;">${msgTxt}</div>
-      </div>
-      <div style="font-size:18px;color:#4d7c0f;flex-shrink:0;">→</div>
-    </div>`;
+  if(wrap){wrap.innerHTML='';wrap.style.display='none';}
 }
 
 function renderEventosReminderBanner(cabId){
@@ -1880,7 +1837,7 @@ function mkClaseCardPV(cl,cabId,esProximo,materialDisponible){
   const{d,m}=typeof fmtBox==='function'?fmtBox(cl.fecha):{d:'',m:''};
   const asist=Object.values(cl.cal||{}).filter(q=>q&&q.a).length;
   const today=new Date().toISOString().split('T')[0];
-  const realizada=cl.fecha<=today;
+  const realizada=typeof claseRealizada==='function'?claseRealizada(cl):(cl.fecha<=today);
   const calificada=typeof claseAvg==='function'&&claseAvg(cl)>0;
   let estadoRealizada='';
   if(realizada){
