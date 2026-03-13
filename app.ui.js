@@ -244,7 +244,9 @@ function pickVersoParaPersonaje(pj){
 }
 
 function hoyStr(){
-  return new Date().toISOString().split('T')[0];
+  var d=new Date();
+  var y=d.getFullYear(),m=d.getMonth()+1,day=d.getDate();
+  return y+'-'+(m<10?'0':'')+m+'-'+(day<10?'0':'')+day;
 }
 
 function getDesafioParaFecha(fecha){
@@ -1752,6 +1754,13 @@ function renderDesafioRankingBanner(){
     var m=typeof getMultiplicadorRacha==='function'?getMultiplicadorRacha(racha||0):1;
     return m===1?'1.0×':m.toFixed(2)+'×';
   };
+  var headerRow='<div class="pv-desafio-rank-row pv-desafio-rank-header" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:var(--border);font-size:11px;font-weight:800;color:var(--text3);">'+
+    '<span style="width:20px;">#</span>'+
+    '<span style="flex:1;">Nombre</span>'+
+    '<span>Pts</span>'+
+    '<span style="min-width:32px;" title="Días de racha">Racha</span>'+
+    '<span style="min-width:36px;">Mult.</span>'+
+    '</div>';
   var rows=top.map(function(c,i){
     var nombre=esc((c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar:c.nombre)||'Caballero');
     var pts=c.honorPuntos||0;
@@ -1762,15 +1771,15 @@ function renderDesafioRankingBanner(){
       '<span style="font-weight:800;color:var(--text3);width:20px;">'+(i+1)+'</span>'+
       '<span style="flex:1;font-weight:700;font-size:13px;color:var(--text1);">'+nombre+(esYo?' (tú)':'')+'</span>'+
       '<span style="font-weight:800;color:var(--teal);font-size:13px;">'+pts+' pts</span>'+
-      '<span style="font-size:11px;color:var(--text3);" title="Días de racha">'+r+'d</span>'+
-      '<span style="font-size:11px;font-weight:700;color:#059669;" title="Multiplicador">'+mult+'</span>'+
+      '<span style="font-size:12px;font-weight:700;color:var(--text1);min-width:32px;" title="Días de racha">'+r+' día'+(r===1?'':'s')+'</span>'+
+      '<span style="font-size:11px;font-weight:700;color:#059669;min-width:36px;" title="Multiplicador">'+mult+'</span>'+
       '</div>';
   }).join('');
   wrap.innerHTML='<div class="pv-desafio-ranking-card" style="background:var(--bg2);border-radius:14px;padding:12px 14px;border:1px solid var(--border);">'+
     '<div style="font-weight:800;font-size:13px;color:var(--text1);margin-bottom:8px;">📊 Cómo vamos — Puntos acumulados</div>'+
     '<p style="font-size:11px;color:var(--text3);margin-bottom:10px;">Cada día de racha suma un poco más (máx. 1.35×). Quien empieza o pierde la racha puede volver a subir.</p>'+
     '<div style="margin-bottom:6px;font-size:11px;color:var(--text3);">Hoy han hecho el desafío: <strong>'+hoyCompletaron.length+'</strong> caballero'+(hoyCompletaron.length===1?'':'s')+'</div>'+
-    (rows?('<div style="max-height:240px;overflow-y:auto;">'+rows+'</div>'):'<div style="font-size:12px;color:var(--text3);">Aún nadie tiene puntos. ¡Sé el primero!</div>')+
+    (rows?(headerRow+'<div style="max-height:240px;overflow-y:auto;">'+rows+'</div>'):'<div style="font-size:12px;color:var(--text3);">Aún nadie tiene puntos. ¡Sé el primero!</div>')+
     '</div>';
 }
 function ajustarAlturaDesafioNota(ta){
@@ -1883,7 +1892,19 @@ function showPvTab(tab){
   if(btnGrupos)btnGrupos.classList.toggle('pv-hdr-active',tab==='calgr');
   const btnPerfil=document.querySelector('.pv-hdr-btn-perfil');
   if(btnPerfil)btnPerfil.classList.toggle('pv-hdr-active',tab==='perfil');
-  if(tab==='eventos')  renderEventosPV();
+  if(tab==='eventos'){
+    renderEventosPV();
+    function scrollEventosTop(){
+      var eventosTab=document.getElementById('pvtab-eventos');
+      if(eventosTab) eventosTab.scrollTop=0;
+      var body=eventosTab&&eventosTab.querySelector('.pv-body');
+      if(body) body.scrollTop=0;
+      var screenPersonal=document.getElementById('screen-personal');
+      if(screenPersonal) screenPersonal.scrollTop=0;
+    }
+    scrollEventosTop();
+    setTimeout(scrollEventosTop, 80);
+  }
   if(tab==='calgr')    renderCalGr('pv-calgr-pg');
   if(tab==='oracion')  cargarPeticiones();
   if(tab==='finanzas') renderFinanzas();

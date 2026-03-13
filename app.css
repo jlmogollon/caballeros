@@ -50,7 +50,8 @@ html,body{height:100%;background:var(--off);color:var(--text);font-family:'Lato'
 .h-title{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:900;color:white;letter-spacing:1px;}
 .h-title span{color:var(--teal);}
 .h-sub{font-family:'Caveat',cursive;font-size:13px;color:var(--teal);opacity:.8;}
-.hbrand-icon{font-size:24px;filter:drop-shadow(0 0 6px rgba(201,168,76,0.4));}
+.hbrand-icon{font-size:24px;filter:drop-shadow(0 0 6px rgba(201,168,76,0.4));color:var(--teal);display:inline-flex;align-items:center;min-width:28px;}
+#screen-personal .hbrand-icon{color:rgba(255,255,255,0.95);}
 .hacts{display:flex;gap:6px;}
 .btn-hdr{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);padding:7px 11px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Lato',sans-serif;white-space:nowrap;transition:all .2s;}
 .btn-hdr:hover{background:rgba(255,255,255,0.14);color:white;}
