@@ -1084,12 +1084,15 @@ function triggerImportCuestionarioJSON(clave){
     const texto=String(p.texto||p.text||p.pregunta||'').trim();
     let opciones=[];
     const rawOp=p.opciones||p.options||p.choices;
-    if(Array.isArray(rawOp)){
-      const idxCorrecta=typeof p.correcta==='number'?p.correcta:(typeof p.correctaIndex==='number'?p.correctaIndex:-1);
+    if(Array.isArray(rawOp)&&rawOp.length>0){
+      let idxCorrecta=typeof p.correcta==='number'?p.correcta:(typeof p.correctaIndex==='number'?p.correctaIndex:-1);
+      if(idxCorrecta<0||idxCorrecta>=rawOp.length)idxCorrecta=0;
       rawOp.forEach((o,j)=>{
         if(typeof o==='object'&&o!==null)opciones.push({texto:String(o.texto||o.text||'').trim(),correcta:!!o.correcta});
         else opciones.push({texto:String(o).trim(),correcta:j===idxCorrecta});
       });
+      const algunaCorrecta=opciones.some(x=>x.correcta);
+      if(!algunaCorrecta&&opciones.length>0)opciones[Math.min(idxCorrecta,opciones.length-1)].correcta=true;
     }
     if(!opciones.length)opciones=[{texto:'',correcta:true},{texto:'',correcta:false}];
     return{id:'p'+Date.now()+'_'+i,texto,opciones};
