@@ -53,13 +53,13 @@
     return { id: q.id, pregunta: q.pregunta, opciones: op, correcta: newIdx };
   }
 
-  /** Arma 15 preguntas: 4 fácil, 4 medio, 4 difícil, 3 avanzado (si hay); si no hay suficientes de un nivel, completa con otros */
+  /** Arma 15 preguntas: mitad difíciles/avanzadas (2+2), resto fácil/medio (5+5+1) para que sea alcanzable. */
   function elegir15(preguntas){
     var facil = preguntas.filter(function(p){ return (p.nivel||'').toLowerCase() === 'facil'; });
     var medio = preguntas.filter(function(p){ return (p.nivel||'').toLowerCase() === 'medio'; });
     var dificil = preguntas.filter(function(p){ return (p.nivel||'').toLowerCase() === 'dificil'; });
     var avanzado = preguntas.filter(function(p){ return (p.nivel||'').toLowerCase() === 'avanzado'; });
-    var a = shuffle(facil).slice(0, 4).concat(shuffle(medio).slice(0, 4)).concat(shuffle(dificil).slice(0, 4)).concat(shuffle(avanzado).slice(0, 3));
+    var a = shuffle(facil).slice(0, 5).concat(shuffle(medio).slice(0, 5)).concat(shuffle(dificil).slice(0, 2)).concat(shuffle(avanzado).slice(0, 2));
     if (a.length < 15) {
       var idsUsados = new Set(a.map(function(p){ return p.id; }));
       var rest = preguntas.filter(function(p){ return !idsUsados.has(p.id); });

@@ -186,25 +186,32 @@ function descargarBackupDB(){
 }
 function aplicarBackupCompleto(legacy){
   if(!legacy||typeof legacy!=='object')return;
+  if(typeof DB==='undefined'){ console.error('aplicarBackupCompleto: DB no definido'); return; }
   var keys=['adminPw','adminNombre','adminPhoto','caballeros','peticiones','eventos','eventosCultosOverride','eventosEstudiosOverride','evaluaciones','evaluacionRespuestas','finanzasGastos','finanzasActividades','finanzasDonativos','finanzasVotos','materialEstudio','appHistorial'];
-  keys.forEach(function(k){ if(legacy[k]!==undefined) DB[k]=JSON.parse(JSON.stringify(legacy[k])); });
-  // Aceptar "estudios" (nuevo) o "clases" (compatible con backups antiguos) y asignar a DB.clases
-  if(legacy.estudios!==undefined&&Array.isArray(legacy.estudios)) DB.clases=JSON.parse(JSON.stringify(legacy.estudios));
-  else if(legacy.clases!==undefined&&Array.isArray(legacy.clases)) DB.clases=JSON.parse(JSON.stringify(legacy.clases));
-  if(typeof window!=='undefined')window.DB=DB;
-  ensureDbShape();
+  try {
+    keys.forEach(function(k){ if(legacy[k]!==undefined) DB[k]=JSON.parse(JSON.stringify(legacy[k])); });
+    if(legacy.estudios!==undefined&&Array.isArray(legacy.estudios)) DB.clases=JSON.parse(JSON.stringify(legacy.estudios));
+    else if(legacy.clases!==undefined&&Array.isArray(legacy.clases)) DB.clases=JSON.parse(JSON.stringify(legacy.clases));
+    if(typeof window!=='undefined')window.DB=DB;
+    ensureDbShape();
+  } catch(e) {
+    console.error('aplicarBackupCompleto error:',e);
+    if(typeof toast==='function')toast('Error al aplicar backup: '+e.message,'err');
+  }
 }
 async function recuperarDesdeBackup(){
   const ta=document.getElementById('legacy-json-inp');
   if(!ta||!ta.value.trim()){toast('Pega el JSON de la base anterior en el cuadro de texto','err');return;}
   var legacy;
-  try{legacy=JSON.parse(ta.value.trim());}catch(e){toast('El archivo no es válido. Pega una copia completa del respaldo.','err');return;}
-  if(!legacy.caballeros||!Array.isArray(legacy.caballeros)){toast('El JSON no tiene lista de caballeros.','err');return;}
+  try{legacy=JSON.parse(ta.value.trim());}catch(e){toast('El JSON no es válido. Pega una copia completa del respaldo.','err');return;}
+  if(!legacy||!legacy.caballeros||!Array.isArray(legacy.caballeros)){toast('El JSON no tiene lista de caballeros.','err');return;}
   aplicarBackupCompleto(legacy);
+  var nCab=(DB.caballeros&&Array.isArray(DB.caballeros))?DB.caballeros.length:0;
+  if(nCab===0){toast('Tras restaurar no hay caballeros. Revisa el JSON o la consola (F12).','err');return;}
   toast('💾 Guardando base restaurada...','info');
   var ok=await saveDB();
   if(ok){
-    toast('✅ Base restaurada (admin, caballeros, perfiles, estudios, cuestionarios) y guardada.','ok');
+    toast('✅ Base restaurada y guardada.','ok');
     ta.value='';
     if(typeof renderPeticiones==='function')renderPeticiones();
     invalidateCache();
@@ -241,7 +248,7 @@ async function loadDB(){
         if(data&&typeof data==='object'){
           DB=data;
           if(typeof window!=='undefined')window.DB=DB;
-          ensureDbShape();
+          try{ ensureDbShape(); }catch(ee){ console.error('loadDB ensureDbShape:',ee); }
           try{
             const raw=localStorage.getItem(SK);
             if(raw){
@@ -267,7 +274,7 @@ async function loadDB(){
             if(local&&Array.isArray(local.caballeros)&&local.caballeros.length>0){
               DB=local;
               if(typeof window!=='undefined')window.DB=DB;
-              ensureDbShape();
+              try{ ensureDbShape(); }catch(ee){ console.error('loadDB ensureDbShape:',ee); }
               toast('✅ Se cargaron datos desde este dispositivo (la nube no tenía datos válidos). Para guardar en la nube, haz un cambio y guarda.','ok');
               return;
             }
@@ -275,7 +282,7 @@ async function loadDB(){
         }catch(e){}
         DB=seedDB();
         if(typeof window!=='undefined')window.DB=DB;
-        ensureDbShape();
+        try{ ensureDbShape(); }catch(ee){ console.error('loadDB ensureDbShape:',ee); }
         toast('⚠️ No había datos válidos. Se cargaron datos iniciales. Restaura desde Peticiones → Copia de seguridad si tienes un backup.','err');
         return;
       }catch(e){
@@ -285,7 +292,7 @@ async function loadDB(){
     }
     try{const r=localStorage.getItem(SK);if(r){DB=JSON.parse(r);if(typeof window!=='undefined')window.DB=DB;}}catch(e){}
     if(!DB||typeof DB!=='object'){DB=seedDB();if(typeof window!=='undefined')window.DB=DB;}
-    ensureDbShape();
+    try{ ensureDbShape(); }catch(ee){ console.error('loadDB ensureDbShape:',ee); }
   }finally{
     hideLoading();
   }
@@ -769,14 +776,17 @@ const SEED_EVAL_DISPENSACIONES_TEXTO={
   ]
 };
 
-// Asegura que la estructura de DB tenga todos los campos esperados
+// Asegura que la estructura de DB tenga todos los campos esperados (nunca borrar datos válidos)
 function ensureDbShape(){
   if(!DB)DB={};
   if(DB.adminPw===undefined||DB.adminPw===null||DB.adminPw==='')DB.adminPw='1234';
   if(typeof window!=='undefined')window.DB=DB;
   if(!Array.isArray(DB.caballeros))DB.caballeros=[];
+  else DB.caballeros=DB.caballeros.filter(c=>c&&typeof c==='object');
   if(!Array.isArray(DB.clases))DB.clases=[];
+  try{
   DB.caballeros.forEach(c=>{
+    if(!c||typeof c!=='object')return;
     if(c.pw===undefined)c.pw='';
     if(c.fnac===undefined)c.fnac='';
     if(c.fechaBautizado===undefined)c.fechaBautizado='';
@@ -803,8 +813,11 @@ function ensureDbShape(){
     if(c.honorDesafioIntentosHoy===undefined)c.honorDesafioIntentosHoy=0;
     if(c.honorDesafioFechaIntentos===undefined)c.honorDesafioFechaIntentos='';
     if(c.honorDesafioMejorPuntosHoy===undefined)c.honorDesafioMejorPuntosHoy=0;
+    if(c.honorDesafioPuntosSumadosHoy===undefined)c.honorDesafioPuntosSumadosHoy=0;
+    if(c.honorDesafioFechaPuntosSumados===undefined)c.honorDesafioFechaPuntosSumados='';
     if(!Array.isArray(c.honorPreguntasAcertadasIds))c.honorPreguntasAcertadasIds=[];
   });
+  }catch(e){ console.error('ensureDbShape caballeros:',e); }
   if(!Array.isArray(DB.peticiones))DB.peticiones=[];
   if(!Array.isArray(DB.eventos))DB.eventos=JSON.parse(JSON.stringify(SEED_EVENTOS));
   if(!DB.eventosCultosOverride)DB.eventosCultosOverride={};
@@ -1040,9 +1053,9 @@ function buildSel(){
   const sel=document.getElementById('miembro-sel');
   if(!sel)return;
   sel.innerHTML='<option value="">— Seleccionar —</option>';
-  if(!DB||!DB.caballeros)return;
-  const nom = c=>(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre||'');
-  [...DB.caballeros].sort((a,b)=>nom(a).localeCompare(nom(b))).forEach(c=>{
+  if(!DB||typeof DB!=='object'||!Array.isArray(DB.caballeros))return;
+  const nom = c=>(c&&c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c&&c.nombre||'');
+  DB.caballeros.filter(c=>c&&typeof c==='object').sort((a,b)=>nom(a).localeCompare(nom(b))).forEach(c=>{
     const o=document.createElement('option');o.value=c.id;
     o.textContent=nom(c);
     sel.appendChild(o);
@@ -1164,7 +1177,9 @@ function showTab(id,el){
   if(id==='t-informes'){renderInformes();}
 }
 function initAdmin(){
-  buildSel();renderDash();renderCabs();
+  if(typeof buildSel==='function')buildSel();
+  if(typeof renderDash==='function')renderDash(); else if(console&&console.warn)console.warn('renderDash no definido');
+  if(typeof renderCabs==='function')renderCabs(); else if(console&&console.warn)console.warn('renderCabs no definido');
   const wrap=document.getElementById('admin-perfil-wrap');
   const tieneNombre=DB.adminNombre&&String(DB.adminNombre).trim();
   const tieneFoto=!!DB.adminPhoto;

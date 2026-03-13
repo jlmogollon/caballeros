@@ -263,7 +263,7 @@ function getDesafioParaFecha(fecha){
 }
 
 var JUEGOS_DESAFIO=[
-  {id:'millonario',titulo:'Desafío diario',instruccion:'Responde 15 preguntas. Cada acierto suma 1 punto. Puedes repetir hasta 3 veces al día. Cuando termines, marca como cumplido.',url:''}
+  {id:'millonario',titulo:'Desafío diario',instruccion:'Responde 15 preguntas. Cada acierto suma 1 punto; los puntos se acumulan día a día. Cada día de racha te da un multiplicador (hasta 1.35×). Puedes repetir hasta 3 veces al día. Cuando termines, marca como cumplido.',url:''}
 ];
 function pickJuegoDesafio(){
   if(!JUEGOS_DESAFIO.length)return null;
@@ -314,15 +314,45 @@ function aprobarDesafioHoy(overrideFields){
 
 function getDesafioPublicadoHoy(){
   const db=_db();
+  if(!db||typeof db!=='object')return null;
   if(!Array.isArray(db.desafiosDiarios))db.desafiosDiarios=[];
-  const fecha=hoyStr();
-  let des=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='publicado');
+  const fecha=typeof hoyStr==='function'?hoyStr():'';
+  if(!fecha)return null;
+  // Priorizar el cuestionario de 15 preguntas (juego) sobre el formato antiguo (reflexión/pregunta)
+  let des=db.desafiosDiarios.find(d=>d&&d.fecha===fecha&&d.status==='publicado'&&(d.tipo==='juego'||!!d.juegoId));
   if(!des){
-    generarDesafioSugeridoParaHoy();
-    const borrador=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='borrador');
-    if(borrador){borrador.status='publicado';borrador.approvedAt=new Date().toISOString();borrador.approvedBy=db.adminNombre||'Desafío diario';if(typeof saveDB==='function')saveDB();}
+    const cualquierPub=db.desafiosDiarios.find(d=>d&&d.fecha===fecha&&d.status==='publicado');
+    if(cualquierPub){
+      try{
+        const juego=typeof JUEGOS_DESAFIO!=='undefined'&&JUEGOS_DESAFIO&&JUEGOS_DESAFIO.length?JUEGOS_DESAFIO[0]:null;
+        const titulo=juego?juego.titulo:'Desafío diario';
+        const instruccion=juego?juego.instruccion:'Responde 15 preguntas. Los puntos se acumulan; cada día de racha suma un multiplicador. Cuando termines, marca como cumplido.';
+        const nuevo={
+          id:'des_'+fecha+'_'+Date.now(),
+          fecha,
+          status:'publicado',
+          tipo:'juego',
+          juegoId:(juego&&juego.id)?juego.id:'millonario',
+          gameUrl:(juego&&juego.url)?juego.url:'',
+          titulo,
+          instruccion,
+          generadoAuto:true,
+          approvedAt:new Date().toISOString(),
+          approvedBy:(db.adminNombre||'Desafío diario')+'',
+          createdAt:new Date().toISOString()
+        };
+        db.desafiosDiarios.push(nuevo);
+        cualquierPub.status='reemplazado';
+        if(typeof saveDB==='function')saveDB();
+        des=nuevo;
+      }catch(e){ console.warn('getDesafioPublicadoHoy reemplazo:',e); des=cualquierPub; }
+    }else{
+      if(typeof generarDesafioSugeridoParaHoy==='function')generarDesafioSugeridoParaHoy();
+      const borrador=db.desafiosDiarios.find(d=>d&&d.fecha===fecha&&d.status==='borrador');
+      if(borrador){borrador.status='publicado';borrador.approvedAt=new Date().toISOString();borrador.approvedBy=(db.adminNombre||'Desafío diario')+'';if(typeof saveDB==='function')saveDB();}
+      des=db.desafiosDiarios.find(d=>d&&d.fecha===fecha&&d.status==='publicado');
+    }
   }
-  des=db.desafiosDiarios.find(d=>d.fecha===fecha&&d.status==='publicado');
   return des?JSON.parse(JSON.stringify(des)):null;
 }
 
@@ -332,6 +362,12 @@ function calcularPHPorRacha(racha){
   if(racha<=7)return 15;
   if(racha<=14)return 20;
   return 25;
+}
+
+/** Multiplicador de puntos del desafío por días de racha (techo 1.35 para que quien empiece tarde pueda alcanzar). */
+function getMultiplicadorRacha(racha){
+  if(!racha||racha<1)return 1;
+  return 1+Math.min(racha,7)*0.05;
 }
 
 async function completarDesafioCaballeroHoy(puntosObtenidos){
@@ -378,7 +414,6 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
   const prevMejor=cab.honorDesafioMejorPuntosHoy||0;
   const newMejor=Math.max(prevMejor,puntosGame);
   cab.honorDesafioMejorPuntosHoy=newMejor;
-  const deltaPuntos=newMejor-prevMejor;
   let nuevaRacha=1;
   if(cab.honorLastFecha){
     try{
@@ -395,7 +430,13 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
   cab.honorDesafioIntentosHoy=(cab.honorDesafioIntentosHoy||0)+1;
   cab.honorRacha=nuevaRacha;
   cab.honorLastFecha=hoy;
-  cab.honorPuntos=(cab.honorPuntos||0)+deltaPuntos;
+  var mult=typeof getMultiplicadorRacha==='function'?getMultiplicadorRacha(nuevaRacha):1;
+  var newSum=Math.round(newMejor*mult);
+  var prevSum=(cab.honorDesafioFechaPuntosSumados===hoy)?(cab.honorDesafioPuntosSumadosHoy||0):0;
+  var toAdd=newSum-prevSum;
+  cab.honorPuntos=(cab.honorPuntos||0)+toAdd;
+  cab.honorDesafioPuntosSumadosHoy=newSum;
+  cab.honorDesafioFechaPuntosSumados=hoy;
   if(esJuego&&Array.isArray(window.millonarioPreguntasIdsCorrectas)&&window.millonarioPreguntasIdsCorrectas.length>0){
     if(!Array.isArray(cab.honorPreguntasAcertadasIds))cab.honorPreguntasAcertadasIds=[];
     const set=new Set(cab.honorPreguntasAcertadasIds);
@@ -405,10 +446,11 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
   }
   try{
     if(typeof saveDB==='function')await saveDB();
-    if(typeof toast==='function')toast('Puntuación máx. hoy: '+newMejor+' · Racha: '+nuevaRacha+' día'+(nuevaRacha===1?'':'s'),'ok');
+    if(typeof toast==='function')toast('+'+toAdd+' pts (hoy '+newMejor+(mult>1?' × '+mult.toFixed(2)+' racha':'')+') · Total: '+(cab.honorPuntos||0)+' · Racha: '+nuevaRacha+' día'+(nuevaRacha===1?'':'s'),'ok');
   }catch(e){
     if(typeof toast==='function')toast('No se pudo guardar el progreso.','err');
   }
+  if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
   if(!esJuego&&typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
 }
 
@@ -997,7 +1039,7 @@ function openClaseDetail(key){
   const mat=cl.materialId?(_db().materialEstudio||[]).find(m=>m.id===cl.materialId):null;
   const materialBlock=mat?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(mat.titulo||'Sin título').replace(/</g,'&lt;')}</span><br><span style="font-size:11px;color:var(--text3);word-break:break-all;">${(mat.url||'').replace(/</g,'&lt;').substring(0,60)}…</span></div><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormMaterialUrlForClase('${esc(clave)}')">Editar URL</button>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin material.</p><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormMaterialUrlForClase(\''+esc(clave)+'\')">+ Añadir URL</button>';
   const evVinculada=(_db().evaluaciones||[]).find(e=>e.claseId===claseIdRef);
-  const evaluacionBlock=evVinculada?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(evVinculada.titulo||'Cuestionario').replace(/</g,'&lt;')}</span> · ${(evVinculada.preguntas||[]).length} preguntas</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion('${esc(evVinculada.id)}')">Editar</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON('${esc(clave)}')">Importar .json (reemplazar)</button></div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario.</p><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion(null,\''+esc(claseIdRef)+'\')">Crear cuestionario</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON(\''+esc(clave)+'\')">Importar desde .json</button></div>';
+  const evaluacionBlock=evVinculada?`<div style="margin-bottom:8px;"><span style="font-weight:600;">${(evVinculada.titulo||'Cuestionario').replace(/</g,'&lt;')}</span> · ${(evVinculada.preguntas||[]).length} preguntas</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion('${esc(evVinculada.id)}')">Editar</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON('${esc(clave)}')">Importar .json (reemplazar)</button><button type="button" class="btn bred" style="font-size:11px;padding:6px 12px" onclick="closeModal();eliminarCuestionarioDelEstudio('${esc(clave)}')">Eliminar cuestionario</button></div>`:'<p style="font-size:13px;color:var(--text3);margin-bottom:8px;">Sin cuestionario.</p><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn bteal" style="font-size:11px;padding:6px 12px" onclick="closeModal();openFormEvaluacion(null,\''+esc(claseIdRef)+'\')">Crear cuestionario</button><button type="button" class="btn boutline" style="font-size:11px;padding:6px 12px" onclick="closeModal();triggerImportCuestionarioJSON(\''+esc(clave)+'\')">Importar desde .json</button></div>';
   const promCl=claseAvg(cl);
   const horaEd=(cl.hora||'').substring(0,5);const horaFinEd=(cl.horaFin||'').substring(0,5);
   openSheet('📅',cl.tema||'Estudio de las Dispensaciones',`${fmtDate(cl.fecha)} · Prom: ${promCl===10?'10':promCl.toFixed(2)}`,`
@@ -1065,6 +1107,18 @@ async function saveMaterialUrlForClase(clave){
   toast('✅ Material actualizado','ok');
   renderClases();if(typeof renderEstudioPV==='function')renderEstudioPV();
   openClaseDetail(clave);
+}
+function eliminarCuestionarioDelEstudio(clave){
+  const cl=getClaseByKey(clave);if(!cl)return;
+  const claseIdRef=String(cl.id||cl.fecha||'');
+  const ev=(_db().evaluaciones||[]).find(e=>e.claseId===claseIdRef);
+  if(!ev){toast('Este estudio no tiene cuestionario vinculado.','info');return;}
+  ev.claseId=undefined;
+  saveDB().then(()=>{
+    toast('Cuestionario desvinculado del estudio.','ok');
+    if(typeof renderClases==='function')renderClases();
+    if(typeof openClaseDetail==='function')openClaseDetail(clave);
+  }).catch(()=>toast('Error al guardar','err'));
 }
 function triggerImportCuestionarioJSON(clave){
   const cl=getClaseByKey(clave);if(!cl)return;
@@ -1592,8 +1646,12 @@ function updateAdminNavNotifs(){
 function renderDesafioCaballero(wrapId){
   const el=document.getElementById(wrapId||'pv-desafio-dia-wrap');
   if(!el)return;
-  const des=typeof getDesafioPublicadoHoy==='function'?getDesafioPublicadoHoy():null;
-  if(!des){el.innerHTML='';return;}
+  let des=typeof getDesafioPublicadoHoy==='function'?getDesafioPublicadoHoy():null;
+  if(!des){el.innerHTML='';var rw=document.getElementById('pv-desafio-ranking-wrap');if(rw)rw.innerHTML='';return;}
+  if(des&&!(des.tipo==='juego'||!!des.juegoId)){
+    des=typeof getDesafioPublicadoHoy==='function'?getDesafioPublicadoHoy():null;
+    if(!des||!(des.tipo==='juego'||!!des.juegoId)){el.innerHTML='';var rw2=document.getElementById('pv-desafio-ranking-wrap');if(rw2)rw2.innerHTML='';return;}
+  }
   const db=_db();
   const cabId=typeof currentCabId!=='undefined'?currentCabId:null;
   const cab=cabId?(db.caballeros||[]).find(c=>c.id===cabId):null;
@@ -1604,6 +1662,7 @@ function renderDesafioCaballero(wrapId){
       <div class="pv-desafio-aviso-ttl">✅ Has usado tus 3 intentos de hoy</div>
       <div class="pv-desafio-aviso-txt">Vuelve mañana para un nuevo desafío.</div>
     </div>`;
+    if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
     return;
   }
   const racha=cab?(cab.honorRacha||0):0;
@@ -1615,15 +1674,21 @@ function renderDesafioCaballero(wrapId){
   const gameTitulo=des.titulo||'Juego bíblico';
   const esInterno=typeof esJuegoInterno==='function'&&esJuegoInterno(des.juegoId);
   if(esJuego&&esInterno){
+    var multTxt=typeof getMultiplicadorRacha==='function'&&getMultiplicadorRacha(racha)>1?' · Multiplicador hoy: '+getMultiplicadorRacha(racha).toFixed(2)+'×':'';
     el.innerHTML=`
     <div class="pv-desafio-card-interno">
       <div class="titulo">📅 Desafío diario</div>
-      <div class="instruccion">${esc(des.instruccion||'Juega las 15 preguntas. Al terminar se guarda tu puntuación automáticamente.')}</div>
+      <div class="instruccion">${esc(des.instruccion||'Juega las 15 preguntas. Los puntos se acumulan; cada día de racha suma un multiplicador. Al terminar, marca como cumplido.')}</div>
+      <div class="pv-desafio-meta" style="margin-bottom:8px;">
+        <span>Puntos acumulados: <strong>${puntos}</strong></span>
+        <span>Racha: <strong>${racha} día${racha===1?'':'s'}</strong></span>${multTxt}
+      </div>
       <div id="pv-desafio-juego-interno" style="margin-bottom:0;"></div>
     </div>
   `;
     var gameEl=document.getElementById('pv-desafio-juego-interno');
     if(gameEl&&typeof renderJuegoInterno==='function')renderJuegoInterno('pv-desafio-juego-interno',des.juegoId);
+    if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
     return;
   }
   if(esJuego&&gameUrl){
@@ -1634,12 +1699,14 @@ function renderDesafioCaballero(wrapId){
       <button type="button" class="pv-desafio-btn-jugar" onclick="openJuegoBiblico('${gameUrl.replace(/'/g,"\\'")}','${esc(gameTitulo).replace(/'/g,"\\'")}')">▶ Jugar ahora (en pantalla completa)</button>
       <div class="pv-desafio-meta">
         <span>Racha: <strong>${racha} día${racha===1?'':'s'}</strong></span>
-        <span>Puntuación: <strong>${puntos}</strong></span>
-        ${puntuacionMaxHoy!==null?'<span>Puntuación máx. hoy: <strong>'+puntuacionMaxHoy+'</strong></span>':''}
+        <span>Puntos acumulados: <strong>${puntos}</strong></span>
+        ${typeof getMultiplicadorRacha==='function'&&getMultiplicadorRacha(racha)>1?'<span>Multiplicador hoy: <strong>'+getMultiplicadorRacha(racha).toFixed(2)+'×</strong></span>':''}
+        ${puntuacionMaxHoy!==null?'<span>Máx. hoy: <strong>'+puntuacionMaxHoy+'</strong></span>':''}
       </div>
       <button type="button" class="pv-desafio-btn-cumplido" onclick="completarDesafioCaballeroHoy()">✅ He cumplido el desafío de hoy</button>
     </div>
   `;
+    if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
     return;
   }
   const ops=(des.opciones||[]).map((o,i)=>`
@@ -1658,14 +1725,53 @@ function renderDesafioCaballero(wrapId){
       <textarea id="pv-desafio-nota" class="pv-desafio-nota" rows="1" placeholder="Escribe en una frase cómo piensas aplicarlo hoy" oninput="ajustarAlturaDesafioNota(this)"></textarea>
       <div class="pv-desafio-meta">
         <span>Racha: <strong>${racha} día${racha===1?'':'s'}</strong></span>
-        <span>Puntuación: <strong>${puntos}</strong></span>
-        ${puntuacionMaxHoy!==null?'<span>Puntuación máx. hoy: <strong>'+puntuacionMaxHoy+'</strong></span>':''}
+        <span>Puntos acumulados: <strong>${puntos}</strong></span>
+        ${typeof getMultiplicadorRacha==='function'&&getMultiplicadorRacha(racha)>1?'<span>Multiplicador hoy: <strong>'+getMultiplicadorRacha(racha).toFixed(2)+'×</strong></span>':''}
+        ${puntuacionMaxHoy!==null?'<span>Máx. hoy: <strong>'+puntuacionMaxHoy+'</strong></span>':''}
       </div>
       <button type="button" class="pv-desafio-btn-cumplido" onclick="completarDesafioCaballeroHoy()">✅ He cumplido el desafío de hoy</button>
     </div>
   `;
   var ta=el.querySelector('#pv-desafio-nota');
   if(ta)ajustarAlturaDesafioNota(ta);
+  if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
+}
+function renderDesafioRankingBanner(){
+  var wrap=document.getElementById('pv-desafio-ranking-wrap');
+  if(!wrap)return;
+  var db=_db();
+  var hoy=typeof hoyStr==='function'?hoyStr():'';
+  var cabId=typeof currentCabId!=='undefined'?currentCabId:null;
+  var todos=db.caballeros||[];
+  var conPuntos=todos.filter(function(c){ return (c.honorPuntos||0)>0; });
+  var hoyCompletaron=todos.filter(function(c){ return c.honorDesafioFechaIntentos===hoy&&(c.honorDesafioIntentosHoy||0)>0; });
+  var ordenados=conPuntos.slice().sort(function(a,b){ return (b.honorPuntos||0)-(a.honorPuntos||0); });
+  var top=ordenados.slice(0,8);
+  var esc=function(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var multStr=function(racha){
+    var m=typeof getMultiplicadorRacha==='function'?getMultiplicadorRacha(racha||0):1;
+    return m===1?'1.0×':m.toFixed(2)+'×';
+  };
+  var rows=top.map(function(c,i){
+    var nombre=esc((c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar:c.nombre)||'Caballero');
+    var pts=c.honorPuntos||0;
+    var r=c.honorRacha||0;
+    var mult=multStr(r);
+    var esYo=c.id===cabId;
+    return '<div class="pv-desafio-rank-row'+(esYo?' pv-desafio-rank-yo':'')+'" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;margin-bottom:4px;background:'+(esYo?'rgba(58,171,186,0.12)':'var(--bg2)')+';">'+
+      '<span style="font-weight:800;color:var(--text3);width:20px;">'+(i+1)+'</span>'+
+      '<span style="flex:1;font-weight:700;font-size:13px;color:var(--text1);">'+nombre+(esYo?' (tú)':'')+'</span>'+
+      '<span style="font-weight:800;color:var(--teal);font-size:13px;">'+pts+' pts</span>'+
+      '<span style="font-size:11px;color:var(--text3);" title="Días de racha">'+r+'d</span>'+
+      '<span style="font-size:11px;font-weight:700;color:#059669;" title="Multiplicador">'+mult+'</span>'+
+      '</div>';
+  }).join('');
+  wrap.innerHTML='<div class="pv-desafio-ranking-card" style="background:var(--bg2);border-radius:14px;padding:12px 14px;border:1px solid var(--border);">'+
+    '<div style="font-weight:800;font-size:13px;color:var(--text1);margin-bottom:8px;">📊 Cómo vamos — Puntos acumulados</div>'+
+    '<p style="font-size:11px;color:var(--text3);margin-bottom:10px;">Cada día de racha suma un poco más (máx. 1.35×). Quien empieza o pierde la racha puede volver a subir.</p>'+
+    '<div style="margin-bottom:6px;font-size:11px;color:var(--text3);">Hoy han hecho el desafío: <strong>'+hoyCompletaron.length+'</strong> caballero'+(hoyCompletaron.length===1?'':'s')+'</div>'+
+    (rows?('<div style="max-height:240px;overflow-y:auto;">'+rows+'</div>'):'<div style="font-size:12px;color:var(--text3);">Aún nadie tiene puntos. ¡Sé el primero!</div>')+
+    '</div>';
 }
 function ajustarAlturaDesafioNota(ta){
   if(!ta||ta.nodeName!=='TEXTAREA')return;

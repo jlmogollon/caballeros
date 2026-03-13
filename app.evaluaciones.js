@@ -40,7 +40,16 @@ function openFormEvaluacion(id,preselectedClaseId){
   if(preselectedClaseId!==undefined&&preselectedClaseId!=='')window._evqClasePreseleccionada=preselectedClaseId;
   const preguntas=(ev&&ev.preguntas)?ev.preguntas:[];
   const pregHtml=preguntas.map((p,i)=>{
-    const opciones=(p.opciones||[]).map((o,j)=>`<label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="radio" name="evq-p-${i}" value="${j}" ${o.correcta?'checked':''}><input type="text" data-preg="${i}" data-op="${j}" value="${escAttr(o.texto)}" placeholder="Opción ${j+1}" style="flex:1;padding:6px 10px;"></label>`).join('');
+    const opciones=(p.opciones||[]).map((o,j)=>{
+      const nOp=(p.opciones||[]).length;
+      return`<div class="evq-opcion-row" data-pidx="${i}" data-opidx="${j}" style="display:flex;align-items:center;gap:6px;margin:6px 0;">
+        <span class="evq-opcion-mover" style="display:flex;flex-direction:column;gap:0;">
+          <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${i},${j},-1)" title="Subir" ${j===0?'disabled':''}>↑</button>
+          <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${i},${j},1)" title="Bajar" ${j>=nOp-1?'disabled':''}>↓</button>
+        </span>
+        <label style="display:flex;align-items:center;gap:8px;flex:1;margin:0;"><input type="radio" name="evq-p-${i}" value="${j}" ${o.correcta?'checked':''}><input type="text" data-preg="${i}" data-op="${j}" value="${escAttr(o.texto)}" placeholder="Opción ${j+1}" style="flex:1;padding:6px 10px;"></label>
+      </div>`;
+    }).join('');
     return`<div class="panel" style="margin-bottom:12px;" data-pidx="${i}" data-pid="${p.id||('p'+i)}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <strong>Pregunta ${i+1}</strong>
@@ -81,8 +90,20 @@ function añadirPreguntaEvq(){
     </div>
     <input type="text" class="evq-preg-texto" data-pidx="${i}" value="" placeholder="Enunciado de la pregunta" style="width:100%;padding:8px 12px;margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:8px;">
     <div class="evq-opciones" data-pidx="${i}">
-      <label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="radio" name="evq-p-${i}" value="0" checked><input type="text" data-preg="${i}" data-op="0" value="" placeholder="Opción 1" style="flex:1;padding:6px 10px;"></label>
-      <label style="display:flex;align-items:center;gap:8px;margin:6px 0;"><input type="radio" name="evq-p-${i}" value="1"><input type="text" data-preg="${i}" data-op="1" value="" placeholder="Opción 2" style="flex:1;padding:6px 10px;"></label>
+      <div class="evq-opcion-row" data-pidx="${i}" data-opidx="0" style="display:flex;align-items:center;gap:6px;margin:6px 0;">
+        <span class="evq-opcion-mover" style="display:flex;flex-direction:column;gap:0;">
+          <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${i},0,-1)" title="Subir" disabled>↑</button>
+          <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${i},0,1)" title="Bajar">↓</button>
+        </span>
+        <label style="display:flex;align-items:center;gap:8px;flex:1;margin:0;"><input type="radio" name="evq-p-${i}" value="0" checked><input type="text" data-preg="${i}" data-op="0" value="" placeholder="Opción 1" style="flex:1;padding:6px 10px;"></label>
+      </div>
+      <div class="evq-opcion-row" data-pidx="${i}" data-opidx="1" style="display:flex;align-items:center;gap:6px;margin:6px 0;">
+        <span class="evq-opcion-mover" style="display:flex;flex-direction:column;gap:0;">
+          <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${i},1,-1)" title="Subir">↑</button>
+          <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${i},1,1)" title="Bajar" disabled>↓</button>
+        </span>
+        <label style="display:flex;align-items:center;gap:8px;flex:1;margin:0;"><input type="radio" name="evq-p-${i}" value="1"><input type="text" data-preg="${i}" data-op="1" value="" placeholder="Opción 2" style="flex:1;padding:6px 10px;"></label>
+      </div>
     </div>
     <button type="button" class="btn boutline" style="font-size:11px;margin-top:6px;" onclick="añadirOpcionEvq(${i})">+ Añadir opción</button>
   `;
@@ -103,11 +124,51 @@ function añadirOpcionEvq(pidx){
   const panel=wrap&&wrap.querySelector('.panel[data-pidx="'+pidx+'"]');
   if(!panel)return;
   const opWrap=panel.querySelector('.evq-opciones');
-  const n=opWrap.querySelectorAll('label').length;
-  const label=document.createElement('label');
-  label.style.cssText='display:flex;align-items:center;gap:8px;margin:6px 0;';
-  label.innerHTML=`<input type="radio" name="evq-p-${pidx}" value="${n}"><input type="text" data-preg="${pidx}" data-op="${n}" value="" placeholder="Opción ${n+1}" style="flex:1;padding:6px 10px;">`;
-  opWrap.appendChild(label);
+  if(!opWrap)return;
+  const rows=opWrap.querySelectorAll('.evq-opcion-row');
+  const n=rows.length;
+  const row=document.createElement('div');
+  row.className='evq-opcion-row';
+  row.setAttribute('data-pidx',String(pidx));
+  row.setAttribute('data-opidx',String(n));
+  row.style.cssText='display:flex;align-items:center;gap:6px;margin:6px 0;';
+  row.innerHTML=`<span class="evq-opcion-mover" style="display:flex;flex-direction:column;gap:0;">
+    <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${pidx},${n},-1)" title="Subir">↑</button>
+    <button type="button" class="btn boutline" style="font-size:10px;padding:2px 6px;line-height:1;" onclick="moverOpcionEvq(${pidx},${n},1)" title="Bajar" disabled>↓</button>
+  </span>
+  <label style="display:flex;align-items:center;gap:8px;flex:1;margin:0;"><input type="radio" name="evq-p-${pidx}" value="${n}"><input type="text" data-preg="${pidx}" data-op="${n}" value="" placeholder="Opción ${n+1}" style="flex:1;padding:6px 10px;"></label>`;
+  opWrap.appendChild(row);
+  rows.forEach((r,idx)=>{ if(idx<n){ const btnDown=r.querySelector('.evq-opcion-mover button[title="Bajar"]'); if(btnDown)btnDown.disabled=false; } });
+  const lastBtnDown=row.querySelector('.evq-opcion-mover button[title="Bajar"]');
+  if(lastBtnDown)lastBtnDown.disabled=true;
+}
+
+function moverOpcionEvq(pidx,opidx,dir){
+  const wrap=document.getElementById('evq-preguntas-wrap');
+  const panel=wrap&&wrap.querySelector('.panel[data-pidx="'+pidx+'"]');
+  if(!panel)return;
+  const opWrap=panel.querySelector('.evq-opciones');
+  if(!opWrap)return;
+  const rows=Array.from(opWrap.querySelectorAll('.evq-opcion-row'));
+  const n=rows.length;
+  if(n<2||opidx<0||opidx>=n)return;
+  const newIdx=opidx+dir;
+  if(newIdx<0||newIdx>=n)return;
+  const a=rows[opidx];
+  const b=rows[newIdx];
+  if(dir<0){ opWrap.insertBefore(a,b); } else { opWrap.insertBefore(b,a); }
+  const rowsAfter=Array.from(opWrap.querySelectorAll('.evq-opcion-row'));
+  rowsAfter.forEach((r,idx)=>{
+    r.setAttribute('data-opidx',idx);
+    const radio=r.querySelector('input[type="radio"]');
+    const textInp=r.querySelector('input[type="text"]');
+    if(radio){ radio.value=idx; radio.name='evq-p-'+pidx; }
+    if(textInp)textInp.setAttribute('data-op',idx);
+    const btnUp=r.querySelector('.evq-opcion-mover button[title="Subir"]');
+    const btnDown=r.querySelector('.evq-opcion-mover button[title="Bajar"]');
+    if(btnUp){ btnUp.disabled=idx===0; btnUp.onclick=function(){ moverOpcionEvq(pidx,idx,-1); }; }
+    if(btnDown){ btnDown.disabled=idx>=rowsAfter.length-1; btnDown.onclick=function(){ moverOpcionEvq(pidx,idx,1); }; }
+  });
 }
 
 function guardarEvaluacion(){
@@ -123,9 +184,10 @@ function guardarEvaluacion(){
     const textoInp=panel.querySelector('.evq-preg-texto');
     const texto=(textoInp&&textoInp.value?textoInp.value:'').trim();
     const opciones=[];
-    panel.querySelectorAll('.evq-opciones label').forEach(lab=>{
-      const radio=lab.querySelector('input[type="radio"]');
-      const textInp=lab.querySelector('input[type="text"]');
+    panel.querySelectorAll('.evq-opciones .evq-opcion-row').forEach(row=>{
+      const lab=row.querySelector('label');
+      const radio=lab&&lab.querySelector('input[type="radio"]');
+      const textInp=lab&&lab.querySelector('input[type="text"]');
       const opVal=(textInp&&textInp.value?textInp.value:'').trim();
       opciones.push({texto:opVal,correcta:!!(radio&&radio.checked)});
     });
