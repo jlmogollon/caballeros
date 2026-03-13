@@ -1079,16 +1079,19 @@ function triggerImportCuestionarioJSON(clave){
     try{json=JSON.parse(await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsText(f);}));}catch(e){toast('El archivo no es un JSON válido','err');return;}
     const titulo=(json.titulo||json.title||'').trim()||'Cuestionario importado';
     const descripcion=(json.descripcion||json.description||'').trim();
-    const rawPreguntas=Array.isArray(json.preguntas)?json.preguntas:(Array.isArray(json.questions)?json.questions:[]);
+    const rawPreguntas=Array.isArray(json.preguntas)?json.preguntas:(Array.isArray(json.questions)?json.questions:(Array.isArray(json.quiz)?json.quiz:[]));
   const preguntas=rawPreguntas.map((p,i)=>{
-    const texto=String(p.texto||p.text||p.pregunta||'').trim();
+    const texto=String(p.texto||p.text||p.pregunta||p.question||'').trim();
     let opciones=[];
-    const rawOp=p.opciones||p.options||p.choices;
+    const rawOp=p.opciones||p.options||p.choices||p.answerOptions;
     if(Array.isArray(rawOp)&&rawOp.length>0){
       let idxCorrecta=typeof p.correcta==='number'?p.correcta:(typeof p.correctaIndex==='number'?p.correctaIndex:-1);
       if(idxCorrecta<0||idxCorrecta>=rawOp.length)idxCorrecta=0;
       rawOp.forEach((o,j)=>{
-        if(typeof o==='object'&&o!==null)opciones.push({texto:String(o.texto||o.text||'').trim(),correcta:!!o.correcta});
+        if(typeof o==='object'&&o!==null){
+          const correcta=!!(o.correcta||o.isCorrect);
+          opciones.push({texto:String(o.texto||o.text||'').trim(),correcta});
+        }
         else opciones.push({texto:String(o).trim(),correcta:j===idxCorrecta});
       });
       const algunaCorrecta=opciones.some(x=>x.correcta);
