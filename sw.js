@@ -11,3 +11,34 @@ self.addEventListener('fetch',function(e){
   if(u.indexOf('firestore')!==-1||u.indexOf('firebase')!==-1||u.indexOf('googleapis')!==-1){ e.respondWith(fetch(e.request)); return; }
   e.respondWith(fetch(e.request).catch(function(){ return caches.match(e.request); }));
 });
+
+// Notificaciones push: mostrar cuando llegue un mensaje push
+self.addEventListener('push',function(e){
+  var data={};
+  try{
+    if(e.data)data=e.data.json();
+  }catch(err){}
+  var title=data.title||'Hombres de Verdad';
+  var options={
+    body:data.body||'',
+    icon:data.icon||'favicon.png',
+    badge:data.badge||'favicon.png',
+    data:data.data||{}
+  };
+  e.waitUntil(self.registration.showNotification(title,options));
+});
+
+// Al hacer clic en la notificación, enfocar o abrir la app
+self.addEventListener('notificationclick',function(e){
+  e.notification.close();
+  var target=(e.notification.data&&e.notification.data.url)||'/';
+  e.waitUntil(
+    clients.matchAll({type:'window',includeUncontrolled:true}).then(function(list){
+      for(var i=0;i<list.length;i++){
+        var c=list[i];
+        if(c.url.indexOf(target)!==-1){ c.focus(); return; }
+      }
+      return clients.openWindow(target);
+    })
+  );
+});

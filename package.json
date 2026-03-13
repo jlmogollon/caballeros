@@ -1,0 +1,23 @@
+{
+  "name": "caballeros",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/jlmogollon/caballeros#readme",
+  "bugs": {
+    "url": "https://github.com/jlmogollon/caballeros/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jlmogollon/caballeros.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "app.evaluaciones.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}

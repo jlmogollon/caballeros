@@ -28,6 +28,7 @@
 <script src="app.eventos.js"></script>
 <script src="app.finanzas.js"></script>
 <script src="app.evaluaciones.js"></script>
+<script src="app.ui.js"></script>
 <script>
 (function(){
   var FIREBASE_CONFIG = {
@@ -44,6 +45,16 @@
     window.FIREBASE_CONFIGURED = (FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.projectId !== 'tu-proyecto-caballeros');
   } catch(e) { console.warn('[Caballeros] Firebase init:', e.message); window.FIREBASE_CONFIGURED = false; }
 })();
+</script>
+<script>
+// Registro básico del service worker (solo si el navegador lo soporta)
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    try{
+      navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('SW register error',e); });
+    }catch(e){ console.warn('SW register error',e); }
+  });
+}
 </script>
 
 <!-- ════ LOGIN ════ -->
@@ -92,7 +103,7 @@
     <div class="ntab active" onclick="showTab('t-dash',this)">🏠 Inicio</div>
     <div class="ntab" onclick="showTab('t-caballeros',this)">👥 Caballeros</div>
     <div class="ntab" onclick="showTab('t-estudio-admin',this)">📚 Estudio</div>
-    <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones</div>
+    <div class="ntab" onclick="showTab('t-peticiones',this)">🙏 Peticiones<span id="nav-peticiones-dot" style="display:none;margin-left:4px;font-size:10px;color:#ef4444;">●</span></div>
     <div class="ntab" onclick="showTab('t-eventos-admin',this)">🗓 Eventos</div>
     <div class="ntab" onclick="showTab('t-finanzas',this)">💰 Finanzas</div>
     <div class="ntab" onclick="showTab('t-informes',this)">📊 Informes</div>
@@ -132,6 +143,12 @@
       <div id="dash-cumple-banner-wrap" style="margin-bottom:14px;"></div>
       <div id="dash-verso-dia-wrap" style="margin-bottom:14px;cursor:pointer;" onclick="openVersoEnBiblia()" title="Abrir en la Biblia RVR1960"></div>
       <div id="dash-desafio-wrap" style="margin-bottom:14px;"></div>
+      <div id="admin-notif-panel" class="panel panel-inicio" style="margin-bottom:14px;">
+        <div class="panel-title" style="margin-bottom:6px;">🔔 Notificaciones del navegador</div>
+        <p id="admin-notif-status" style="font-size:12px;color:var(--text3);margin-bottom:8px;">Cargando estado de notificaciones…</p>
+        <button type="button" id="admin-notif-btn" class="btn bteal" style="font-size:11px;padding:6px 12px;">Activar notificaciones</button>
+      </div>
+      <div id="dash-mini-activity-wrap" style="margin-bottom:14px;"></div>
       <!-- Top 5 -->
       <div class="sec-ttl" style="margin-top:4px">🏆 Top 5 Caballeros</div>
       <div id="top5" class="card-list"></div>
@@ -362,6 +379,10 @@
       <div id="pv-cumple-banner-wrap" style="margin-bottom:14px;"></div>
       <!-- Banner cuestionarios pendientes -->
       <div id="pv-eval-pendiente-wrap" style="margin-bottom:14px;"></div>
+      <!-- Banner nuevos eventos / estudios -->
+      <div id="pv-eventos-reminder-wrap" style="margin-bottom:14px;"></div>
+      <!-- Recordatorio desafío diario pendiente -->
+      <div id="pv-desafio-reminder-wrap" style="margin-bottom:14px;"></div>
       <!-- Versículo del día (RVR60) — clic abre la biblia -->
       <div id="pv-verso-dia-wrap" style="margin-bottom:14px;cursor:pointer;" onclick="openVersoOverlay()" title="Abrir en la Biblia RVR1960"></div>
       <div id="pv-desafio-dia-wrap" style="margin-bottom:14px;"></div>

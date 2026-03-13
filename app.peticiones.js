@@ -113,6 +113,7 @@ function cargarPeticiones(esAdmin=false){
       </div>
     </div>`;
   }).join('');
+  if(esAdmin&&typeof updateAdminNavNotifs==='function')updateAdminNavNotifs();
 }
 
 function cargarPeticionesAdmin(){cargarPeticiones(true);}

@@ -14,6 +14,10 @@ const MONEDA = { symbol: '$', locale: 'es-CO' };
 function fmtMonto(n){ return (Number(n)||0).toLocaleString(MONEDA.locale,{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function escAttr(s){ if(s==null||s===undefined)return''; return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+// Clave pública VAPID para push (VAPID public key)
+// Generada con web-push.generateVAPIDKeys()
+const PUSH_VAPID_PUBLIC_KEY = 'BEv3_CKyyLvU8eqh747UwP9WdJN07czCySodDtVWULIWsGnQQBLHvdJPEQx6Zz3RPJljJDynTy_KpJf0Z2f89fQ';
+
 // ═══════════════════════════════════════════════════════════════
 // NUBE — Firebase Firestore (como Escuela Dominical)
 // ═══════════════════════════════════════════════════════════════
@@ -78,6 +82,51 @@ function useCloud(){
     if(h==='localhost'||h==='127.0.0.1'||h==='')return false;
     return true;
   }catch(e){return false;}
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=atob(base64);
+  const outputArray=new Uint8Array(rawData.length);
+  for(let i=0;i<rawData.length;i++)outputArray[i]=rawData.charCodeAt(i);
+  return outputArray;
+}
+
+async function savePushSubscription(kind,cabId,sub){
+  if(!sub)return;
+  const dbFs=await waitForFirestore(12000);
+  if(!dbFs)return;
+  const id=(kind||'admin')+'_'+(cabId||'main');
+  try{
+    await dbFs.collection('caballeros_push').doc(id).set({
+      subscription:sub,
+      kind:kind||'admin',
+      cabId:cabId||null,
+      updatedAt:new Date().toISOString()
+    },{merge:true});
+  }catch(e){
+    console.warn('No se pudo guardar la suscripción push:',e.message);
+  }
+}
+
+async function subscribePush(kind,cabId){
+  try{
+    if(!('serviceWorker' in navigator))return;
+    if(!('PushManager' in window))return;
+    if(!PUSH_VAPID_PUBLIC_KEY)return;
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      sub=await reg.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:urlBase64ToUint8Array(PUSH_VAPID_PUBLIC_KEY)
+      });
+    }
+    await savePushSubscription(kind,cabId,sub.toJSON?sub.toJSON():sub);
+  }catch(e){
+    console.warn('Error al suscribirse a push:',e.message);
+  }
 }
 
 function showLoading(msg){

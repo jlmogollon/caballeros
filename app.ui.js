@@ -14,13 +14,59 @@ function showTab(id,el){
   tabEl.classList.add('active');if(el)el.classList.add('active');
   if(id==='t-dash'){renderDash();}
   if(id==='t-cumple')renderCumple();
-  if(id==='t-peticiones'){cargarPeticionesAdmin();}
+  if(id==='t-peticiones'){
+    cargarPeticionesAdmin();
+    try{
+      const items=[...(_db().peticiones||[])];
+      const latestTs=items.reduce((m,p)=>(typeof p.ts==='number'&&p.ts>m)?p.ts:m,0);
+      if(latestTs&&typeof localStorage!=='undefined')localStorage.setItem('caballeros_admin_peticiones_last_seen_ts',String(latestTs));
+    }catch(e){}
+    if(typeof updateAdminNavNotifs==='function')updateAdminNavNotifs();
+  }
   if(id==='t-caballeros'){renderCabs();}
   if(id==='t-estudio-admin'){renderClases();}
   if(id==='t-eventos-admin'){renderEventosAdmin();}
   if(id==='t-finanzas'){renderFinanzas();}
   if(id==='t-informes'){renderInformes();}
   if(id==='t-historial'){if(typeof renderHistorialApp==='function')renderHistorialApp();}
+}
+function initNotificationPrefs(){
+  const panel=document.getElementById('admin-notif-panel');
+  const btn=document.getElementById('admin-notif-btn');
+  const statusEl=document.getElementById('admin-notif-status');
+  if(!panel||!btn||!statusEl)return;
+  if(!('Notification' in window)){
+    statusEl.textContent='Las notificaciones no son compatibles con este navegador.';
+    btn.style.display='none';
+    return;
+  }
+  function refresh(){
+    const perm=Notification.permission;
+    if(perm==='granted'){
+      if(typeof subscribePush==='function')subscribePush('admin',null);
+      panel.style.display='none';
+    }else if(perm==='denied'){
+      statusEl.textContent='Notificaciones bloqueadas. Debes habilitarlas en el navegador.';
+      btn.textContent='Ver cómo habilitarlas';
+      btn.disabled=false;
+    }else{
+      statusEl.textContent='Puedes activar notificaciones para recordatorios y avisos.';
+      btn.textContent='Activar notificaciones';
+      btn.disabled=false;
+    }
+  }
+  btn.onclick=function(){
+    if(!('Notification' in window))return;
+    if(Notification.permission==='default'){
+      Notification.requestPermission().then(function(){
+        refresh();
+        if(typeof subscribePush==='function')subscribePush('admin',null);
+      });
+    }else if(Notification.permission==='denied'){
+      alert('Las notificaciones están bloqueadas. Ve a la configuración del navegador para habilitarlas.');
+    }
+  };
+  refresh();
 }
 function initAdmin(){
   buildSel();renderDash();renderCabs();
@@ -46,6 +92,8 @@ function initAdmin(){
     photoInp.value='';
     if(d.adminNombre&&String(d.adminNombre).trim()&&wrap)wrap.style.display='none';
   };
+  if(typeof updateAdminNavNotifs==='function')updateAdminNavNotifs();
+  if(typeof initNotificationPrefs==='function')initNotificationPrefs();
 }
 
 function goToStatCard(tipo){
@@ -78,6 +126,40 @@ function renderDash(){
   const list=ranking();
   const top5El=document.getElementById('top5');
   if(top5El)top5El.innerHTML=list.slice(0,5).map((c,i)=>mkCabCard(c,i+1)).join('');
+  const miniWrap=document.getElementById('dash-mini-activity-wrap');
+  if(miniWrap){
+    const pet=(db.peticiones||[]).slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,3);
+    const hist=Array.isArray(db.appHistorial)?db.appHistorial:[];
+    const ultEval=hist.filter(e=>e.accion==='cuestionario').slice().sort((a,b)=>b.ts-a.ts)[0]||null;
+    const ultMat=hist.filter(e=>e.accion==='material_estudio').slice().sort((a,b)=>b.ts-a.ts)[0]||null;
+    const nombreCab=id=>{const c=(db.caballeros||[]).find(x=>x.id===id);return c?(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre||''):('ID '+id);};
+    let html='<div class="panel panel-inicio">';
+    html+='<div class="panel-title" style="margin-bottom:8px;">🔔 Actividad reciente</div>';
+    if(!pet.length && !ultEval && !ultMat){
+      html+='<p style="font-size:12px;color:var(--text3);margin:0;">Sin actividad reciente de peticiones ni estudios.</p>';
+    }else{
+      if(pet.length){
+        html+='<div style="margin-bottom:8px;"><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Peticiones más recientes</div>';
+        pet.forEach(p=>{
+          const nom=(p.nombre||'').toString().substring(0,40);
+          html+='<div style="font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">• '+(p.fecha||'')+' · '+nom+'</div>';
+        });
+        html+='</div>';
+      }
+      if(ultEval){
+        const d=new Date(ultEval.ts);
+        const fh=d.toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+        html+='<div style="font-size:12px;color:var(--text2);margin-bottom:4px;">📝 Último cuestionario: <strong>'+nombreCab(ultEval.cabId)+'</strong> · '+fh+'</div>';
+      }
+      if(ultMat){
+        const d2=new Date(ultMat.ts);
+        const fh2=d2.toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+        html+='<div style="font-size:12px;color:var(--text2);">📚 Último acceso a material: <strong>'+nombreCab(ultMat.cabId)+'</strong> · '+fh2+'</div>';
+      }
+    }
+    html+='</div>';
+    miniWrap.innerHTML=html;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -330,6 +412,29 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
   if(!esJuego&&typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
 }
 
+function resetDesafioCaballeroHoy(cabId){
+  const db=_db();
+  const hoy=typeof hoyStr==='function'?hoyStr():'';
+  if(!hoy){
+    if(typeof toast==='function')toast('No se pudo obtener la fecha de hoy.','err');
+    return;
+  }
+  const cab=(db.caballeros||[]).find(c=>c.id===cabId);
+  if(!cab){
+    if(typeof toast==='function')toast('Caballero no encontrado.','err');
+    return;
+  }
+  const intentos=cab.honorDesafioFechaIntentos===hoy?(cab.honorDesafioIntentosHoy||0):0;
+  if(intentos<3){
+    if(typeof toast==='function')toast('Este caballero aún no ha usado sus 3 intentos de hoy.','info');
+    return;
+  }
+  cab.honorDesafioIntentosHoy=2;
+  if(typeof saveDB==='function')saveDB();
+  if(typeof toast==='function')toast('Se ha habilitado un intento extra para el desafío de hoy.','ok');
+  if(typeof renderDesafioAdminDash==='function')renderDesafioAdminDash('dash-desafio-wrap');
+}
+
 function renderDesafioAdminDash(wrapId){
   const el=document.getElementById(wrapId||'dash-desafio-wrap');
   if(!el)return;
@@ -343,8 +448,14 @@ function renderDesafioAdminDash(wrapId){
   const esc=s=>String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const rows=cabs.map(function(c){
     const intentos=c.honorDesafioFechaIntentos===hoy?(c.honorDesafioIntentosHoy||0):0;
+    const cabIdAttr=String(c.id||'').replace(/"/g,'&quot;');
+    const nombreMostrar=(c.nombreMostrar&&String(c.nombreMostrar).trim()?c.nombreMostrar.trim():c.nombre||'');
+    const nombreHtml=esc(nombreMostrar);
     return '<tr style="border-bottom:1px solid #e5e7eb;">'+
-      '<td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1e293b;">'+esc(c.nombre||'')+'</td>'+
+      '<td style="padding:10px 12px;font-size:13px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:6px;">'+
+        '<span>'+nombreHtml+'</span>'+
+        '<button type="button" title="Permitir repetir desafío hoy" style="border:none;background:transparent;padding:0;cursor:pointer;color:#0ea5e9;display:inline-flex;align-items:center;justify-content:center;font-size:14px;" onclick="resetDesafioCaballeroHoy(\''+cabIdAttr+'\')">⟳</button>'+
+      '</td>'+
       '<td style="padding:10px 12px;font-size:13px;font-weight:800;color:#059669;">'+(c.honorPuntos||0)+'</td>'+
       '<td style="padding:10px 12px;font-size:13px;font-weight:700;">'+(c.honorRacha||0)+' día'+(c.honorRacha===1?'':'s')+'</td>'+
       '<td style="padding:10px 12px;font-size:12px;">'+intentos+'</td>'+
@@ -1366,12 +1477,153 @@ function renderPersonal(cabId){
   renderEncuestaCampamento(c);
   renderCumpleBanners(cabId);
   renderEvalPendienteBanner(cabId);
+  renderEventosReminderBanner(cabId);
+  renderDesafioReminderBanner(cabId);
   if(typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
   // Top 5 caballeros general en el inicio
   renderTop5Caballeros();
   const finBtn=document.getElementById('pv-btn-finanzas');
   if(finBtn)finBtn.style.display=(cabId===CARLOS_FINANZAS_ID||(c&&c.nombre==='Carlos Rodríguez'))?'':'none';
   showPvTab('perfil');
+}
+
+function renderDesafioReminderBanner(cabId){
+  const wrap=document.getElementById('pv-desafio-reminder-wrap');
+  if(!wrap)return;
+  const db=_db();
+  const hoy=typeof hoyStr==='function'?hoyStr():'';
+  const des=typeof getDesafioPublicadoHoy==='function'?getDesafioPublicadoHoy():null;
+  const cab=(db.caballeros||[]).find(c=>c.id===cabId);
+  if(!wrap||!hoy||!des||!cab){
+    wrap.innerHTML='';
+    wrap.style.display='none';
+    return;
+  }
+  const intentos=cab.honorDesafioFechaIntentos===hoy?(cab.honorDesafioIntentosHoy||0):0;
+  // Mostrar solo si hoy no ha hecho NINGÚN intento
+  if(intentos>0){
+    wrap.innerHTML='';
+    wrap.style.display='none';
+    return;
+  }
+  // Y solo si ya ha pasado una hora "razonable" del día (por ejemplo, después de las 17:00)
+  try{
+    const now=new Date();
+    if(now.getHours()<17){
+      wrap.innerHTML='';
+      wrap.style.display='none';
+      return;
+    }
+  }catch(e){}
+  // Y si lleva al menos 2 días sin registrar desafío (racha rota)
+  try{
+    if(cab.honorLastFecha){
+      const last=new Date(cab.honorLastFecha);
+      const hoyDate=new Date(hoy);
+      const diffDias=Math.round((hoyDate-last)/86400000);
+      if(diffDias<2){
+        wrap.innerHTML='';
+        wrap.style.display='none';
+        return;
+      }
+    }
+  }catch(e){}
+  let yaCerrado=false;
+  const key='caballeros_cab_desafio_rec_'+cabId+'_'+hoy;
+  try{
+    yaCerrado=typeof localStorage!=='undefined'&&localStorage.getItem(key)==='1';
+  }catch(e){}
+  if(yaCerrado){
+    wrap.innerHTML='';
+    wrap.style.display='none';
+    return;
+  }
+  wrap.style.display='block';
+  const msgTitulo='📅 Retoma el desafío diario';
+  const msgTxt='Hace varios días que no registras el desafío. Desplázate abajo para hacerlo hoy.';
+  wrap.innerHTML=`
+    <div onclick="try{localStorage.setItem('${key}','1');}catch(e){} this.style.display='none';"
+         style="background:linear-gradient(135deg,#ecfccb 0%,#d9f99d 50%,#bbf7d0 100%);border-radius:14px;padding:14px 18px;border:2px solid #84cc16;box-shadow:0 4px 16px rgba(132,204,22,0.35);cursor:pointer;display:flex;align-items:center;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(22,163,74,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⏰</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#365314;">${msgTitulo}</div>
+        <div style="font-size:12px;color:#4d7c0f;margin-top:2px;">${msgTxt}</div>
+      </div>
+      <div style="font-size:18px;color:#4d7c0f;flex-shrink:0;">→</div>
+    </div>`;
+}
+
+function renderEventosReminderBanner(cabId){
+  const wrap=document.getElementById('pv-eventos-reminder-wrap');
+  if(!wrap)return;
+  if(typeof getEventosCompletos!=='function'){
+    wrap.innerHTML='';
+    wrap.style.display='none';
+    return;
+  }
+  const data=getEventosCompletos();
+  const items=(data&&Array.isArray(data.proximos))?data.proximos:[];
+  if(!items.length){
+    wrap.innerHTML='';
+    wrap.style.display='none';
+    return;
+  }
+  const primero=items[0];
+  const tipo=primero.tipo||'evento';
+  const fechaStr=primero.fechaStr||'';
+  const claseId=primero.clase?(primero.clase.id||primero.clase.fecha||''):'';
+  const evId=primero.ev?(primero.ev.id||primero.ev.nombre||''):'';
+  const currId=tipo+':'+fechaStr+':'+claseId+':'+evId;
+  // Solo avisar si el evento/estudio es en 7 días o menos
+  try{
+    const hoy=new Date();
+    hoy.setHours(0,0,0,0);
+    const d=primero.fecha instanceof Date?primero.fecha:new Date(primero.fechaStr+'T00:00:00');
+    const diff=Math.round((d-hoy)/86400000);
+    if(isNaN(diff)||diff>7){
+      wrap.innerHTML='';
+      wrap.style.display='none';
+      return;
+    }
+  }catch(e){}
+  let lastSeen='';
+  const key='caballeros_cab_eventos_seen_'+cabId;
+  try{
+    lastSeen=typeof localStorage!=='undefined'?(localStorage.getItem(key)||''):'';
+  }catch(e){}
+  if(lastSeen===currId){
+    wrap.innerHTML='';
+    wrap.style.display='none';
+    return;
+  }
+  wrap.style.display='block';
+  const msgTitulo='🗓 Nuevos eventos y estudios';
+  const msgTxt='Hay nuevos eventos o estudios próximos. Toca para verlos en detalle.';
+  wrap.innerHTML=`
+    <div onclick="showPvTab('eventos');try{localStorage.setItem('${key}','${currId}');}catch(e){}"
+         style="background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 50%,#e0f2fe 100%);border-radius:14px;padding:14px 18px;border:2px solid #60a5fa;box-shadow:0 4px 16px rgba(37,99,235,0.25);cursor:pointer;display:flex;align-items:center;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🗓</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#1d4ed8;">${msgTitulo}</div>
+        <div style="font-size:12px;color:#1d4ed8;margin-top:2px;">${msgTxt}</div>
+      </div>
+      <div style="font-size:18px;color:#1d4ed8;flex-shrink:0;">→</div>
+    </div>`;
+}
+
+function updateAdminNavNotifs(){
+  const db=_db();
+  const petDot=document.getElementById('nav-peticiones-dot');
+  if(petDot){
+    const items=[...(db.peticiones||[])];
+    const latestTs=items.reduce((m,p)=>(typeof p.ts==='number'&&p.ts>m)?p.ts:m,0);
+    let lastSeen=0;
+    try{
+      lastSeen=typeof localStorage!=='undefined'?Number(localStorage.getItem('caballeros_admin_peticiones_last_seen_ts')||'0'):0;
+    }catch(e){}
+    const hayNuevas=latestTs>0&&latestTs>lastSeen;
+    petDot.style.display=hayNuevas?'inline-block':'none';
+  }
 }
 
 function renderDesafioCaballero(wrapId){
