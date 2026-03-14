@@ -1119,6 +1119,15 @@ function doLogin(){
     currentCabId=v;
     try{sessionStorage.setItem('caballeros_miembro',v);}catch(e){}
     showSc('screen-personal');renderPersonal(v);
+    function scrollInicioArriba(){
+      window.scrollTo(0,0);
+      var sp=document.getElementById('screen-personal');
+      if(sp)sp.scrollTop=0;
+      var tabActivo=sp?sp.querySelector('.pv-tab.active'):null;
+      if(tabActivo)tabActivo.scrollTop=0;
+    }
+    scrollInicioArriba();
+    setTimeout(scrollInicioArriba,50);
     // Primera vez: mensaje y abrir perfil solo una vez por sesión (como en admin)
     if(primeraVezCaballero){
       var toastCabYa=false;
@@ -1927,6 +1936,13 @@ async function initApp(){
     logAppHistorial(savedCab,'entrada_app','Entró a la app');
     showSc('screen-personal');
     if(typeof renderPersonal==='function')renderPersonal(savedCab);
+    setTimeout(function(){
+      window.scrollTo(0,0);
+      var sp=document.getElementById('screen-personal');
+      if(sp)sp.scrollTop=0;
+      var tabActivo=sp?sp.querySelector('.pv-tab.active'):null;
+      if(tabActivo)tabActivo.scrollTop=0;
+    },50);
   }
   setInterval(function(){if(document.hidden)location.reload();},3600000);
   window._reportLogos={favicon:'',ev:(document.querySelector('#screen-admin .ev-banner img')||document.querySelector('.ev-banner img'))?.src||''};

@@ -430,6 +430,9 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
     }
   }
   cab.honorDesafioIntentosHoy=(cab.honorDesafioIntentosHoy||0)+1;
+  if(puntosGame===15){
+    cab.honorDesafioIntentosHoy=3;
+  }
   cab.honorRacha=nuevaRacha;
   cab.honorLastFecha=hoy;
   var mult=typeof getMultiplicadorRacha==='function'?getMultiplicadorRacha(nuevaRacha):1;
@@ -453,7 +456,7 @@ async function completarDesafioCaballeroHoy(puntosObtenidos){
     if(typeof toast==='function')toast('No se pudo guardar el progreso.','err');
   }
   if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
-  if(!esJuego&&typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
+  if(typeof renderDesafioCaballero==='function')renderDesafioCaballero('pv-desafio-dia-wrap');
 }
 
 function resetDesafioCaballeroHoy(cabId){
@@ -485,10 +488,7 @@ function renderDesafioAdminDash(wrapId){
   const db=_db();
   const hoy=typeof hoyStr==='function'?hoyStr():'';
   const todos=db.caballeros||[];
-  const cabs=todos.filter(function(c){
-    const intentos=c.honorDesafioFechaIntentos===hoy?(c.honorDesafioIntentosHoy||0):0;
-    return intentos>0;
-  }).sort((a,b)=>(b.honorPuntos||0)-(a.honorPuntos||0));
+  const cabs=todos.slice().sort(function(a,b){ return (b.honorPuntos||0)-(a.honorPuntos||0); });
   const esc=s=>String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const rows=cabs.map(function(c){
     const intentos=c.honorDesafioFechaIntentos===hoy?(c.honorDesafioIntentosHoy||0):0;
@@ -502,20 +502,20 @@ function renderDesafioAdminDash(wrapId){
       '</td>'+
       '<td style="padding:10px 12px;font-size:13px;font-weight:800;color:#059669;">'+(c.honorPuntos||0)+'</td>'+
       '<td style="padding:10px 12px;font-size:13px;font-weight:700;">'+(c.honorRacha||0)+' día'+(c.honorRacha===1?'':'s')+'</td>'+
-      '<td style="padding:10px 12px;font-size:12px;">'+intentos+'</td>'+
+      '<td style="padding:10px 12px;font-size:12px;">'+intentos+' <span style="color:var(--text3);font-weight:400;">hoy</span></td>'+
       '</tr>';
   }).join('');
   el.innerHTML='<div class="panel panel-inicio">'+
     '<div class="panel-title" style="margin-bottom:12px;">📅 Desafío diario</div>'+
-    '<p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Solo caballeros que han hecho el desafío hoy.</p>'+
+    '<p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Todos los caballeros. Intentos = veces que ha hecho el desafío hoy.</p>'+
     '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
     '<thead><tr style="background:#f1f5f9;text-align:left;">'+
     '<th style="padding:10px 12px;font-weight:800;color:#475569;">Caballero</th>'+
     '<th style="padding:10px 12px;font-weight:800;color:#475569;">Puntos</th>'+
     '<th style="padding:10px 12px;font-weight:800;color:#475569;">Racha</th>'+
-    '<th style="padding:10px 12px;font-weight:800;color:#475569;">Intentos</th>'+
+    '<th style="padding:10px 12px;font-weight:800;color:#475569;">Intentos hoy</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
-    (cabs.length===0?'<p style="font-size:12px;color:var(--text3);margin-top:12px;">Nadie ha hecho el desafío hoy.</p>':'')+'</div>';
+    (cabs.length===0?'<p style="font-size:12px;color:var(--text3);margin-top:12px;">No hay caballeros.</p>':'')+'</div>';
 }
 
 function desafioAdminGenerarOtro(){
@@ -1659,10 +1659,14 @@ function renderDesafioCaballero(wrapId){
   const cab=cabId?(db.caballeros||[]).find(c=>c.id===cabId):null;
   const hoy=typeof hoyStr==='function'?hoyStr():'';
   if(cab&&hoy&&cab.honorDesafioFechaIntentos===hoy&&(cab.honorDesafioIntentosHoy||0)>=3){
+    var mejorHoy=cab.honorDesafioMejorPuntosHoy!=null?cab.honorDesafioMejorPuntosHoy:0;
+    var multHoy=typeof getMultiplicadorRacha==='function'?getMultiplicadorRacha(cab.honorRacha||0):1;
+    var sumadoHoy=cab.honorDesafioFechaPuntosSumados===hoy?(cab.honorDesafioPuntosSumadosHoy||0):0;
     el.innerHTML=`
     <div class="pv-desafio-aviso">
       <div class="pv-desafio-aviso-ttl">✅ Has usado tus 3 intentos de hoy</div>
-      <div class="pv-desafio-aviso-txt">Vuelve mañana para un nuevo desafío.</div>
+      <div class="pv-desafio-aviso-txt">Tu mejor puntuación hoy: <strong>${mejorHoy}</strong> de 15 · Sumado a tu total: <strong>${sumadoHoy}</strong> pts ${multHoy>1?'(×'+multHoy.toFixed(2)+' racha)':''}.</div>
+      <div class="pv-desafio-aviso-txt" style="margin-top:4px;">Vuelve mañana para un nuevo desafío.</div>
     </div>`;
     if(typeof renderDesafioRankingBanner==='function')renderDesafioRankingBanner();
     return;
@@ -1748,7 +1752,7 @@ function renderDesafioRankingBanner(){
   var conPuntos=todos.filter(function(c){ return (c.honorPuntos||0)>0; });
   var hoyCompletaron=todos.filter(function(c){ return c.honorDesafioFechaIntentos===hoy&&(c.honorDesafioIntentosHoy||0)>0; });
   var ordenados=conPuntos.slice().sort(function(a,b){ return (b.honorPuntos||0)-(a.honorPuntos||0); });
-  var top=ordenados.slice(0,8);
+  var top=ordenados;
   var esc=function(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   var multStr=function(racha){
     var m=typeof getMultiplicadorRacha==='function'?getMultiplicadorRacha(racha||0):1;
