@@ -488,7 +488,8 @@ function renderDesafioAdminDash(wrapId){
   const db=_db();
   const hoy=typeof hoyStr==='function'?hoyStr():'';
   const todos=db.caballeros||[];
-  const cabs=todos.slice().sort(function(a,b){ return (b.honorPuntos||0)-(a.honorPuntos||0); });
+  const conPuntos=todos.filter(function(c){ return (c.honorPuntos||0)>0; });
+  const cabs=conPuntos.slice().sort(function(a,b){ return (b.honorPuntos||0)-(a.honorPuntos||0); });
   const esc=s=>String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const rows=cabs.map(function(c){
     const intentos=c.honorDesafioFechaIntentos===hoy?(c.honorDesafioIntentosHoy||0):0;
@@ -507,7 +508,7 @@ function renderDesafioAdminDash(wrapId){
   }).join('');
   el.innerHTML='<div class="panel panel-inicio">'+
     '<div class="panel-title" style="margin-bottom:12px;">📅 Desafío diario</div>'+
-    '<p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Todos los caballeros. Intentos = veces que ha hecho el desafío hoy.</p>'+
+    '<p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Solo caballeros que han hecho el desafío (con puntos). Intentos = veces que ha hecho el desafío hoy.</p>'+
     '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
     '<thead><tr style="background:#f1f5f9;text-align:left;">'+
     '<th style="padding:10px 12px;font-weight:800;color:#475569;">Caballero</th>'+
@@ -515,7 +516,7 @@ function renderDesafioAdminDash(wrapId){
     '<th style="padding:10px 12px;font-weight:800;color:#475569;">Racha</th>'+
     '<th style="padding:10px 12px;font-weight:800;color:#475569;">Intentos hoy</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table></div>'+
-    (cabs.length===0?'<p style="font-size:12px;color:var(--text3);margin-top:12px;">No hay caballeros.</p>':'')+'</div>';
+    (cabs.length===0?'<p style="font-size:12px;color:var(--text3);margin-top:12px;">Nadie tiene puntos aún.</p>':'')+'</div>';
 }
 
 function desafioAdminGenerarOtro(){
@@ -2181,6 +2182,7 @@ function getMaterialUrl(m){
   }
   return '';
 }
+var _materialViewerVisibilityOff=null;
 function openMaterialViewer(id){
   const m=(_db().materialEstudio||[]).find(x=>x.id===id);
   if(!m)return;
@@ -2196,8 +2198,20 @@ function openMaterialViewer(id){
   if(typeof currentCabId!=='undefined'&&currentCabId&&typeof logAppHistorial==='function')logAppHistorial(currentCabId,'material_estudio',(m.titulo||m.id||'').toString());
   function onEsc(e){if(e.key==='Escape'){closeMaterialViewer();document.removeEventListener('keydown',onEsc);}}
   document.addEventListener('keydown',onEsc);
+  function onVisibilityChange(){
+    if(document.visibilityState==='hidden'){
+      closeMaterialViewer();
+      if(_materialViewerVisibilityOff)_materialViewerVisibilityOff();
+    }
+  }
+  _materialViewerVisibilityOff=function(){
+    document.removeEventListener('visibilitychange',onVisibilityChange);
+    _materialViewerVisibilityOff=null;
+  };
+  document.addEventListener('visibilitychange',onVisibilityChange);
 }
 function closeMaterialViewer(){
+  if(_materialViewerVisibilityOff){_materialViewerVisibilityOff();_materialViewerVisibilityOff=null;}
   const wrap=document.getElementById('material-viewer-wrap');
   const iframe=document.getElementById('material-viewer-iframe');
   if(wrap)wrap.style.display='none';

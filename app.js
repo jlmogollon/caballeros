@@ -1121,23 +1121,24 @@ function doLogin(){
     showSc('screen-personal');renderPersonal(v);
     function scrollInicioArriba(){
       window.scrollTo(0,0);
+      if(document.documentElement)document.documentElement.scrollTop=0;
+      if(document.body)document.body.scrollTop=0;
       var sp=document.getElementById('screen-personal');
       if(sp)sp.scrollTop=0;
       var tabActivo=sp?sp.querySelector('.pv-tab.active'):null;
       if(tabActivo)tabActivo.scrollTop=0;
     }
     scrollInicioArriba();
-    setTimeout(scrollInicioArriba,50);
-    // Primera vez: mensaje y abrir perfil solo una vez por sesión (como en admin)
+    setTimeout(scrollInicioArriba,0);
+    setTimeout(scrollInicioArriba,80);
+    setTimeout(scrollInicioArriba,200);
+    // Primera vez: solo toast, sin cambiar de pestaña ni auto-scroll
     if(primeraVezCaballero){
       var toastCabYa=false;
       try{toastCabYa=sessionStorage.getItem('caballeros_cab_pw_toast_shown')==='1';}catch(e){}
       if(!toastCabYa){
         try{sessionStorage.setItem('caballeros_cab_pw_toast_shown','1');}catch(e){}
-        setTimeout(function(){
-          toast('Por seguridad, puedes cambiar tu contraseña en tu perfil (👤).','info');
-          if(typeof showPvTab==='function')showPvTab('perfil');
-        },500);
+        setTimeout(function(){ toast('Por seguridad, puedes cambiar tu contraseña en tu perfil (👤).','info'); },600);
       }
     }
   }
@@ -1936,13 +1937,18 @@ async function initApp(){
     logAppHistorial(savedCab,'entrada_app','Entró a la app');
     showSc('screen-personal');
     if(typeof renderPersonal==='function')renderPersonal(savedCab);
-    setTimeout(function(){
+    function scrollInicioArriba(){
       window.scrollTo(0,0);
+      if(document.documentElement)document.documentElement.scrollTop=0;
+      if(document.body)document.body.scrollTop=0;
       var sp=document.getElementById('screen-personal');
       if(sp)sp.scrollTop=0;
       var tabActivo=sp?sp.querySelector('.pv-tab.active'):null;
       if(tabActivo)tabActivo.scrollTop=0;
-    },50);
+    }
+    setTimeout(scrollInicioArriba,0);
+    setTimeout(scrollInicioArriba,80);
+    setTimeout(scrollInicioArriba,200);
   }
   setInterval(function(){if(document.hidden)location.reload();},3600000);
   window._reportLogos={favicon:'',ev:(document.querySelector('#screen-admin .ev-banner img')||document.querySelector('.ev-banner img'))?.src||''};
